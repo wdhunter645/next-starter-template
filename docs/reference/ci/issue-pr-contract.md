@@ -30,23 +30,23 @@ Design-accepted for #2618. Runtime/controller integration depends on the complet
 ## 1. Canonical contract location and precedence
 
 - The canonical contract lives **only** inside the implementation task Issue body, in one marked section. It is never split across comments, and ordinary discussion comments are never parsed as contract authority — this reuses the same rule `docs/governance/PR_PROCESS.md` already applies to formal PR review (advisory comment is not authority).
-- Marker syntax (versioned, machine-parseable, consistent with the existing identity-marker convention used by `scripts/agent-routing/lib/idempotency.mjs`):
+- Marker syntax (versioned, machine-parseable, consistent with the repository's established `lgfc-*` machine-marker convention — see `<!-- lgfc-task-id:... -->` in `docs/ops/implementation-plans/README.md` and `docs/ops/trackers/PROGRAM-1500-CLOSEOUT-STABILIZATION-IMPLEMENTATION-QUEUE.md`):
 
   ```text
-  <!-- issue-pr-contract:v1:rev=<n> -->
+  <!-- lgfc-issue-pr-contract:v1:rev=<n> -->
   ...YAML-like fields (see §2)...
-  <!-- /issue-pr-contract:v1 -->
+  <!-- /lgfc-issue-pr-contract:v1 -->
   ```
 
   `<n>` is a positive integer the task owner increments by one every time the contract's field values materially change. The revision is part of the marker text itself (not a field), so a validator can detect a changed contract without diffing field-by-field.
-- **Exactly one** `issue-pr-contract:v1` block may exist in the current Issue body. Two or more is a hard validation failure (`contract_duplicate`) — the workflow must never guess which one is authoritative.
+- **Exactly one** `lgfc-issue-pr-contract:v1` block may exist in the current Issue body. Two or more is a hard validation failure (`contract_duplicate`) — the workflow must never guess which one is authoritative.
 - A **separate** bot-managed validation-status marker records the last validated outcome. It is posted as one upserted Issue comment (never in the Issue body, so the task owner's edit history stays clean):
 
   ```text
-  <!-- issue-pr-contract-status:v1:<valid|invalid>:rev=<n> -->
+  <!-- lgfc-issue-pr-contract-status:v1:<valid|invalid>:rev=<n> -->
   ```
 
-  If the body's current `rev=<n>` does not match the status marker's `rev=<n>`, any prior `valid` disposition is stale and must not be trusted — the validator re-validates from scratch. This mirrors the stale-event protection already required of the #2677 controller (`docs/reference/ci/agent-routing-controller-contract.md`) and must not be reimplemented differently.
+  If the body's current `rev=<n>` does not match the status marker's `rev=<n>`, any prior `valid` disposition is stale and must not be trusted — the validator re-validates from scratch. This is the same stale-event discipline the #2677 controller enforces, applied independently here; it does not depend on or import the #2677 controller substrate itself, which lives only on the separate, not-yet-promoted-to-`main` `component/deterministic-handoff-controller` branch.
 - The contract **may narrow but may not widen** the Issue's own `## Scope > Allowed paths` (already defined in `.github/ISSUE_TEMPLATE/delivery-task.md`). A contract `allowed_paths` value that introduces a path outside the Issue's own allowlist is `contract_scope_widens_issue_allowlist` and fails closed.
 
 ## 2. Contract fields
@@ -102,7 +102,7 @@ One versioned module owns field definitions, parsing, validation, and PR-body re
 
 | Code | Meaning |
 | --- | --- |
-| `contract_missing` | No `issue-pr-contract:v1` block found in the Issue body. |
+| `contract_missing` | No `lgfc-issue-pr-contract:v1` block found in the Issue body. |
 | `contract_duplicate` | More than one `v1` contract block found. |
 | `contract_field_missing:<field>` | Required field absent. |
 | `contract_field_placeholder:<field>` | Field present but a placeholder (`____`, `<...>`, empty). |
@@ -118,7 +118,7 @@ One versioned module owns field definitions, parsing, validation, and PR-body re
 On any failure:
 
 - do not create a branch or PR;
-- upsert exactly one `issue-pr-contract-status:v1:invalid:rev=<n>` comment listing every failing code and the exact corrective field(s) — never create comment spam by posting a new comment per attempt;
+- upsert exactly one `lgfc-issue-pr-contract-status:v1:invalid:rev=<n>` comment listing every failing code and the exact corrective field(s) — never create comment spam by posting a new comment per attempt;
 - remove `status:pr-ready`;
 - apply `status:pr-contract-incomplete` (label creation itself is out of scope for this document — see `## 9`);
 - allow a clean retry: correcting the contract, bumping `rev=<n>`, and reapplying `status:pr-ready` must produce a fresh validation, not a cached one (`contract_stale_revision` exists specifically to make stale-cache reuse impossible).
@@ -157,7 +157,7 @@ Non-duplication boundaries confirmed by inspection:
 - **`.github/workflows/orchestrator-draft-pr.yml`** already implements a label-triggered (`orchestrator` + `status:queued`) draft-PR creator via `scripts/orchestrator/create-draft-pr.mjs`, targeting `main` directly. It predates the component-branch Development profile and the stable-facts template. #2621's controller-integrated creator must not double-trigger alongside it and must not target `main`; reconciling or retiring `orchestrator-draft-pr.yml` is out of scope for #2615 and is not addressed further here.
 - **`scripts/ci/ai_execution_bridge_prepare.mjs`** builds `ai-build/*` branches and PR bodies for a separate, already-approved AI-build execution path. It is a peer mechanism, not something #2615's validator subsumes or duplicates.
 - **#2436** (CI-001 PR Body Generator Preclearance Tooling) is closed/completed but scoped only to Content Collection-specific fields and `scripts/ci/**pr_body**` / `scripts/ci/**pr_hygiene**` naming; it did not produce a `docs/reference/ci/pr-body-generator-contract.md` file (none exists in the repository) or a general-purpose Issue-side contract. Nothing from #2436 needs to be reused verbatim; its non-duplication boundary is that this document's schema is repo-wide and package-agnostic where #2436's was Content Collection-specific.
-- **#2294** (`component/agent-issue-polling-handoff-routing`) and the #2677 controller it fed are the runtime substrate this contract's validator/creator will eventually run inside (per #2615's Runtime Integration Dependency note on #2618's sibling tasks). This document defines the Issue-side contract only; it does not restate the controller's own event/state-machine contract, which remains owned by `docs/reference/ci/agent-routing-controller-contract.md`.
+- **#2294** (`component/agent-issue-polling-handoff-routing`) and the #2677 controller it fed are the runtime substrate this contract's validator/creator will eventually run inside (per #2615's Runtime Integration Dependency note on #2618's sibling tasks). This document defines the Issue-side contract only; it does not restate the controller's own event/state-machine contract. That contract currently lives only on `component/deterministic-handoff-controller` as `docs/reference/ci/agent-routing-controller-contract.md` and `scripts/agent-routing/**` — neither exists on `main` or on this component branch (`component/issue-contract-draft-pr`) as of this writing, since that work has not yet been promoted. A future implementation task must re-verify this reference resolves before depending on it at runtime.
 
 ## 9. Rollout boundary
 
