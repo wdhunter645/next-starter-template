@@ -5,8 +5,8 @@ Authority Level: Constitutional
 Owns: Repository precedence, GitHub Issue authority, domain ownership, lane topology, work-queue topology, canonical-source rules, supersession, and unresolved-conflict escalation
 Does Not Own: Detailed PMO, queue, delivery, agent, CI, Administration, Operations, collaboration, or platform procedures
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2477, #2486, #2640, #2641, #2686, #2690, #2699, #2720
-Last Reviewed: 2026-07-21
+Related Issues: #2477, #2486, #2640, #2641, #2678, #2686, #2690, #2699, #2720, #2941
+Last Reviewed: 2026-07-29
 ---
 
 # Repository Authority
@@ -14,6 +14,14 @@ Last Reviewed: 2026-07-21
 ## Purpose
 
 This document is the repository constitution for LGFC. It defines precedence, domain ownership, and the top-level operating topology so process changes update one owning domain instead of rewriting unrelated authority.
+
+## Temporary constitutional adjustment register
+
+Project [#2678](https://github.com/wdhunter645/next-starter-template/issues/2678) is the temporary constitutional adjustment register while its approved governance refinements are being implemented.
+
+All governance-sensitive agents must read both this constitution and Project #2678 during this transition. Approved constitutional adjustments recorded in #2678 temporarily supplement this constitution only for the specific subjects they address; they do not otherwise change the long-term authority model.
+
+When Project #2678 is fully implemented and its approved changes are merged into the canonical governance documents, that same documentation change must remove this section and every other constitutional reference to #2678.
 
 ## Precedence
 
