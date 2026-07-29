@@ -164,6 +164,15 @@ Before each promotion:
 - confirm `main` remains manual;
 - record the decision and evidence.
 
+### 7. Run a scoped CREATE_DRAFT_PR (#2621)
+
+`CREATE_DRAFT_PR` opens a draft PR from a source Issue whose `lgfc-issue-pr-contract:v1` block already passed #2620's advisory validation. It is never triggered automatically — dispatch it explicitly per Issue:
+
+1. Confirm the Issue's `lgfc-issue-pr-contract-status:v1` comment shows `valid` at the current contract revision (re-apply `status:pr-ready` and wait for #2620's validator first if not).
+2. Run `.github/workflows/ops-agent-routing-controller.yml` via `workflow_dispatch` with `mode: advance` (or `integrate`), `authorize_mutation: true`, and `issue_number` set to the source Issue.
+3. The `create-draft-pr` job re-runs #2620's validator, plans the action, re-reads live state immediately before mutating, and either opens the draft PR (recording its URL on the existing status comment) or reports a specific fail-closed reason (`contract_invalid`, `contract_actor_unauthorized`, `contract_diff_empty`, `stale_head_sha`/`stale_base_sha`/`stale_contract_revision`, `existing_pr_found`, …) — nothing else fires.
+4. Known limitation: a PR opened this way uses the default `GITHUB_TOKEN`, so GitHub will not automatically run other `pull_request`-triggered gates (`pr-hygiene`, `diff-scope`, required checks) against it — push an empty commit or close/reopen the PR to trigger them until a GitHub App installation token is adopted (`docs/reference/ci/issue-pr-contract.md` §7).
+
 ## Routine watcher cycle
 
 For every watcher activation:
