@@ -13,7 +13,18 @@ Last Reviewed: 2026-07-29
 
 ## Status
 
-**In progress — Phases 1 and 2 evidence collected; Phase 3 (controlled draft-PR pilot) awaits explicit per-trigger human/ChatGPT authorization, per #2622's own required work item 3.** This report does not authorize enabling draft-PR creation beyond what #2621 already shipped (explicit `workflow_dispatch` only). The promotion decision itself is a separate document: `docs/reference/ci/issue-pr-contract-promotion-decision.md`.
+**In progress — genuinely incomplete against #2622's own acceptance criteria; do not read this as a closeout report.**
+
+- **Phase 1 (historical dry run): complete.** 12-Issue sample, evidence below.
+- **Phase 2 (live advisory validation): not satisfied.** #2622 requires this to "record false positives, false negatives, operator correction effort, and comment noise" from live traffic. No real Issue has adopted the marker yet, so there is zero live traffic to record — this section reports that absence honestly; it is not a substitute for the required live evidence.
+- **Phase 3 (controlled draft-PR pilot): not executed.** Requires explicit per-trigger human/ChatGPT authorization per #2622's own required work item 3. No trigger has been proposed with exact source Issue/branches/diff yet in this report; that is the concrete next step, not something this report can self-authorize.
+- **Phase 4 (promotion decision): a recommendation only,** built from Phase 1's evidence and Phase 2/3's honest absence of evidence — not a claim that #2622 is ready to close. See `docs/reference/ci/issue-pr-contract-promotion-decision.md`.
+
+This report does not authorize enabling draft-PR creation beyond what #2621 already shipped (explicit `workflow_dispatch` only), and does not claim #2622's acceptance criteria are met.
+
+### Note on this file's location
+
+`docs/ops/reports/**` is outside the four DIATAXIS-classified folders (`docs/tutorials`, `docs/how-to`, `docs/reference`, `docs/explanation`) that `scripts/ci/diataxis_folder_audit.mjs` checks, so this file triggers that check's `OUTSIDE_DIATAXIS_FOLDER` advisory. This is not a defect specific to this file: every point-in-time evidence/pilot report in the repository lives at this same path (e.g. `docs/ops/reports/delivery-system-v1-pilot-evidence.md`, `docs/ops/reports/lou-gehrig-content-seed-pilot-report.md`), and the check itself is explicitly documented as "advisory and non-blocking during PR Hygiene Foundation rollout" (`.github/workflows/diataxis-folder-authority.yml` and `diataxis-folder-authority-check.yml`'s own comment output). Moving this one file out of that established, repo-wide convention would make it the odd one out rather than resolve anything.
 
 ## Phase 1 — Historical dry run
 
