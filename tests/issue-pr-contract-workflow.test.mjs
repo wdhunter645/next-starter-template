@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -8,10 +9,12 @@ import {
   findVersionedContractMarkers,
   validateBaseHeadSyntax,
   VALIDATE_ERROR_CODES,
+  runCli as runValidateCli,
 } from '../scripts/ci/issue_pr_contract_validate.mjs';
 import {
   findExistingValidationComment,
   renderValidationComment,
+  runCli as runCommentCli,
 } from '../scripts/ci/issue_pr_contract_comment.mjs';
 import { CONTRACT_STATUS_MARKER_PREFIX } from '../scripts/ci/issue_pr_contract.mjs';
 
@@ -103,18 +106,6 @@ describe('evaluateIssuePrContractRequest (#2620)', () => {
     expect(result.ok).toBe(false);
     expect(result.errors.some((error) => error.code === VALIDATE_ERROR_CODES.DELIVERY_PROFILE_INVALID)).toBe(true);
   });
-
-  it('fails live_state_changed when the workflow detects a race before mutation', () => {
-    const event = readEvent('valid-request.json');
-    const result = evaluateIssuePrContractRequest({
-      issue: toIssue(event),
-      comments: event.comments,
-      authorizedActors: event.authorizedActors,
-      liveState: toLiveState(event, { raceDetected: true }),
-    });
-    expect(result.ok).toBe(false);
-    expect(result.errors.some((error) => error.code === VALIDATE_ERROR_CODES.LIVE_STATE_CHANGED)).toBe(true);
-  });
 });
 
 describe('findVersionedContractMarkers (#2620)', () => {
@@ -187,5 +178,90 @@ describe('issue_pr_contract_comment (#2620)', () => {
 
   it('returns null when no status comment exists yet', () => {
     expect(findExistingValidationComment([{ id: 1, created_at: '2026-01-01T00:00:00Z', body: 'unrelated' }])).toBeNull();
+  });
+});
+
+describe('CLI wiring (#2620)', () => {
+  it('issue_pr_contract_validate.mjs runCli reads issue/comments/live-state and writes a result', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'issue-pr-contract-validate-cli-'));
+    const event = readEvent('valid-request.json');
+    const issuePath = path.join(tempDir, 'issue.json');
+    const commentsPath = path.join(tempDir, 'comments.json');
+    const liveStatePath = path.join(tempDir, 'live_state.json');
+    const actorsPath = path.join(tempDir, 'authorized_actors.json');
+    const resultPath = path.join(tempDir, 'result.json');
+
+    fs.writeFileSync(issuePath, JSON.stringify(toIssue(event)));
+    fs.writeFileSync(commentsPath, JSON.stringify(event.comments));
+    fs.writeFileSync(liveStatePath, JSON.stringify(toLiveState(event)));
+    fs.writeFileSync(actorsPath, JSON.stringify(event.authorizedActors));
+
+    const exitCode = runValidateCli({
+      ISSUE_PR_CONTRACT_ISSUE_JSON: issuePath,
+      ISSUE_PR_CONTRACT_COMMENTS_JSON: commentsPath,
+      ISSUE_PR_CONTRACT_LIVE_STATE_JSON: liveStatePath,
+      ISSUE_PR_CONTRACT_AUTHORIZED_ACTORS_JSON: actorsPath,
+      ISSUE_PR_CONTRACT_RESULT_JSON: resultPath,
+    });
+
+    expect(exitCode).toBe(0);
+    const result = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
+    expect(result.ok).toBe(true);
+    expect(result.primarySourceIssue).toBe(event.issueNumber);
+  });
+
+  it('issue_pr_contract_comment.mjs runCli renders the body and finds no existing comment on first run', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'issue-pr-contract-comment-cli-'));
+    const resultPath = path.join(tempDir, 'result.json');
+    const commentsPath = path.join(tempDir, 'comments.json');
+    const outputPath = path.join(tempDir, 'comment_output.json');
+
+    fs.writeFileSync(resultPath, JSON.stringify({
+      ok: true,
+      rev: 1,
+      primarySourceIssue: 9101,
+      fields: { head_branch: 'cursor/9101-example', base_branch: 'component/example', intent_label: 'intent:feature', pr_class: 'code' },
+    }));
+    fs.writeFileSync(commentsPath, JSON.stringify([]));
+
+    const exitCode = runCommentCli({
+      ISSUE_PR_CONTRACT_RESULT_JSON: resultPath,
+      ISSUE_PR_CONTRACT_COMMENTS_JSON: commentsPath,
+      ISSUE_PR_CONTRACT_COMMENT_OUTPUT_JSON: outputPath,
+    });
+
+    expect(exitCode).toBe(0);
+    const output = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+    expect(output.existingCommentId).toBeNull();
+    expect(output.removeLabel).toBe(false);
+    expect(output.body).toContain(`${CONTRACT_STATUS_MARKER_PREFIX}:valid:rev=1`);
+  });
+
+  it('issue_pr_contract_comment.mjs runCli finds the existing comment to update and flags label removal on failure', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'issue-pr-contract-comment-cli-fail-'));
+    const resultPath = path.join(tempDir, 'result.json');
+    const commentsPath = path.join(tempDir, 'comments.json');
+    const outputPath = path.join(tempDir, 'comment_output.json');
+
+    fs.writeFileSync(resultPath, JSON.stringify({
+      ok: false,
+      rev: 2,
+      errors: [{ code: 'contract_field_missing', message: 'purpose is required.' }],
+    }));
+    fs.writeFileSync(commentsPath, JSON.stringify([
+      { id: 42, created_at: '2026-01-01T00:00:00Z', body: `${CONTRACT_STATUS_MARKER_PREFIX}:invalid:rev=1` },
+    ]));
+
+    const exitCode = runCommentCli({
+      ISSUE_PR_CONTRACT_RESULT_JSON: resultPath,
+      ISSUE_PR_CONTRACT_COMMENTS_JSON: commentsPath,
+      ISSUE_PR_CONTRACT_COMMENT_OUTPUT_JSON: outputPath,
+    });
+
+    expect(exitCode).toBe(0);
+    const output = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+    expect(output.existingCommentId).toBe(42);
+    expect(output.removeLabel).toBe(true);
+    expect(output.body).toContain('contract_field_missing');
   });
 });

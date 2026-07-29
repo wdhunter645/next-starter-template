@@ -74,11 +74,15 @@ jobs:
               comments.map((c) => ({ id: c.id, created_at: c.created_at, body: c.body || '' })),
             ));
 
-            // Extract head/base branch from the contract block, if present, to
-            // look up live branch/diff/PR state. Missing/malformed values are
-            // left for issue_pr_contract_validate.mjs to report deterministically.
-            const headMatch = (issue.body || '').match(/head_branch:\s*(\S+)/);
-            const baseMatch = (issue.body || '').match(/base_branch:\s*(\S+)/);
+            // Extract head/base branch strictly from inside the marked contract
+            // block (not the whole Issue body), so an example, prior revision,
+            // or quoted text elsewhere in the body can never be mistaken for the
+            // live contract's branch refs. Missing/malformed values are left for
+            // issue_pr_contract_validate.mjs to report deterministically.
+            const blockMatch = (issue.body || '').match(/<!--\s*lgfc-issue-pr-contract:v1:rev=\d+\s*-->([\s\S]*?)<!--\s*\/lgfc-issue-pr-contract:v1\s*-->/);
+            const blockText = blockMatch ? blockMatch[1] : '';
+            const headMatch = blockText.match(/head_branch:\s*(\S+)/);
+            const baseMatch = blockText.match(/base_branch:\s*(\S+)/);
             const headBranch = headMatch ? headMatch[1] : '';
             const baseBranch = baseMatch ? baseMatch[1] : '';
 
@@ -178,61 +182,32 @@ jobs:
           name: issue-pr-contract-result-${{ needs.evaluate.outputs.issue_number }}
           path: ${{ runner.temp }}
 
-      - name: Re-read live state and upsert comment / remove label
+      - name: Re-read live state and fetch fresh comments (race guard)
+        id: live_check
         uses: actions/github-script@v7
         env:
           ISSUE_NUMBER: ${{ needs.evaluate.outputs.issue_number }}
-          RESULT_FILE: ${{ runner.temp }}/result.json
         with:
           script: |
             const fs = require('fs');
-            const path = require('path');
             const issueNumber = Number(process.env.ISSUE_NUMBER);
-            const result = JSON.parse(fs.readFileSync(process.env.RESULT_FILE, 'utf8'));
 
-            // Re-read expected state immediately before mutation (race guard).
+            // Re-read expected state immediately before mutation. A live_state_changed
+            // race (VALIDATE_ERROR_CODES.LIVE_STATE_CHANGED in issue_pr_contract_validate.mjs)
+            // is handled here, not by the read-only evaluate job, which only ever
+            // sees one snapshot and cannot detect staleness against itself.
             const { data: issue } = await github.rest.issues.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issueNumber,
             });
             const stillHasTriggerLabel = (issue.labels || []).some((l) => (typeof l === 'string' ? l : l.name) === 'status:pr-ready');
-            if (issue.state !== 'open' || !stillHasTriggerLabel) {
-              console.log('Live state changed since evaluation (issue closed or trigger label already removed); skipping mutation to avoid a duplicate/stale action.');
+            const proceed = issue.state === 'open' && stillHasTriggerLabel;
+            core.setOutput('proceed', proceed);
+            if (!proceed) {
+              console.log('live_state_changed: issue closed or trigger label already removed since evaluation; skipping mutation so a fresh event can re-trigger evaluation.');
               return;
             }
-
-            const markerPrefix = 'lgfc-issue-pr-contract-status:v1';
-            const state = result.ok ? 'valid' : 'invalid';
-            const marker = result.rev != null ? `<!-- ${markerPrefix}:${state}:rev=${result.rev} -->` : `<!-- ${markerPrefix}:${state} -->`;
-
-            const body = result.ok
-              ? [
-                  marker,
-                  '## Issue PR-Contract Validation',
-                  '',
-                  'Contract is complete, in-scope, and ready. A revision-bound plan preview follows.',
-                  '',
-                  '```text',
-                  `Primary source Issue: #${result.primarySourceIssue}`,
-                  `Head branch: ${result.fields.head_branch}`,
-                  `Base branch: ${result.fields.base_branch}`,
-                  `Intent label: ${result.fields.intent_label}`,
-                  `PR class: ${result.fields.pr_class}`,
-                  '```',
-                  '',
-                  'This is advisory validation only. No branch or PR was created.',
-                ].join('\n')
-              : [
-                  marker,
-                  '## Issue PR-Contract Validation',
-                  '',
-                  'Validation failed. Correct the listed fields, bump the contract revision, and reapply the trigger label.',
-                  '',
-                  ...result.errors.map((e) => `- \`${e.code}\`: ${e.message}`),
-                  '',
-                  'This is advisory validation only. No branch or PR was created; the trigger label has been removed.',
-                ].join('\n');
 
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
@@ -240,27 +215,47 @@ jobs:
               issue_number: issueNumber,
               per_page: 100,
             });
-            const existing = comments
-              .filter((c) => (c.body || '').includes(markerPrefix))
-              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/fresh_comments.json', JSON.stringify(
+              comments.map((c) => ({ id: c.id, created_at: c.created_at, body: c.body || '' })),
+            ));
 
-            if (existing) {
+      - name: Render comment and locate upsert target
+        if: steps.live_check.outputs.proceed == 'true'
+        env:
+          ISSUE_PR_CONTRACT_RESULT_JSON: ${{ runner.temp }}/result.json
+          ISSUE_PR_CONTRACT_COMMENTS_JSON: ${{ runner.temp }}/fresh_comments.json
+          ISSUE_PR_CONTRACT_COMMENT_OUTPUT_JSON: ${{ runner.temp }}/comment_output.json
+        run: node scripts/ci/issue_pr_contract_comment.mjs
+
+      - name: Upsert comment / remove label
+        if: steps.live_check.outputs.proceed == 'true'
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ needs.evaluate.outputs.issue_number }}
+          COMMENT_OUTPUT_FILE: ${{ runner.temp }}/comment_output.json
+        with:
+          script: |
+            const fs = require('fs');
+            const issueNumber = Number(process.env.ISSUE_NUMBER);
+            const output = JSON.parse(fs.readFileSync(process.env.COMMENT_OUTPUT_FILE, 'utf8'));
+
+            if (output.existingCommentId) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
+                comment_id: output.existingCommentId,
+                body: output.body,
               });
             } else {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issueNumber,
-                body,
+                body: output.body,
               });
             }
 
-            if (!result.ok) {
+            if (output.removeLabel) {
               try {
                 await github.rest.issues.removeLabel({
                   owner: context.repo.owner,

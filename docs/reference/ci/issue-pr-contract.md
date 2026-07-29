@@ -115,7 +115,7 @@ One versioned module owns field definitions, parsing, validation, and PR-body re
 | `pr_already_exists` | An open PR already targets `base_branch` from `head_branch` for this source Issue. |
 | `template_mismatch` | The generated body fails `buildPrHygieneReport().isClean`. |
 
-#2620's advisory validator (`scripts/ci/issue_pr_contract_validate.mjs`) additionally covers:
+The advisory validator added by #2620 (`scripts/ci/issue_pr_contract_validate.mjs`) additionally covers:
 
 | Code | Meaning |
 | --- | --- |

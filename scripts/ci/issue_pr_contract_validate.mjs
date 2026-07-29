@@ -5,10 +5,13 @@
 // Orchestrates #2619's shared modules (issue_pr_contract.mjs, pr_contract.mjs)
 // into the full request-level evaluation `status:pr-ready` requires: issue
 // open-state, marker version support, contract selection/validation, delivery
-// profile, base/head syntax, and live-state re-check immediately before any
-// mutation. This module is read-only — it returns a result; it never calls
-// the GitHub API. The workflow (.github/workflows/issue-pr-contract-validate.yml)
-// owns evidence gathering and the label/comment mutation.
+// profile, and base/head syntax. This module is read-only — it returns a
+// result computed from one snapshot; it never calls the GitHub API and cannot
+// itself detect a race against its own snapshot. The workflow's mutate job
+// (.github/workflows/issue-pr-contract-validate.yml) re-reads live Issue/label
+// state immediately before mutating and skips cleanly (VALIDATE_ERROR_CODES.
+// LIVE_STATE_CHANGED) if it no longer matches what evaluate saw, rather than
+// this module guessing at staleness from a single evaluation pass.
 
 import fs from 'node:fs';
 import { selectIssuePrContract, validateIssuePrContract } from './issue_pr_contract.mjs';
@@ -29,6 +32,10 @@ export const VALIDATE_ERROR_CODES = Object.freeze({
   DELIVERY_PROFILE_INVALID: 'delivery_profile_invalid',
   ISSUE_NOT_OPEN: 'issue_not_open',
   BASE_HEAD_INVALID: 'base_head_invalid',
+  // Not emitted by evaluateIssuePrContractRequest (a single-snapshot function
+  // cannot detect its own staleness). Detected and acted on only by the
+  // workflow's mutate job pre-mutation re-check; kept here as the shared
+  // constant/name so the workflow and docs reference one canonical string.
   LIVE_STATE_CHANGED: 'live_state_changed',
 });
 
@@ -134,10 +141,6 @@ export function evaluateIssuePrContractRequest({
   }
 
   errors.push(...validateBaseHeadSyntax({ headBranch: fields.head_branch, baseBranch: fields.base_branch }));
-
-  if (liveState.raceDetected === true) {
-    errors.push(contractError(VALIDATE_ERROR_CODES.LIVE_STATE_CHANGED, 'Live Issue/label/PR state changed since this evaluation began; re-run required.'));
-  }
 
   return {
     ok: errors.length === 0,

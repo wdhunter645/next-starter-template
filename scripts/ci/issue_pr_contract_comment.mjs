@@ -7,7 +7,10 @@
 // finds the one existing comment (if any) that must be updated in place, so
 // the calling workflow never creates duplicate feedback comments.
 
+import fs from 'node:fs';
 import { buildStatusMarker, CONTRACT_STATUS_MARKER_PREFIX } from './issue_pr_contract.mjs';
+
+export { CONTRACT_STATUS_MARKER_PREFIX };
 
 /**
  * Find the single upserted validation-status comment among an Issue's
@@ -66,4 +69,44 @@ export function renderValidationComment(result) {
   }
   lines.push('', 'This is advisory validation only. No branch or PR was created; the trigger label has been removed.');
   return lines.join('\n');
+}
+
+function readJsonFile(filePath, fallback) {
+  if (!filePath || !fs.existsSync(filePath)) return fallback;
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+/**
+ * CLI entrypoint. Reads an evaluation result and a fresh comments list
+ * (fetched by the workflow immediately before mutation, per the re-read-
+ * before-mutate rule), writes { body, existingCommentId, removeLabel }.
+ * Never calls the GitHub API — the calling workflow step performs the
+ * actual create/update/removeLabel calls using this output, so the
+ * marker/render/find logic has exactly one implementation.
+ */
+export function runCli(env = process.env) {
+  const result = readJsonFile(env.ISSUE_PR_CONTRACT_RESULT_JSON, null);
+  if (!result) {
+    console.error('ISSUE_PR_CONTRACT_RESULT_JSON is required and must point to an existing file.');
+    return 2;
+  }
+  const comments = readJsonFile(env.ISSUE_PR_CONTRACT_COMMENTS_JSON, []);
+
+  const existing = findExistingValidationComment(comments);
+  const output = {
+    body: renderValidationComment(result),
+    existingCommentId: existing ? existing.id : null,
+    removeLabel: result.ok !== true,
+  };
+
+  const outputPath = env.ISSUE_PR_CONTRACT_COMMENT_OUTPUT_JSON;
+  if (outputPath) {
+    fs.writeFileSync(outputPath, `${JSON.stringify(output, null, 2)}\n`);
+  }
+  console.log(JSON.stringify(output, null, 2));
+  return 0;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  process.exitCode = runCli();
 }
