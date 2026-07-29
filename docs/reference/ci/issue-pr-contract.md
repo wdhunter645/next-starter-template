@@ -155,7 +155,9 @@ Then, and only then:
 
 ## 7. Authentication and permissions
 
-Least-privilege applies: the validator/creator identity may read Issues, read/write the validation-status comment, add/remove the specific lifecycle labels named in `## 3`/`## 5`, and open draft PRs. It must never hold approval or merge scope. Whether a GitHub App installation token is required (versus the default `GITHUB_TOKEN`) so that a workflow-opened PR reliably triggers downstream PR workflows is an open implementation question for #2621, not decided here.
+Least-privilege applies: the validator/creator identity may read Issues, read/write the validation-status comment, add/remove the specific lifecycle labels named in `## 3`/`## 5`, and open draft PRs. It must never hold approval or merge scope.
+
+**#2621 disposition:** the `create-draft-pr` job uses the default `GITHUB_TOKEN` (via `actions/github-script`), not a personal token, satisfying the "no personal token" requirement. This has a known, accepted limitation for this rollout stage: GitHub does not run `pull_request`-triggered workflows off a PR opened with the default `GITHUB_TOKEN` (its built-in anti-recursion behavior), so `pr-hygiene`, `diff-scope`, and other PR-triggered gates will not fire automatically on a PR `CREATE_DRAFT_PR` opens — they require a manual re-trigger (e.g. an empty commit, or closing/reopening the PR) until a GitHub App installation token is evaluated and adopted. This is why `CREATE_DRAFT_PR` remains reachable only via explicit, single-Issue `workflow_dispatch` rather than the automatic `status:pr-ready` label event: an operator dispatching it can also arrange the re-trigger. Adopting an installation token to close this gap is left for a future task.
 
 ## 8. Reconciliation findings
 
@@ -166,10 +168,10 @@ Two governance documents contained PR-body requirements that predate the current
 
 Non-duplication boundaries confirmed by inspection:
 
-- **`.github/workflows/orchestrator-draft-pr.yml`** already implements a label-triggered (`orchestrator` + `status:queued`) draft-PR creator via `scripts/orchestrator/create-draft-pr.mjs`, targeting `main` directly. It predates the component-branch Development profile and the stable-facts template. #2621's controller-integrated creator must not double-trigger alongside it and must not target `main`; reconciling or retiring `orchestrator-draft-pr.yml` is out of scope for #2615 and is not addressed further here.
+- **`.github/workflows/orchestrator-draft-pr.yml`** already implements a label-triggered (`orchestrator` + `status:queued`) draft-PR creator via `scripts/orchestrator/create-draft-pr.mjs`, targeting `main` directly. It predates the component-branch Development profile and the stable-facts template. **Resolved by #2621:** kept unchanged (no functional overlap — see `docs/reference/ci/agent-routing-controller-contract.md`'s Legacy overlapping paths table); the `CREATE_DRAFT_PR` action never targets `main` and is reachable only via explicit `workflow_dispatch`, not the automatic `orchestrator`/`status:queued` labels this workflow consumes.
 - **`scripts/ci/ai_execution_bridge_prepare.mjs`** builds `ai-build/*` branches and PR bodies for a separate, already-approved AI-build execution path. It is a peer mechanism, not something #2615's validator subsumes or duplicates.
 - **#2436** (CI-001 PR Body Generator Preclearance Tooling) is closed/completed but scoped only to Content Collection-specific fields and `scripts/ci/**pr_body**` / `scripts/ci/**pr_hygiene**` naming; it did not produce a `docs/reference/ci/pr-body-generator-contract.md` file (none exists in the repository) or a general-purpose Issue-side contract. Nothing from #2436 needs to be reused verbatim; its non-duplication boundary is that this document's schema is repo-wide and package-agnostic where #2436's was Content Collection-specific.
-- **#2294** (`component/agent-issue-polling-handoff-routing`) and the #2677 controller it fed are the runtime substrate this contract's validator/creator will eventually run inside (per #2615's Runtime Integration Dependency note on #2618's sibling tasks). This document defines the Issue-side contract only; it does not restate the controller's own event/state-machine contract. That contract currently lives only on `component/deterministic-handoff-controller` as `docs/reference/ci/agent-routing-controller-contract.md` and `scripts/agent-routing/**` — neither exists on `main` or on this component branch (`component/issue-contract-draft-pr`) as of this writing, since that work has not yet been promoted. A future implementation task must re-verify this reference resolves before depending on it at runtime.
+- **#2294** (`component/agent-issue-polling-handoff-routing`) is the runtime substrate this contract's validator/creator runs inside as of #2621. **Correction of an earlier note:** this substrate does *not* live on `component/deterministic-handoff-controller` — that branch has a same-path, same-filename but functionally unrelated system built for #2677 (deterministic post-integration/closeout verification), a naming collision discovered and documented while implementing #2621 (`docs/reference/ci/agent-routing-controller-contract.md`'s Reconciliation findings). #2621 ported the real #2294 substrate (`scripts/agent-routing/**`, `tests/agent-routing/**`, this contract's own doc) forward from `component/agent-issue-polling-handoff-routing` by file copy onto `component/issue-contract-draft-pr`, since the two branches' git histories diverged before a repository-wide history rewrite and cannot be reconciled by merge.
 
 ## 9. Rollout boundary
 
@@ -180,7 +182,7 @@ Per #2615's own advisory-first requirement, no implementation task following thi
 3. dry-run-generated bodies are confirmed to pass `buildPrHygieneReport().isClean`;
 4. only then is draft-PR creation enabled, and only in the advisory/observe-first posture already established by the #2677 controller contract.
 
-**Status:** step 1 is implemented by #2620's `.github/workflows/issue-pr-contract-validate.yml` — it evaluates and posts feedback on `status:pr-ready` but creates no branch or PR under any condition. Steps 2–4 (measurement and enabling creation) remain for #2621/#2622.
+**Status:** step 1 is implemented by #2620's `.github/workflows/issue-pr-contract-validate.yml` — it evaluates and posts feedback on `status:pr-ready` but creates no branch or PR under any condition. Step 4 (draft-PR creation) is now implemented by #2621's `CREATE_DRAFT_PR` action (`docs/reference/ci/agent-routing-controller-contract.md`), but reachable only through an explicit, single-Issue-scoped `workflow_dispatch` on `.github/workflows/ops-agent-routing-controller.yml` — not automatically off `status:pr-ready`, so #2620's validator remains the sole automatic consumer of that label and the two workflows do not compete. Steps 2–3 (representative-Issue measurement and false-positive/ambiguous-parse review before any automatic, non-dry-run enablement) remain open for #2622.
 
 ## 10. Open research questions carried forward
 
@@ -188,5 +190,5 @@ Left for #2619–#2622 to resolve during implementation, not decided by this des
 
 - exact label-creation mechanics for `status:pr-contract-incomplete` / `status:pr-created` (label creation itself is explicitly out of scope for #2618);
 - whether branch creation may ever become a workflow responsibility (currently: no — the validator only checks `head_branch` exists; it never creates one);
-- whether a GitHub App installation token is required for #2621 (see `## 7`);
+- whether a GitHub App installation token is required so a `CREATE_DRAFT_PR`-opened PR reliably triggers downstream PR-triggered gates (see `## 7`) — resolved as a known, accepted limitation for this rollout stage, not yet adopted;
 - reconciliation or retirement plan for `orchestrator-draft-pr.yml` and `scripts/ci/pr_body_auto_repair.mjs`'s legacy heading set, tracked as a finding here but not resolved here.

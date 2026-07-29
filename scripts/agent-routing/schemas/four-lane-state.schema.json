@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Four-Lane Operating State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "topology",
+    "lanes",
+    "operationalHold"
+  ],
+  "properties": {
+    "topology": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "horizontal",
+        "vertical"
+      ],
+      "properties": {
+        "horizontal": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vertical": {
+          "type": "string"
+        }
+      }
+    },
+    "lanes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pmo-engineering",
+        "implementation-operations",
+        "day2-operations",
+        "administration-communications"
+      ],
+      "properties": {
+        "pmo-engineering": {
+          "type": "object"
+        },
+        "implementation-operations": {
+          "type": "object"
+        },
+        "day2-operations": {
+          "type": "object"
+        },
+        "administration-communications": {
+          "type": "object"
+        }
+      }
+    },
+    "operationalHold": {
+      "type": "object"
+    },
+    "planAdjustment": {
+      "type": "object"
+    },
+    "latestEvent": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  }
+}

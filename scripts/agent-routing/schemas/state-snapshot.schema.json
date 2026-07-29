@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Routing State Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "identity",
+    "revision",
+    "routingOwner",
+    "dependencyState",
+    "ambiguous"
+  ],
+  "properties": {
+    "identity": {
+      "type": "object"
+    },
+    "revision": {
+      "type": "string"
+    },
+    "routingOwner": {
+      "enum": [
+        "cursor",
+        "chatgpt",
+        "none",
+        "ambiguous"
+      ]
+    },
+    "dependencyState": {
+      "enum": [
+        "ready",
+        "blocked",
+        "complete",
+        "ambiguous"
+      ]
+    },
+    "ambiguous": {
+      "type": "boolean"
+    },
+    "ambiguityReasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "latestEvent": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "dependencyClass": {
+      "type": "string"
+    },
+    "independentAuthority": {
+      "type": "boolean"
+    },
+    "fourLaneEnabled": {
+      "type": "boolean"
+    },
+    "operatingLanes": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "incidentAutoRemediation": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "pullRequests": {
+      "type": "array"
+    },
+    "checks": {
+      "type": "array"
+    },
+    "reviews": {
+      "type": "array"
+    },
+    "activeClaims": {
+      "type": "array"
+    },
+    "consumedEventIds": {
+      "type": "array"
+    },
+    "fileScope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "wakeEligible": {
+      "type": "boolean"
+    },
+    "projectLifecycle": {
+      "type": "string"
+    },
+    "issuePrContract": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  }
+}

@@ -1,0 +1,331 @@
+name: OPS Agent Routing Controller
+
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled, assigned, unassigned, closed, reopened]
+  issue_comment:
+    types: [created, edited]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, closed, labeled, unlabeled]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  workflow_run:
+    workflows:
+      - GATE — Quality Checks
+      - GATE — Secret Scan
+      - GATE — Reviewer Response Completion
+      - Component Child Integration
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Routing mode for this scoped run
+        required: true
+        type: choice
+        default: observe
+        options: [observe, normalize, advance, integrate]
+      authorize_mutation:
+        description: Explicitly authorize bounded non-main mutation
+        required: true
+        type: boolean
+        default: false
+      issue_number:
+        description: Source Issue number for a CREATE_DRAFT_PR (#2621) bounded mutation run
+        required: false
+        type: string
+
+env:
+  # Same connected identity #2620's validator trusts (docs/reference/ci/issue-pr-contract.md).
+  # Update if the AGENT-TEAM.md mapping changes.
+  AUTHORIZED_ACTORS: wdhunter645
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ops-agent-routing-controller-${{ github.event_name }}-${{ github.event.issue.number || github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    name: Evaluate routing state
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      actions: read
+    steps:
+      - name: Checkout trusted repository code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run routing unit tests
+        run: npx vitest run tests/agent-routing
+
+      - name: Write observe summary
+        if: always()
+        run: |
+          {
+            echo "## OPS Agent Routing Controller"
+            echo
+            echo "- Event: ${{ github.event_name }}"
+            echo "- Requested mode: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'observe' }}"
+            echo "- Automatic event behavior: observe-only"
+            echo "- Automatic main merge: prohibited"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  bounded-mutation-gate:
+    name: Validate explicitly authorized non-main mutation
+    needs: evaluate
+    if: github.event_name == 'workflow_dispatch' && inputs.authorize_mutation == true && inputs.mode != 'observe'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      actions: write
+    steps:
+      - name: Checkout trusted repository code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Refuse production mutation
+        run: |
+          test "${{ github.ref }}" != "refs/heads/main"
+          echo "Bounded mutation gate authorized for non-main mode: ${{ inputs.mode }}"
+          echo "No mutation is executed unless a versioned action plan passes expected-state revalidation."
+
+  # #2621: CREATE_DRAFT_PR only. Explicitly authorized, scoped to one Issue
+  # per run (workflow_dispatch `issue_number`), never wired to the automatic
+  # `status:pr-ready` label event — #2620's advisory validator already owns
+  # that trigger and this job must not become a second, competing
+  # controller for it. Re-reads live state immediately before mutating and
+  # never targets `main` (enforced independently in github-actions.mjs).
+  create-draft-pr:
+    name: Plan and apply CREATE_DRAFT_PR
+    needs: [evaluate, bounded-mutation-gate]
+    if: |
+      github.event_name == 'workflow_dispatch' && inputs.authorize_mutation == true
+      && (inputs.mode == 'advance' || inputs.mode == 'integrate') && inputs.issue_number != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout trusted repository code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Gather live evidence
+        id: gather
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER_INPUT: ${{ inputs.issue_number }}
+        with:
+          script: |
+            const fs = require('fs');
+            const issueNumber = Number(process.env.ISSUE_NUMBER_INPUT);
+
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+            });
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              per_page: 100,
+            });
+
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/issue.json', JSON.stringify({
+              number: issue.number,
+              body: issue.body || '',
+              state: issue.state,
+              triggerActor: context.actor,
+            }));
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/comments.json', JSON.stringify(
+              comments.map((c) => ({ id: c.id, created_at: c.created_at, body: c.body || '' })),
+            ));
+
+            const blockMatch = (issue.body || '').match(/<!--\s*lgfc-issue-pr-contract:v1:rev=\d+\s*-->([\s\S]*?)<!--\s*\/lgfc-issue-pr-contract:v1\s*-->/);
+            const blockText = blockMatch ? blockMatch[1] : '';
+            const headMatch = blockText.match(/head_branch:\s*(\S+)/);
+            const baseMatch = blockText.match(/base_branch:\s*(\S+)/);
+            const headBranch = headMatch ? headMatch[1] : '';
+            const baseBranch = baseMatch ? baseMatch[1] : '';
+
+            const getBranchSha = async (branch) => {
+              if (!branch) return null;
+              try {
+                const { data } = await github.rest.repos.getBranch({ owner: context.repo.owner, repo: context.repo.repo, branch });
+                return data.commit.sha;
+              } catch {
+                return null;
+              }
+            };
+            const headSha = await getBranchSha(headBranch);
+            const baseSha = await getBranchSha(baseBranch);
+
+            let hasDiff = false;
+            let changedFiles = [];
+            if (headSha && baseSha) {
+              try {
+                const { data: compare } = await github.rest.repos.compareCommitsWithBasehead({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  basehead: `${baseBranch}...${headBranch}`,
+                });
+                hasDiff = compare.status !== 'identical' && (compare.files || []).length > 0;
+                changedFiles = (compare.files || []).map((f) => f.filename);
+              } catch {
+                hasDiff = false;
+              }
+            }
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/live_state.json', JSON.stringify({ headBranchExists: headSha !== null, headSha, baseSha, hasDiff, changedFiles }));
+
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner, repo: context.repo.repo, state: 'open', head: `${context.repo.owner}:${headBranch}`,
+            });
+            const existingPr = prs.length > 0 ? { number: prs[0].number, url: prs[0].html_url, headBranch, sourceIssue: issueNumber, state: 'open' } : null;
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/existing_pr.json', JSON.stringify(existingPr));
+
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/authorized_actors.json', JSON.stringify((process.env.AUTHORIZED_ACTORS || '').split(',').map((s) => s.trim()).filter(Boolean)));
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/issue_identity.json', JSON.stringify({ number: issue.number, projectIssue: null, projectBranch: null, taskId: null, state: issue.state, labels: (issue.labels || []).map((l) => (typeof l === 'string' ? l : l.name)) }));
+
+      - name: Evaluate #2620 contract request
+        env:
+          ISSUE_PR_CONTRACT_ISSUE_JSON: ${{ runner.temp }}/issue.json
+          ISSUE_PR_CONTRACT_COMMENTS_JSON: ${{ runner.temp }}/comments.json
+          ISSUE_PR_CONTRACT_LIVE_STATE_JSON: ${{ runner.temp }}/live_state.json
+          ISSUE_PR_CONTRACT_AUTHORIZED_ACTORS_JSON: ${{ runner.temp }}/authorized_actors.json
+          ISSUE_PR_CONTRACT_RESULT_JSON: ${{ runner.temp }}/validation_result.json
+        run: node scripts/ci/issue_pr_contract_validate.mjs
+
+      - name: Plan CREATE_DRAFT_PR
+        id: plan
+        env:
+          AGENT_ROUTING_ISSUE_JSON: ${{ runner.temp }}/issue_identity.json
+          ISSUE_PR_CONTRACT_RESULT_JSON: ${{ runner.temp }}/validation_result.json
+          AGENT_ROUTING_EXISTING_PR_JSON: ${{ runner.temp }}/existing_pr.json
+          AGENT_ROUTING_MODE: ${{ inputs.mode }}
+          AGENT_ROUTING_PLAN_OUTPUT_JSON: ${{ runner.temp }}/plan_result.json
+          AGENT_ROUTING_PLAN_ONLY_OUTPUT_JSON: ${{ runner.temp }}/plan.json
+        run: node scripts/agent-routing/controller.mjs
+
+      - name: Re-read live state immediately before mutation (race guard)
+        id: refresh
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER_INPUT: ${{ inputs.issue_number }}
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + '/plan.json', 'utf8'));
+            const mutation = (plan.mutations || []).find((m) => m.type === 'create_draft_pr');
+            if (!mutation) {
+              console.log(`create-draft-pr: plan class was '${plan.class}', not create_draft_pr. Nothing to do.`);
+              fs.writeFileSync(process.env.RUNNER_TEMP + '/fresh_state.json', JSON.stringify({}));
+              core.setOutput('hasMutation', 'false');
+              return;
+            }
+            core.setOutput('hasMutation', 'true');
+
+            const issueNumber = Number(process.env.ISSUE_NUMBER_INPUT);
+            const { data: issue } = await github.rest.issues.get({ owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber });
+            const getBranchSha = async (branch) => {
+              try {
+                const { data } = await github.rest.repos.getBranch({ owner: context.repo.owner, repo: context.repo.repo, branch });
+                return data.commit.sha;
+              } catch {
+                return null;
+              }
+            };
+            const headSha = await getBranchSha(mutation.headBranch);
+            const baseSha = await getBranchSha(mutation.baseBranch);
+            const { data: prs } = await github.rest.pulls.list({ owner: context.repo.owner, repo: context.repo.repo, state: 'open', head: `${context.repo.owner}:${mutation.headBranch}` });
+            const pullRequests = prs.map((pr) => ({ state: 'open', headBranch: mutation.headBranch, sourceIssue: issueNumber, url: pr.html_url }));
+
+            const blockMatch = (issue.body || '').match(/<!--\s*lgfc-issue-pr-contract:v1:rev=(\d+)\s*-->/);
+            const authorizedActors = (process.env.AUTHORIZED_ACTORS || '').split(',').map((s) => s.trim()).filter(Boolean);
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/fresh_state.json', JSON.stringify({
+              issueOpen: issue.state === 'open',
+              actorAuthorized: authorizedActors.length === 0 || authorizedActors.includes(context.actor),
+              headSha,
+              baseSha,
+              contractRev: blockMatch ? Number(blockMatch[1]) : null,
+              pullRequests,
+            }));
+
+      - name: Build draft-PR request
+        id: build
+        if: steps.refresh.outputs.hasMutation == 'true'
+        env:
+          AGENT_ROUTING_CLI_MODE: mutate
+          AGENT_ROUTING_PLAN_JSON: ${{ runner.temp }}/plan.json
+          AGENT_ROUTING_FRESH_STATE_JSON: ${{ runner.temp }}/fresh_state.json
+          AGENT_ROUTING_DRAFT_PR_OUTPUT_JSON: ${{ runner.temp }}/draft_pr.json
+        run: node scripts/agent-routing/controller.mjs
+
+      - name: Create draft PR and record it on the contract comment
+        if: steps.refresh.outputs.hasMutation == 'true'
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER_INPUT: ${{ inputs.issue_number }}
+          BUILD_OUTPUT_FILE: ${{ runner.temp }}/draft_pr.json
+        with:
+          script: |
+            const fs = require('fs');
+            const issueNumber = Number(process.env.ISSUE_NUMBER_INPUT);
+            const output = JSON.parse(fs.readFileSync(process.env.BUILD_OUTPUT_FILE, 'utf8'));
+
+            if (!output.ok) {
+              console.log(`create-draft-pr: not proceeding — ${output.reason}. No PR created.`);
+              return;
+            }
+
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Draft: source Issue #${output.request.issue}`,
+              head: output.request.head,
+              base: output.request.base,
+              draft: true,
+              body: `- **Issue:** #${output.request.issue}\n\nOpened by the #2294 CREATE_DRAFT_PR action (#2621) from a clean, current advisory contract validation.`,
+            });
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber, per_page: 100,
+            });
+            const marker = output.commentUpdateTemplate.marker;
+            const existing = comments.find((c) => (c.body || '').includes(marker.split(':rev=')[0]));
+            const body = `${marker}\nDraft PR created: ${pr.html_url}`;
+            if (existing) {
+              await github.rest.issues.updateComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber, body });
+            }
+            console.log(`create-draft-pr: opened ${pr.html_url}`);
