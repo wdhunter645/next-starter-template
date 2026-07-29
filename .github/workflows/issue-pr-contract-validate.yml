@@ -1,0 +1,274 @@
+name: OPS — Issue PR-Contract Advisory Validation
+
+# #2615/#2620: advisory-only validation of a marked lgfc-issue-pr-contract:v1
+# Issue-side contract when status:pr-ready is applied. Never creates a branch
+# or PR (see docs/reference/ci/issue-pr-contract.md). Evaluation is read-only;
+# only the separate mutate job may write a comment or remove the trigger label.
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue number to validate (test/recovery)
+        required: true
+        type: string
+
+env:
+  # Current AGENT-TEAM.md mapping resolves Product Authority, PMO/Engineering,
+  # and Administration & Communications to this single connected GitHub
+  # identity. Update this list if that mapping changes.
+  AUTHORIZED_ACTORS: wdhunter645
+
+concurrency:
+  group: issue-pr-contract-validate-${{ github.event.issue.number || inputs.issue_number }}
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'status:pr-ready'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    outputs:
+      ok: ${{ steps.summarize.outputs.ok }}
+      issue_number: ${{ steps.summarize.outputs.issue_number }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Gather live evidence
+        id: gather
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER_INPUT: ${{ github.event.issue.number || inputs.issue_number }}
+          TRIGGER_ACTOR: ${{ github.event.sender.login || github.actor }}
+        with:
+          script: |
+            const fs = require('fs');
+            const issueNumber = Number(process.env.ISSUE_NUMBER_INPUT);
+
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+            });
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              per_page: 100,
+            });
+
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/issue.json', JSON.stringify({
+              number: issue.number,
+              body: issue.body || '',
+              state: issue.state,
+              triggerActor: process.env.TRIGGER_ACTOR,
+            }));
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/comments.json', JSON.stringify(
+              comments.map((c) => ({ id: c.id, created_at: c.created_at, body: c.body || '' })),
+            ));
+
+            // Extract head/base branch from the contract block, if present, to
+            // look up live branch/diff/PR state. Missing/malformed values are
+            // left for issue_pr_contract_validate.mjs to report deterministically.
+            const headMatch = (issue.body || '').match(/head_branch:\s*(\S+)/);
+            const baseMatch = (issue.body || '').match(/base_branch:\s*(\S+)/);
+            const headBranch = headMatch ? headMatch[1] : '';
+            const baseBranch = baseMatch ? baseMatch[1] : '';
+
+            const branchExists = async (branch) => {
+              if (!branch) return false;
+              try {
+                await github.rest.repos.getBranch({ owner: context.repo.owner, repo: context.repo.repo, branch });
+                return true;
+              } catch {
+                return false;
+              }
+            };
+
+            const headBranchExists = await branchExists(headBranch);
+            const baseBranchExists = await branchExists(baseBranch);
+
+            let hasDiff = false;
+            let changedFiles = [];
+            if (headBranchExists && baseBranchExists) {
+              try {
+                const { data: compare } = await github.rest.repos.compareCommitsWithBasehead({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  basehead: `${baseBranch}...${headBranch}`,
+                });
+                hasDiff = compare.status !== 'identical' && (compare.files || []).length > 0;
+                changedFiles = (compare.files || []).map((f) => f.filename);
+              } catch {
+                hasDiff = false;
+              }
+            }
+
+            let openPrExists = false;
+            if (headBranch) {
+              const { data: prs } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                head: `${context.repo.owner}:${headBranch}`,
+              });
+              openPrExists = prs.length > 0;
+            }
+
+            const statusMarkerPattern = /<!--\s*lgfc-issue-pr-contract-status:v1:(?:valid|invalid):rev=(\d+)\s*-->/;
+            let lastValidatedRev;
+            for (const comment of comments) {
+              const match = (comment.body || '').match(statusMarkerPattern);
+              if (match) lastValidatedRev = Number(match[1]);
+            }
+
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/live_state.json', JSON.stringify({
+              headBranchExists,
+              hasDiff,
+              openPrExists,
+              changedFiles,
+              lastValidatedRev,
+            }));
+
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/authorized_actors.json', JSON.stringify(
+              (process.env.AUTHORIZED_ACTORS || '').split(',').map((s) => s.trim()).filter(Boolean),
+            ));
+
+      - name: Evaluate contract request
+        id: evaluate
+        env:
+          ISSUE_PR_CONTRACT_ISSUE_JSON: ${{ runner.temp }}/issue.json
+          ISSUE_PR_CONTRACT_COMMENTS_JSON: ${{ runner.temp }}/comments.json
+          ISSUE_PR_CONTRACT_LIVE_STATE_JSON: ${{ runner.temp }}/live_state.json
+          ISSUE_PR_CONTRACT_AUTHORIZED_ACTORS_JSON: ${{ runner.temp }}/authorized_actors.json
+          ISSUE_PR_CONTRACT_RESULT_JSON: ${{ runner.temp }}/result.json
+        run: node scripts/ci/issue_pr_contract_validate.mjs
+
+      - name: Summarize
+        id: summarize
+        run: |
+          echo "ok=$(node -e "console.log(JSON.parse(require('fs').readFileSync('${{ runner.temp }}/result.json','utf8')).ok)")" >> "$GITHUB_OUTPUT"
+          echo "issue_number=${{ github.event.issue.number || inputs.issue_number }}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload evaluation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-pr-contract-result-${{ github.event.issue.number || inputs.issue_number }}
+          path: ${{ runner.temp }}/result.json
+
+  mutate:
+    needs: evaluate
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download evaluation artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: issue-pr-contract-result-${{ needs.evaluate.outputs.issue_number }}
+          path: ${{ runner.temp }}
+
+      - name: Re-read live state and upsert comment / remove label
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ needs.evaluate.outputs.issue_number }}
+          RESULT_FILE: ${{ runner.temp }}/result.json
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const issueNumber = Number(process.env.ISSUE_NUMBER);
+            const result = JSON.parse(fs.readFileSync(process.env.RESULT_FILE, 'utf8'));
+
+            // Re-read expected state immediately before mutation (race guard).
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+            });
+            const stillHasTriggerLabel = (issue.labels || []).some((l) => (typeof l === 'string' ? l : l.name) === 'status:pr-ready');
+            if (issue.state !== 'open' || !stillHasTriggerLabel) {
+              console.log('Live state changed since evaluation (issue closed or trigger label already removed); skipping mutation to avoid a duplicate/stale action.');
+              return;
+            }
+
+            const markerPrefix = 'lgfc-issue-pr-contract-status:v1';
+            const state = result.ok ? 'valid' : 'invalid';
+            const marker = result.rev != null ? `<!-- ${markerPrefix}:${state}:rev=${result.rev} -->` : `<!-- ${markerPrefix}:${state} -->`;
+
+            const body = result.ok
+              ? [
+                  marker,
+                  '## Issue PR-Contract Validation',
+                  '',
+                  'Contract is complete, in-scope, and ready. A revision-bound plan preview follows.',
+                  '',
+                  '```text',
+                  `Primary source Issue: #${result.primarySourceIssue}`,
+                  `Head branch: ${result.fields.head_branch}`,
+                  `Base branch: ${result.fields.base_branch}`,
+                  `Intent label: ${result.fields.intent_label}`,
+                  `PR class: ${result.fields.pr_class}`,
+                  '```',
+                  '',
+                  'This is advisory validation only. No branch or PR was created.',
+                ].join('\n')
+              : [
+                  marker,
+                  '## Issue PR-Contract Validation',
+                  '',
+                  'Validation failed. Correct the listed fields, bump the contract revision, and reapply the trigger label.',
+                  '',
+                  ...result.errors.map((e) => `- \`${e.code}\`: ${e.message}`),
+                  '',
+                  'This is advisory validation only. No branch or PR was created; the trigger label has been removed.',
+                ].join('\n');
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              per_page: 100,
+            });
+            const existing = comments
+              .filter((c) => (c.body || '').includes(markerPrefix))
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body,
+              });
+            }
+
+            if (!result.ok) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  name: 'status:pr-ready',
+                });
+              } catch (error) {
+                console.log(`status:pr-ready already absent or could not be removed: ${error.message}`);
+              }
+            }

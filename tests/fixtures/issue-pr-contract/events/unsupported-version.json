@@ -1,0 +1,8 @@
+{
+  "issueNumber": 9103,
+  "issueState": "open",
+  "triggerActor": "wdhunter645",
+  "authorizedActors": ["wdhunter645"],
+  "issueBody": "<!-- lgfc-issue-pr-contract:v2:rev=1 -->\npurpose: Uses a future, unsupported marker version.\n<!-- /lgfc-issue-pr-contract:v2 -->\n",
+  "comments": []
+}
