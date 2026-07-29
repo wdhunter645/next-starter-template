@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Current PR process baseline after #2228 and #2469 closeout
 Does Not Own: Canonical PR-process policy, live GitHub branch protection settings, or GitHub App settings
 Canonical Reference: /docs/governance/PR_PROCESS.md
-Related Issues: #2175, #2208, #2228, #2469
-Last Reviewed: 2026-07-12
+Related Issues: #2175, #2208, #2228, #2469, #2622
+Last Reviewed: 2026-07-29
 ---
 
 # PR Process Current State
@@ -94,6 +94,12 @@ The remaining exception queue is handled incrementally through routine housekeep
 
 Do not promote advisory gates to required status or restore PR-body lifecycle mutation without satisfying `/docs/governance/PR_PROCESS.md`.
 
-## Design-stage: Issue-side preclearance
+## Issue-side preclearance (#2615/#2618–#2622)
 
-`docs/reference/ci/issue-pr-contract.md` (#2615/#2618) is a design specification for validating stable PR-open facts before a PR exists. It is not implemented against this baseline; no check, label, or workflow in this document changes as a result of that design existing.
+`docs/reference/ci/issue-pr-contract.md` defines Issue-side validation of stable PR-open facts before a PR exists. As of #2622's pilot, this is **implemented but not required and not automatic beyond its own advisory scope**:
+
+- `issue-pr-contract-validate.yml` (#2620) runs on the `status:pr-ready` label and posts one advisory validation comment; it never creates a branch, PR, or label not already named in `## 3`/`## 5` of the design doc, and it is **not** one of the "Required checks" or "Active advisory checks" tables above (those apply to PR-triggered gates; this is Issue-triggered).
+- `CREATE_DRAFT_PR` (#2621) exists on the #2294 controller but is reachable only via explicit `workflow_dispatch`, never automatically — it does not change any PR-triggered check in this document.
+- Pilot evidence (#2622): `docs/ops/reports/issue-pr-contract-pilot-evidence.md`. Promotion decision: `docs/reference/ci/issue-pr-contract-promotion-decision.md`.
+
+No check, label, or workflow in the tables above changes as a result of this feature existing. Promoting any part of it to a required PR-side gate remains subject to `## Do not promote without evidence` and `/docs/governance/PR_PROCESS.md`.

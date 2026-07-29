@@ -1,0 +1,86 @@
+[
+  {
+    "issueNumber": 2734,
+    "title": "FIX: Replace legacy assistant name with ChatGPT repository-wide",
+    "deliveryModelStated": "Model A",
+    "url": "https://github.com/wdhunter645/next-starter-template/issues/2734",
+    "body": "Operating Classification: Standalone emergency repository correction\nIssue Class: standalone task\nProduct Authority Direction: Bill, 2026-07-21 3:30 PM EDT\nPriority: immediate\n\n## Objective\nReplace the retired assistant name with `ChatGPT` everywhere it appears as a case-insensitive whole word in tracked repository text files.\n\n## Delivery\n- Delivery model: Model A\n- Promotion path: Promotion Candidate -> Production\n- Target branch/environment: `main` / production repository authority\n- Source main SHA: `79cd47b2f93749ff17348f5aa199f0325b40dfc2`\n- Rollback: one-step revert of the resulting merge commit\n\n## Scope and allowlist\nAllowed final-diff paths:\n- `**/*` only where the source file contains the retired assistant name as a case-insensitive whole word\n\n## Acceptance criteria\n- [ ] Every tracked text-file whole-word match for the retired assistant name is replaced with `ChatGPT`.\n\n## Validation\nRequired builder validation:\n- `git grep -n -i -w '' -- .` returns no matches after replacement.\n- `git diff --check` passes.\n- Final PR changed-file list is reviewed for replacement-only scope."
+  },
+  {
+    "issueNumber": 2690,
+    "title": "TASK: Constitution Completion | Integrated Reconciliation, Final Review, and Production Promotion",
+    "deliveryModelStated": "Model B promotion",
+    "url": "https://github.com/wdhunter645/next-starter-template/issues/2690",
+    "body": "Parent Project: #2686\nDelivery Model: Model B promotion\nProfile: Promotion Candidate -> Production\nComponent branch: `component/constitution-domain-policy-completion`\nTarget environment: production\nGate profile: component-promotion\nApproval profile: one integrated ChatGPT / Atlas substantive review plus recorded Production authority\nRollback profile: multi-step release-unit scope\n\n## Objective\nReview the complete assembled documentation package once, perform all shared reconciliation and final edits as one authority system, qualify the exact Promotion Candidate, and promote it to `main` through one controlled Production PR.\n\n## Acceptance criteria\n- [ ] Exact integrated Promotion Candidate identity is recorded.\n- [ ] Production PR contains the exact reviewed candidate and no unreviewed drift.\n\n## Validation\n- `bash scripts/ci/docs_check_headers.sh`\n- `node scripts/ci/diataxis_folder_audit.mjs`\n\n## Rollback\nBefore merge, revise or discard the Promotion Candidate without affecting `main`. After merge, revert the Production promotion commit and verify restoration of the prior constitutional authority chain."
+  },
+  {
+    "issueNumber": 2495,
+    "title": "TASK: Delivery System v1 — Define delivery, rollback, Operations, and emergency-recovery policy",
+    "deliveryModelStated": "Model B child",
+    "url": "https://github.com/wdhunter645/next-starter-template/issues/2495",
+    "body": "Parent Project: #2478\nSize: medium-provisional\nDelivery Model: Model B child\nComponent branch: `component/delivery-system-v1`\nTarget environment: component integration\n\n## Allowed paths\n- `docs/governance/DELIVERY-AND-RELEASE.md`\n- `docs/governance/OPERATIONS-AND-RECOVERY.md`\n- `docs/reference/delivery/delivery-and-rollback-profiles.md`\n\nAll other files are out of scope.\n\n## Required implementation\n1. Write release and approval policy for Model A, Model B child integration, Model B promotion, and emergency recovery.\n\n## Validation\n- Model A, Model B, and emergency boundaries do not overlap.\n- Header, DIATAXIS, and reference checks pass.\n\n## Acceptance criteria\n- [ ] Delivery and release have one canonical policy owner.\n\n## Rollback\nRevert the policy/procedure child PR from `component/delivery-system-v1`."
+  },
+  {
+    "issueNumber": 2593,
+    "title": "TASK: #2294-001 | Establish routing contracts and configuration",
+    "deliveryModelStated": "Model B child",
+    "url": "https://github.com/wdhunter645/next-starter-template/issues/2593",
+    "body": "Parent Project: #2294\nProject Branch: `component/agent-issue-polling-handoff-routing`\nDelivery Model: Model B child\nPull Request Base: `component/agent-issue-polling-handoff-routing`\nWorking Branch Pattern: `cursor/2294-001-*`\n\n## Allowed paths\n- `docs/ops/ai/**`\n- `scripts/agent-routing/config.json`\n- `scripts/agent-routing/schemas/**`\n- `tests/agent-routing/contract-validation.test.mjs`\n\n## Acceptance criteria\n- One coherent contract covers CI, Cursor, ChatGPT watchers, alerts, claims, lanes, repository-runner boundaries, and production controls.\n\n## Verification\n- Schema and contract tests.\n- `git diff --check`."
+  },
+  {
+    "issueNumber": 2500,
+    "title": "TASK: Delivery System v1 — Update templates, issue metadata, and repository configuration",
+    "deliveryModelStated": "Model B child",
+    "url": "https://github.com/wdhunter645/next-starter-template/issues/2500",
+    "body": "Parent Project: #2478\nSize: medium-provisional\nDelivery Model: Model B child\nComponent branch: `component/delivery-system-v1`\n\n## Allowed paths\n- `.github/pull_request_template.md`\n- Relevant `.github/ISSUE_TEMPLATE/**`\n- `docs/reference/github/delivery-system-repository-configuration.md`\n\n## Stable fields\n- Size\n- Delivery model\n- Change mode\n- Target environment\n\n## Validation\n- Templates represent every stable field without conflicting definitions.\n- Header, workflow, template, and repository configuration checks pass.\n\n## Rollback\nRestore previous templates and repository settings using the recorded configuration snapshot."
+  },
+  {
+    "issueNumber": 2101,
+    "title": "DESIGN: PMO dashboard GitHub Pages CI build/deploy",
+    "deliveryModelStated": null,
+    "url": "https://github.com/wdhunter645/next-starter-template/issues/2101",
+    "body": "## Purpose\n\nDocument the design for the PMO dashboard as a generated GitHub Pages site backed by live GitHub Issues data.\n\nThis issue is a design / pre-build issue only.\n\n## Suggested implementation files\n\n```text\n.github/workflows/pmo-dashboard-ci-build.yml\n.github/workflows/pmo-dashboard-ci-deploy.yml\nscripts/pmo-dashboard/build-dashboard.mjs\nscripts/pmo-dashboard/validate-dashboard.mjs\n```\n\n## Acceptance criteria\n\nDesign/pre-build acceptance:\n\n- [ ] Issue documents dashboard purpose, source-of-truth model, and hosting decision.\n\nImplementation acceptance for future PR:\n\n- [ ] Adds `pmo-dashboard-ci-build.yml`.\n- [ ] Adds `pmo-dashboard-ci-deploy.yml`."
+  },
+  {
+    "issueNumber": 2047,
+    "title": "[Task-007] Production launch checklist smoke tests rollback and evidence model",
+    "deliveryModelStated": null,
+    "url": "https://github.com/wdhunter645/next-starter-template/issues/2047",
+    "body": "## Parent program\n\n#2039 — Website Public Launch / Relaunch Readiness\n\n## Objective\n\nCreate or update the production launch checklist, smoke-test checklist, rollback path, and release evidence model for public relaunch readiness.\n\n## Scope\n\n- Define preview and production smoke tests.\n- Define rollback and operator stop conditions.\n- Define release evidence capture expectations.\n\n## Acceptance criteria\n\n- Launch checklist exists or is updated.\n- Smoke-test checklist is concrete and executable.\n- Rollback path is documented.\n\n## Cursor stop condition\n\n`READY FOR REVIEW`"
+  },
+  {
+    "issueNumber": 1706,
+    "title": "[Task-006] Website-side campaign configuration and display implementation",
+    "deliveryModelStated": null,
+    "url": "https://github.com/wdhunter645/next-starter-template/issues/1706",
+    "body": "Implementation Plan: `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md`\nTask: Task-006\nType: website\nAgent: cursor\nParent Program: #1700\n\n## Objective\n\nImplement only accepted website-side campaign config/display surfaces with fail-closed behavior.\n\n## Allowlist\n\nWritable:\n\n- scoped `src/**`\n- scoped `functions/api/**` only if required\n- `tests/**`\n- `docs/ops/reports/**`\n\n## Acceptance criteria\n\n- Only accepted website-side campaign configuration/display deltas are implemented.\n- Tests cover fail-closed behavior and approved display paths.\n\n## Validation\n\n- Run targeted tests for changed React/component/API behavior.\n- Confirm PR body includes one source issue line and exact allowlist alignment.\n\n## Cursor stop condition\n\n`READY FOR REVIEW`"
+  },
+  {
+    "issueNumber": 2694,
+    "title": "OPS: Add Cursor Bridge health watchdog and missed-handoff reconciliation",
+    "deliveryModelStated": "Model A unless implementation proves materially larger than one reviewable PR",
+    "url": "https://github.com/wdhunter645/next-starter-template/issues/2694",
+    "body": "Operating Classification: Standalone Operations Issue\nDelivery Model: Model A unless implementation proves materially larger than one reviewable PR\nProfile: Development -> Promotion Candidate -> Production\n\n## Objective\n\nImprove reliability of the existing event-driven Cursor Local Bridge by adding a local Bridge health heartbeat/watchdog and a bounded slow reconciliation sweep.\n\n## Validation\n\nProvide repository and direct-host evidence for healthy heartbeat generation, watchdog recovery, and reconciliation correctness.\n\n## Acceptance criteria\n\n- [ ] Bridge writes a fresh local heartbeat while healthy.\n- [ ] One independently reviewed Production PR promotes the complete change to `main`.\n\n## Rollback\n\n- Disable the new watchdog/timer and reconciliation feature flag or interval.\n- Restore the prior Bridge service and configuration."
+  },
+  {
+    "issueNumber": 2805,
+    "title": "ENGINEERING PREPARATION: #2779 — Production backup, restore, rollback, and disaster recovery verification",
+    "deliveryModelStated": null,
+    "url": "https://github.com/wdhunter645/next-starter-template/issues/2805",
+    "body": "Related Pipeline Project: #2779\nGraduation Target: #2779\nImplementation Go: NOT GRANTED\n\n# Production backup, restore, rollback, and disaster recovery verification\n\n## Preparation objective\n\nDevelop a complete-enough, evidence-backed launch package for PMO review without authorizing Active implementation.\n\n## Current readiness assessment\n\n**PREPARATION IN PROGRESS.** This record does not authorize child implementation, Cursor wake/dispatch, branch creation, PR creation, Project Graduation, Active priority, or Production action.\n\nClosed as duplicate."
+  },
+  {
+    "issueNumber": 2806,
+    "title": "ENGINEERING PREPARATION: #2780 — Production monitoring, alerting, incident ownership, and post-launch response",
+    "deliveryModelStated": null,
+    "url": "https://github.com/wdhunter645/next-starter-template/issues/2806",
+    "body": "Related Pipeline Project: #2780\nGraduation Target: #2780\nImplementation Go: NOT GRANTED\n\n# Production monitoring, alerting, incident ownership, and post-launch response\n\n## Preparation objective\n\nDevelop a complete-enough, evidence-backed launch package for PMO review without authorizing Active implementation.\n\n## Current readiness assessment\n\n**PREPARATION IN PROGRESS.** This record does not authorize child implementation, Cursor wake/dispatch, branch creation, PR creation, Project Graduation, Active priority, or Production action.\n\nClosed as duplicate."
+  },
+  {
+    "issueNumber": 2615,
+    "title": "PROJECT: #2615 — Complete website implementation and supporting repo services",
+    "deliveryModelStated": "hard-case: multiple lgfc-* marker-style blocks in one body",
+    "url": "https://github.com/wdhunter645/next-starter-template/issues/2615",
+    "body": "<!-- lgfc-current-project-state:v1 -->\nstate: active\n<!-- /lgfc-current-project-state:v1 -->\n\n<!-- lgfc-project-launch-package:v1 -->\npackage: complete\n<!-- /lgfc-project-launch-package:v1 -->\n\n<!-- lgfc-project-child-map:v1 -->\nchildren: 2618,2619,2620,2621,2622\n<!-- /lgfc-project-child-map:v1 -->\n\n## Objective\n\nComplete website implementation and supporting repo services. This body intentionally exercises the ambiguity of MULTIPLE distinct lgfc-* marker-style blocks coexisting, none of which are an lgfc-issue-pr-contract:v1 block, to confirm the parser correctly reports contract_missing rather than misidentifying an unrelated marker as the contract."
+  }
+]
