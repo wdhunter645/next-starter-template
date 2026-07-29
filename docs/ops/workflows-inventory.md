@@ -174,6 +174,7 @@ Generic implementation-plan orchestration remains. The dedicated #1075 CI phase 
 | `ops-stale-issue-label-cleanup.yml` | OPS — Stale Issue Label Cleanup | `push` (self-path), `workflow_dispatch` | Label cleanup |
 | `copilot-setup-steps.yml` | Copilot Setup Steps | `push`, `workflow_dispatch` | Copilot setup |
 | `issue-pr-contract-validate.yml` | OPS — Issue PR-Contract Advisory Validation | `issues` (`labeled`), `workflow_dispatch` | Advisory-only `status:pr-ready` validation per #2615/#2620; separate read-only evaluate job and write-scoped mutate job; never creates a branch or PR |
+| `ops-agent-routing-controller.yml` | OPS Agent Routing Controller | `issues`, `issue_comment`, `pull_request`, `pull_request_review`, `workflow_run`, `workflow_dispatch` | Project #2294 deterministic controller (#2594/#2595); automatic events remain observe-only; `CREATE_DRAFT_PR` (#2621) is reachable only via explicit `workflow_dispatch` with `authorize_mutation: true` and a scoped `issue_number`, never off the automatic `status:pr-ready` label event that #2620's validator already owns |
 
 ## One-shot / deprecated candidates
 
