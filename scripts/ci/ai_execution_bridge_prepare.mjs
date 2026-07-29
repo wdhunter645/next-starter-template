@@ -1,5 +1,13 @@
 #!/usr/bin/env node
 
+// NOTE (#2619): buildPrBody() below renders the phase-1, execution-disabled
+// AI-build planning body (see FUTURE_PHASE_NOTE) using its own pre-#2175/#2208
+// heading set. It is a distinct, currently plan-only pathway, not the live
+// merge-path PR body. It is not authoritative for, and is not reused by,
+// scripts/ci/pr_contract.mjs / scripts/ci/pr_body_renderer.mjs — those own the
+// current `.github/pull_request_template.md`-compatible stable-facts body.
+// See docs/reference/ci/issue-pr-contract.md §8 for the reconciliation record.
+
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 

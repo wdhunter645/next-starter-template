@@ -100,7 +100,11 @@ function isPlaceholderPath(value = '') {
 
 export function parseAllowedFiles(body) {
   const lines = (body || '').split(/\r?\n/);
-  const allowedIndex = lines.findIndex((line) => /^(Allowed paths|Allowed files):\s*$/i.test(line.trim()));
+  const allowedIndex = lines.findIndex((line) => {
+    const trimmed = line.trim();
+    return /^(Allowed paths|Allowed files):\s*$/i.test(trimmed)
+      || /^#{1,6}\s+(Allowed paths|Allowed files)\s*$/i.test(trimmed);
+  });
   if (allowedIndex === -1) return [];
 
   const files = [];
