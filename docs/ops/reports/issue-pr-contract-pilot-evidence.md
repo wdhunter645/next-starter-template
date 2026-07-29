@@ -13,14 +13,14 @@ Last Reviewed: 2026-07-29
 
 ## Status
 
-**In progress — genuinely incomplete against #2622's own acceptance criteria; do not read this as a closeout report.**
+**Phases 1-3 executed with real evidence; see Phase 4's recommendation before treating this as a closeout.**
 
 - **Phase 1 (historical dry run): complete.** 12-Issue sample, evidence below.
-- **Phase 2 (live advisory validation): not satisfied.** #2622 requires this to "record false positives, false negatives, operator correction effort, and comment noise" from live traffic. No real Issue has adopted the marker yet, so there is zero live traffic to record — this section reports that absence honestly; it is not a substitute for the required live evidence.
-- **Phase 3 (controlled draft-PR pilot): not executed.** Requires explicit per-trigger human/ChatGPT authorization per #2622's own required work item 3. No trigger has been proposed with exact source Issue/branches/diff yet in this report; that is the concrete next step, not something this report can self-authorize.
-- **Phase 4 (promotion decision): a recommendation only,** built from Phase 1's evidence and Phase 2/3's honest absence of evidence — not a claim that #2622 is ready to close. See `docs/reference/ci/issue-pr-contract-promotion-decision.md`.
+- **Phase 2 (live advisory validation): executed once, live, on 2026-07-29** via the authorized #2622 Phase 3 pilot exercise (Issue #2948) — see below. One real evaluation is not the "representative sample" #2622 envisions for this phase, but it is genuine live traffic, not a dry run.
+- **Phase 3 (controlled draft-PR pilot): executed, authorized, on 2026-07-29.** Pilot Issue #2948 → draft PR #2949. Results below, including one genuine defect found and fixed live (a `delivery_model` value-format mismatch) and confirmation of the documented `GITHUB_TOKEN` downstream-workflow-suppression limitation with real evidence.
+- **Phase 4 (promotion decision):** see `docs/reference/ci/issue-pr-contract-promotion-decision.md`. The recommendation (remain advisory) is unchanged and now further reinforced by the Phase 3 downstream-workflow finding below.
 
-This report does not authorize enabling draft-PR creation beyond what #2621 already shipped (explicit `workflow_dispatch` only), and does not claim #2622's acceptance criteria are met.
+This report does not authorize enabling draft-PR creation beyond what #2621 already shipped (explicit `workflow_dispatch` only).
 
 ### Note on this file's location
 
@@ -71,34 +71,60 @@ Two clear gap-class Issues (#2101, #2047, and their sibling #1706) — pre-#2495
 
 ## Phase 2 — Live advisory validation
 
-`issue-pr-contract-validate.yml` (#2620) has been live and automatic on `status:pr-ready` since it merged. As of this report, **zero real-world label-triggered evaluations have occurred** (confirmed by the same zero-adoption finding in Phase 1 — no Issue has applied the marker, so none has applied `status:pr-ready` with a contract block present either). This is an honest, expected limitation, not a gap in the pilot's execution: live advisory evidence accumulates only as real Issues opt in, which requires either an authoring convention change (out of #2622's scope) or a deliberate pilot trigger.
+### Finding 5 — `issues: [labeled]` and other non-PR-event triggers never fired automatically, because the workflow files were never promoted to `main`
 
-No false positives or false negatives can yet be measured from real traffic. The 41-test suite in `tests/issue-pr-contract-workflow.test.mjs` plus the fixture-based dry run above are the only current evidence for validator correctness; both are synthetic/historical, not live.
+Applying `status:pr-ready` to a real Issue (#2948) produced **no comment and no workflow run** — confirmed by checking `actions_list.list_workflow_runs` and `actions_list.list_workflows`: `issue-pr-contract-validate.yml` and `ops-agent-routing-controller.yml` do not exist on `main` (`git ls-tree origin/main` returns nothing for either path), and GitHub only evaluates non-PR-event triggers (`issues`, `issue_comment`, `workflow_run`, and — critically — the REST `workflows/{id}/dispatches` **filename**-addressed endpoint) from the workflow file version on the repository's **default branch**. `pull_request`-triggered jobs on these same workflows (e.g. `Evaluate routing state`) run fine from a component branch because GitHub evaluates `pull_request` workflow definitions from the PR's own branch — a different, PR-specific resolution path.
+
+Practical consequence discovered live: dispatching `issue-pr-contract-validate.yml` or `ops-agent-routing-controller.yml` by **filename** via the REST API 404s (`POST .../workflows/issue-pr-contract-validate.yml/dispatches` → `404 Not Found`) for the same reason, even though `workflow_dispatch` is exactly the mechanism #2620/#2621 built as the safe, explicit-only trigger path. Dispatching by the workflow's **numeric ID** instead (resolved from any prior run, e.g. `315553856` for `ops-agent-routing-controller.yml`) works once the workflow has any run history — this is how the Phase 3 exercise below was actually fired. This is a real, previously-undocumented operability gap: an operator following `docs/how-to/agents/operate-agent-routing.md` §7 literally (`gh workflow run ops-agent-routing-controller.yml` or the GitHub web UI's "Run workflow" dropdown, both filename/default-branch-resolved) would hit the same 404 today.
+
+**This means #2620 has *not* actually been "live and automatic" on `status:pr-ready` at any point since it merged** — a correction to what this report and `docs/reference/ci/issue-pr-contract.md` previously claimed. It has only ever been reachable via numeric-ID `workflow_dispatch`. Promoting these workflow files to `main` (a decision with its own, separate risk profile, since `main` is production-protected) is a precondition for genuine automatic operation, not merely a nice-to-have.
+
+### Live evaluation result (Phase 2 real evidence)
+
+One real, live evaluation occurred as part of the Phase 3 exercise below (the `create-draft-pr` job's "Evaluate #2620 contract request" step runs the same validator #2620 uses). First attempt (contract rev 1) reported `delivery_profile_invalid` (see Finding 6). Second attempt (contract rev 2, corrected) reported **`valid`** — confirmed by the upserted `lgfc-issue-pr-contract-status:v1:valid:rev=2` comment on Issue #2948. Zero false positives, one true positive (correctly caught a real field-format defect), one true negative (correctly validated the corrected contract).
 
 ## Phase 3 — Controlled draft-PR pilot
 
-**Not executed in this pass.** #2622's own text requires *"human/ChatGPT authorization for each pilot trigger"* for this phase, and #2621's `CREATE_DRAFT_PR` action is reachable only via explicit, authorized `workflow_dispatch` — by design, nothing in this pilot may fire it without that per-trigger sign-off. Firing a live, authorized `CREATE_DRAFT_PR` run against a real bounded non-production task is the next concrete step once Bill/ChatGPT selects a candidate task and authorizes the trigger; this report does not select one unilaterally.
+**Executed, authorized by Bill on #2622, on 2026-07-29.** Candidate: pilot Issue #2948 (`cursor/2622-phase3-pilot` → `component/issue-contract-draft-pr`, a self-contained one-line diff to this report), proposed on #2622 and confirmed before any mutation.
 
-`docs/how-to/agents/operate-agent-routing.md` §7 (added by #2621) already documents the exact operator steps for running this trigger when authorized.
+### Finding 6 — Real Issues' common `Delivery model: Model B child` phrasing fails `delivery_profile.mjs`'s strict classifier
+
+The first live dispatch (contract rev 1) failed with `delivery_profile_invalid`: `Delivery model must be one of: A, B-child, B-promotion, emergency-recovery` — because the PMO intake block read `Delivery model: Model B child`, not the literal `B-child` the classifier (`scripts/ci/delivery_profile.mjs`'s `DELIVERY_MODELS`) requires exactly. This is not a one-off authoring mistake: **real Issues #2495, #2500, and #2593 in this report's own Phase 1 sample all write `Delivery Model: Model B child` the same way.** Any of them, used as a real contract's `reuse` source today, would hit the identical failure. Fixed live by correcting the pilot Issue's PMO intake to the literal `B-child` (contract rev 2) — the same convention already used correctly throughout every PR body in this program (`docs/governance/PR_PROCESS.md`'s stable-facts template). This is a genuine false-negative-shaped risk for real-world adoption: authors following the Issue-side PMO-intake convention they already know will predictably fail delivery-profile classification on a wording mismatch that has nothing to do with the actual delivery model being wrong.
+
+### Finding 7 (the headline finding) — Confirmed: a `CREATE_DRAFT_PR`-opened PR does not trigger downstream `pull_request` gates
+
+The corrected rev-2 dispatch succeeded end-to-end: `ops-agent-routing-controller.yml`'s `create-draft-pr` job (run [30479476694](https://github.com/wdhunter645/next-starter-template/actions/runs/30479476694)) evaluated the contract as `valid`, planned `create_draft_pr`, re-validated live state immediately before mutating, and opened **draft PR #2949** (`Draft: source Issue #2948`) — exactly one PR, and it correctly updated the existing `lgfc-issue-pr-contract-status:v1` comment on #2948 with the PR URL rather than creating a second comment (requirement 7 confirmed).
+
+**Checking PR #2949's check runs immediately after creation showed only three: `semgrep-cloud-platform/scan` (a third-party App integration, not a `pull_request`-workflow gate), and two runs (`quality`, `Cloudflare Pages`) that both *started before the PR was even opened* — i.e. triggered by the earlier branch `push`, not by `pull_request`.** None of `pr-hygiene`, `diff-scope`, `gitleaks`, `component-child-integration`, `cursor-review`, `check-design-authority`, `validate-diataxis-authority`, or `reviewer-response-completion` — the full suite that fires on every other PR in this program — appeared at all. This empirically confirms, with a real example rather than documentation-only reasoning, the `GITHUB_TOKEN` limitation #2621 flagged: GitHub's anti-recursion behavior suppresses `pull_request`-triggered workflows for a PR opened by the default `GITHUB_TOKEN`. Acceptance criterion *"Downstream PR workflows trigger successfully under the selected authentication model"* — **not met**, now with direct evidence rather than a documented risk.
+
+### Other Phase 3 acceptance-criteria evidence
+
+- No duplicate PR was created across the two dispatch attempts (confirmed via `search_pull_requests` for `head:cursor/2622-phase3-pilot` — exactly one result, #2949).
+- No unauthorized mutation, automatic approval, or path toward `main` occurred at any point (`base_branch: component/issue-contract-draft-pr` throughout; `production_main_boundary` guard never triggered because it was never approached).
+- Pilot cleanup: Issue #2948 and PR #2949 closed, branch `cursor/2622-phase3-pilot` deleted, per the pilot Issue's own documented rollback plan — no shared or production state was touched.
+
+`docs/how-to/agents/operate-agent-routing.md` §7 needs a follow-up correction: its `gh workflow run` / web-UI instructions will 404 today per Finding 5, until either the workflow is promoted to `main` or the guidance is updated to the numeric-workflow-ID dispatch path actually used here.
 
 ## Required metrics (from #2622) — current values
 
 | Metric | Value | Source |
 | --- | --- | --- |
 | Issues evaluated (historical dry run) | 12 | Phase 1 |
-| Contracts complete on first attempt | 0 | Phase 1 (no real Issue has a contract block yet) |
-| Contracts requiring correction | not applicable | no live contract exists to correct |
-| Missing-field frequency by field | see Finding 3 | Phase 1 (retrospective heuristic, not literal contract parsing) |
-| Unauthorized/ambiguous contract attempts | 0 | Phase 1/2 (none observed) |
-| Branch missing / no-diff frequency | not measured | no `liveState` gathered for historical dry run (no real branches to check against) |
-| Duplicate PR attempts prevented | 0 observed | no live trigger has occurred yet; guard logic itself is unit-tested in #2621 (`tests/agent-routing/create-draft-pr-action.test.mjs`) |
-| Generated PR bodies passing hygiene on first render | not applicable | no PR generated yet |
-| Generated PRs whose actual diff exceeds allowlist | not applicable | no PR generated yet |
-| Validation false positives | 0 observed (12/12 correctly `contract_missing`, including the #2615 hard case) | Phase 1 |
-| Validation false negatives discovered later | none discovered — nothing has been marked valid yet to falsify | Phase 1/2 |
-| Mean number of Issue correction cycles | not applicable | no live contract has been authored and iterated yet |
+| Issues evaluated (live) | 1 (#2948, 2 attempts: rev 1 invalid, rev 2 valid) | Phase 2/3 |
+| Contracts complete on first attempt | 0 of 1 live attempt (rev 1 failed `delivery_profile_invalid`; rev 2 corrected and passed) | Phase 3, Finding 6 |
+| Contracts requiring correction | 1 of 1 live contract (the pilot's own, corrected live) | Phase 3, Finding 6 |
+| Missing-field frequency by field | see Finding 3 (historical); Finding 6 (live: `delivery_model` value-format mismatch) | Phase 1/3 |
+| Unauthorized/ambiguous contract attempts | 0 | Phase 1/2/3 (none observed) |
+| Branch missing / no-diff frequency | 0/1 live attempt — real branch, real diff, correctly detected both | Phase 3 |
+| Duplicate PR attempts prevented | 0 needed — exactly one PR (#2949) resulted from two dispatch attempts against the same Issue; guard logic additionally unit-tested in #2621 | Phase 3 |
+| Generated PR bodies passing hygiene on first render | 1/1 — PR #2949 raised no `pr-hygiene` findings (though see Finding 7: the check never ran automatically to confirm this live) | Phase 3 |
+| Generated PRs whose actual diff exceeds allowlist | 0/1 — diff was exactly the declared one-line change | Phase 3 |
+| Validation false positives | 0 observed (12/12 historical `contract_missing` correct; live rev 1's `delivery_profile_invalid` was a true positive, not a false one) | Phase 1/3 |
+| Validation false negatives discovered later | none discovered | Phase 1/2/3 |
+| Mean number of Issue correction cycles | 1 (the live pilot contract needed exactly one correction: rev 1 → rev 2) | Phase 3 |
 | Post-merge clerical exceptions attributable to fields covered by the new contract | see comparison below | Phase 1 vs. #2592 |
 | Comparison against the #2592 post-merge audit baseline | see below | #2592 (closed 2026-07-22) |
+| Downstream PR-triggered workflows firing on a `CREATE_DRAFT_PR`-opened PR | **0 of 8 expected gates fired** (`pr-hygiene`, `diff-scope`, `gitleaks`, `quality`(PR-triggered), `component-child-integration`, `cursor-review`, `check-design-authority`, `validate-diataxis-authority`, `reviewer-response-completion`) | Phase 3, Finding 7 |
 
 ## Comparison against the #2592 baseline
 
@@ -115,6 +141,7 @@ Mapping the two field sets:
 
 ## Evidence limitations
 
-- All Phase 1/2 numbers come from a manually curated 12-Issue sample plus one repository-wide marker search, not an exhaustive census of every open/closed Issue.
-- No live, authorized Phase 3 trigger has occurred; Phase 3 metrics are all "not applicable — not yet executed," not zero-with-confidence.
+- All Phase 1 numbers come from a manually curated 12-Issue sample plus one repository-wide marker search, not an exhaustive census of every open/closed Issue.
+- Phase 2/3's live evidence is from exactly **one** pilot Issue/branch/PR cycle, not the "representative sample" or "bounded set of non-production tasks" (plural) #2622 envisions. It is real, not synthetic, but it is a single data point — a false-positive/false-negative rate cannot be statistically estimated from n=1. A second or third pilot cycle against a different real, low-stakes task would materially strengthen Phase 4 confidence.
 - The retrospective field-completeness review (Finding 3) is a heuristic manual read, not machine-verified against a formal schema — a future pass could formalize it as an additional dry-run harness mode if more rigor is wanted.
+- Finding 5 (workflow files absent from `main`) was discovered as a side effect of running Phase 3, not from a systematic audit of every OPS workflow's default-branch presence — other component-branch-only workflows in this repository may have the same latent gap.
