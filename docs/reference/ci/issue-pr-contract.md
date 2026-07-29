@@ -115,6 +115,18 @@ One versioned module owns field definitions, parsing, validation, and PR-body re
 | `pr_already_exists` | An open PR already targets `base_branch` from `head_branch` for this source Issue. |
 | `template_mismatch` | The generated body fails `buildPrHygieneReport().isClean`. |
 
+The advisory validator added by #2620 (`scripts/ci/issue_pr_contract_validate.mjs`) additionally covers:
+
+| Code | Meaning |
+| --- | --- |
+| `contract_marker_version_unsupported` | A `lgfc-issue-pr-contract:v<n>` marker exists but `n` is not the supported version (currently `1`); distinct from `contract_missing` so an unrecognized future version reports honestly instead of appearing absent. |
+| `delivery_profile_invalid` | The reused PMO-intake fields, combined with the contract's `head_branch`/`base_branch`, fail `classifyDeliveryProfile()` from `scripts/ci/delivery_profile.mjs`. |
+| `issue_not_open` | The Issue is not open; checked before any contract parsing. |
+| `base_head_invalid` | `head_branch` and `base_branch` are missing, identical, or `base_branch` is neither `component/**` nor `main`. |
+| `live_state_changed` | The Issue/label/PR state changed between evaluation and the mutate job's pre-mutation re-check; no comment or label change is made — the workflow simply skips, since a fresh event will re-trigger evaluation. |
+
+Two of the Issue-text names originally proposed for #2620 (`contract_author_unauthorized`, `contract_precedence_ambiguous`, `contract_expands_issue_scope`, `required_field_missing`, `placeholder_value`, `branch_has_no_diff`) name concepts #2619 already implements. Rather than fork a second vocabulary, the validator emits the existing canonical codes for these: `contract_unauthorized_trigger`, `contract_duplicate`, `contract_scope_widens_issue_allowlist`, `contract_field_missing:<field>`, `contract_field_placeholder:<field>`, and `diff_empty`, respectively. This table is the single source of truth for error-code names.
+
 On any failure:
 
 - do not create a branch or PR;
@@ -167,6 +179,8 @@ Per #2615's own advisory-first requirement, no implementation task following thi
 2. missing-field frequency, false positives, and ambiguous parses are measured;
 3. dry-run-generated bodies are confirmed to pass `buildPrHygieneReport().isClean`;
 4. only then is draft-PR creation enabled, and only in the advisory/observe-first posture already established by the #2677 controller contract.
+
+**Status:** step 1 is implemented by #2620's `.github/workflows/issue-pr-contract-validate.yml` — it evaluates and posts feedback on `status:pr-ready` but creates no branch or PR under any condition. Steps 2–4 (measurement and enabling creation) remain for #2621/#2622.
 
 ## 10. Open research questions carried forward
 

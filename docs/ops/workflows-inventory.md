@@ -173,6 +173,7 @@ Generic implementation-plan orchestration remains. The dedicated #1075 CI phase 
 | `ensure-ai-build-label.yml` | Ensure AI Build Label | `push` (self-path), `workflow_dispatch` | Label bootstrap |
 | `ops-stale-issue-label-cleanup.yml` | OPS — Stale Issue Label Cleanup | `push` (self-path), `workflow_dispatch` | Label cleanup |
 | `copilot-setup-steps.yml` | Copilot Setup Steps | `push`, `workflow_dispatch` | Copilot setup |
+| `issue-pr-contract-validate.yml` | OPS — Issue PR-Contract Advisory Validation | `issues` (`labeled`), `workflow_dispatch` | Advisory-only `status:pr-ready` validation per #2615/#2620; separate read-only evaluate job and write-scoped mutate job; never creates a branch or PR |
 
 ## One-shot / deprecated candidates
 

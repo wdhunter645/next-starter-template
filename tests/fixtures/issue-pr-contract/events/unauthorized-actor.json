@@ -1,0 +1,11 @@
+{
+  "issueNumber": 9102,
+  "issueState": "open",
+  "triggerActor": "random-user",
+  "authorizedActors": ["wdhunter645"],
+  "headBranch": "cursor/9102-example",
+  "baseBranch": "component/example",
+  "changedFiles": ["scripts/example.mjs"],
+  "issueBody": "## Scope\n\n### Allowed paths\n\n- `scripts/example.mjs`\n\n<!-- lgfc-issue-pr-contract:v1:rev=1 -->\npurpose: Example.\nintent_label: intent:feature\npr_class: code\nallowed_paths:\n- scripts/example.mjs\nout_of_scope_changes_present: NO\nchange_summary: Example change summary.\nverification_commands:\n- npm test\nverification_results: PASS\nfollow_up_required: NO\nrollback_summary: Revert the PR.\nhead_branch: cursor/9102-example\nbase_branch: component/example\n<!-- /lgfc-issue-pr-contract:v1 -->\n",
+  "comments": []
+}
