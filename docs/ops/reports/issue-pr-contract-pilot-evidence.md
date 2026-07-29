@@ -107,3 +107,5 @@ Mapping the two field sets:
 - All Phase 1/2 numbers come from a manually curated 12-Issue sample plus one repository-wide marker search, not an exhaustive census of every open/closed Issue.
 - No live, authorized Phase 3 trigger has occurred; Phase 3 metrics are all "not applicable — not yet executed," not zero-with-confidence.
 - The retrospective field-completeness review (Finding 3) is a heuristic manual read, not machine-verified against a formal schema — a future pass could formalize it as an additional dry-run harness mode if more rigor is wanted.
+
+<!-- lgfc-issue-pr-contract-pilot-marker: this line is the deliberate one-line diff for #2622's authorized Phase 3 CREATE_DRAFT_PR live exercise. Safe to remove after the pilot artifacts (Issue, branch, draft PR) are closed and their results are recorded above. -->
