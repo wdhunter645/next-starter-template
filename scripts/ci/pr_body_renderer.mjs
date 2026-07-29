@@ -63,7 +63,7 @@ export function renderPrBody({ issue = {}, contract = {}, deliveryProfile = {} }
     ? verificationCommands
       .map((command) => `- Command: \`${command}\`\n  Result: ${fields.verification_results || 'NOT RUN'}`)
       .join('\n')
-    : `- Command: \`\`\n  Result: ${fields.verification_results || 'NOT RUN'}`;
+    : `- Command: (none)\n  Result: ${fields.verification_results || 'NOT RUN'}`;
 
   const verification = [
     '## Verification',

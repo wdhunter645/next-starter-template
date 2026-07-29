@@ -119,6 +119,11 @@ export function validateRenderedPrBody({ body = '', baseRef = '', headRef = '', 
       hygiene,
     }));
   }
+  if (!scope.ok) {
+    errors.push(contractError(CONTRACT_ERROR_CODES.TEMPLATE_MISMATCH, 'Rendered body fails diff-scope validation.', {
+      scope,
+    }));
+  }
   if (delivery.errors.length > 0) {
     errors.push(contractError(CONTRACT_ERROR_CODES.TEMPLATE_MISMATCH, 'Rendered body fails delivery-profile classification.', {
       deliveryErrors: delivery.errors,

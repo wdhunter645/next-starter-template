@@ -62,4 +62,41 @@ describe('renderPrBody round-trip (#2619)', () => {
     expect(body).toMatch(/- \[ \] I have read all bot\/advisory findings on this PR/);
     expect(body).not.toMatch(/- \[x\] I have read all human review threads on this PR/);
   });
+
+  it('renders well-formed markdown when verification_commands is empty (Copilot review, PR #2937)', () => {
+    const fixture = readFixture('valid-b-child.json');
+    const deliveryProfile = parseDeliveryMetadata(fixture.issueBody);
+    const body = renderPrBody({
+      issue: { number: fixture.issueNumber },
+      contract: { fields: { intent_label: 'intent:feature', pr_class: 'code', allowed_paths: ['scripts/example.mjs'], verification_commands: [] } },
+      deliveryProfile,
+    });
+    expect(body).not.toMatch(/Command: ``/);
+    expect(body).toContain('- Command: (none)');
+  });
+});
+
+describe('validateRenderedPrBody scope enforcement (Copilot review, PR #2937)', () => {
+  it('fails when changed files are outside the declared Allowed paths, even if hygiene checks alone would not catch it', () => {
+    const fixture = readFixture('valid-b-child.json');
+    const issue = { number: fixture.issueNumber, body: fixture.issueBody };
+    const selection = selectIssuePrContract({ issue, comments: [] });
+    const validated = validateIssuePrContract({
+      issue,
+      contract: selection.contract,
+      liveState: { headBranchExists: true, hasDiff: true, openPrExists: false },
+    });
+    const deliveryProfile = parseDeliveryMetadata(fixture.issueBody);
+    const body = renderPrBody({ issue, contract: { fields: validated.fields }, deliveryProfile });
+
+    const rendered = validateRenderedPrBody({
+      body,
+      baseRef: fixture.baseBranch,
+      headRef: fixture.headBranch,
+      changedFiles: [...fixture.changedFiles, 'scripts/unrelated-out-of-scope.mjs'],
+    });
+    expect(rendered.scope.ok).toBe(false);
+    expect(rendered.ok).toBe(false);
+    expect(rendered.errors.some((error) => error.scope)).toBe(true);
+  });
 });
