@@ -376,3 +376,20 @@ describe('live-state drift detection (governance remediation)', () => {
     expect(output.reasons).toContain('trigger_label_removed');
   });
 });
+
+describe('workflow permissions (governance re-review)', () => {
+  it('mutate job declares contents:read and pull-requests:read alongside issues:write, matching what its re-fetch step calls', () => {
+    const workflowPath = path.join(__dirname, '..', '.github/workflows/issue-pr-contract-validate.yml');
+    const workflow = fs.readFileSync(workflowPath, 'utf8');
+    const mutateBlock = workflow.slice(workflow.indexOf('\n  mutate:'));
+
+    // repos.getBranch / repos.compareCommitsWithBasehead need contents:read;
+    // pulls.list needs pull-requests:read. An explicit job-level permissions
+    // map defaults every unlisted scope to none, so both must be declared
+    // even though the job's only mutation is issues:write.
+    const permissionsBlock = mutateBlock.slice(mutateBlock.indexOf('permissions:'), mutateBlock.indexOf('steps:'));
+    expect(permissionsBlock).toContain('contents: read');
+    expect(permissionsBlock).toContain('issues: write');
+    expect(permissionsBlock).toContain('pull-requests: read');
+  });
+});
