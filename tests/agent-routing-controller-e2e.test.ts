@@ -504,6 +504,76 @@ Requested action:
     ).toBe(false);
   });
 
+  it('preserves the untouched component_integration_disabled result when the subsystem itself is disabled', () => {
+    const config = loadControllerConfig();
+
+    // Subsystem disabled, explicit switch left at its default (true).
+    const subsystemDisabled = {
+      ...config,
+      componentIntegration: {
+        ...config.componentIntegration,
+        enabled: false,
+      },
+    };
+    const resultA = runController(baseLive(), subsystemDisabled);
+    expect(resultA.integration.ok).toBe(true);
+    expect(resultA.integration.eligible).toBe(false);
+    expect(resultA.integration.suppressed).toBe(true);
+    expect(resultA.integration.code).toBe('component_integration_disabled');
+    expect(resultA.integration.actions).toEqual([]);
+    expect(resultA.integration.mutationSwitchDisabled).toBeUndefined();
+    expect(resultA.integration.mutationDisabled).toBeUndefined();
+    expect(resultA.integration.underlyingCode).toBeUndefined();
+    expect(
+      resultA.observability.events.some(
+        (event) =>
+          event.kind === 'mutation_disabled' &&
+          event.outcome === 'integration' &&
+          event.code === 'component_integration_disabled',
+      ),
+    ).toBe(false);
+
+    // Subsystem disabled AND explicit switch also false — subsystem-disabled
+    // still takes the untouched path; it must not be relabeled either.
+    const bothDisabled = {
+      ...config,
+      mutationSwitches: {
+        remediationInstructions: false,
+        componentIntegration: false,
+        closeoutSuccessor: false,
+        reconciliationMutations: false,
+      },
+      componentIntegration: {
+        ...config.componentIntegration,
+        enabled: false,
+      },
+    };
+    const resultB = runController(baseLive(), bothDisabled);
+    expect(resultB.integration.code).toBe('component_integration_disabled');
+    expect(resultB.integration.mutationSwitchDisabled).toBeUndefined();
+    expect(resultB.integration.underlyingCode).toBeUndefined();
+
+    // Subsystem enabled, explicit switch disabled — must still take the
+    // mutation-switch wrapper path (unchanged from #2873).
+    const explicitSwitchDisabled = {
+      ...config,
+      mutationSwitches: {
+        remediationInstructions: false,
+        componentIntegration: false,
+        closeoutSuccessor: false,
+        reconciliationMutations: false,
+      },
+      componentIntegration: {
+        ...config.componentIntegration,
+        enabled: true,
+      },
+    };
+    const resultC = runController(baseLive(), explicitSwitchDisabled);
+    expect(resultC.integration.code).toBe('component_integration_mutation_disabled');
+    expect(resultC.integration.mutationSwitchDisabled).toBe(true);
+    expect(resultC.integration.underlyingCode).toBe('integration_authorized');
+  });
+
   it('emits structured observability for required transitions', () => {
     const enabled = runController(baseLive());
     const kinds = new Set(enabled.observability.events.map((event) => event.kind));
