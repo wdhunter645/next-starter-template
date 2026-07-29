@@ -1,4 +1,4 @@
 {
   "issueNumber": 9004,
-  "issueBody": "<!-- issue-pr-contract:v1:rev=1 -->\npurpose: First.\n<!-- /issue-pr-contract:v1 -->\n\nSome discussion in between.\n\n<!-- issue-pr-contract:v1:rev=2 -->\npurpose: Second.\n<!-- /issue-pr-contract:v1 -->\n"
+  "issueBody": "<!-- lgfc-issue-pr-contract:v1:rev=1 -->\npurpose: First.\n<!-- /lgfc-issue-pr-contract:v1 -->\n\nSome discussion in between.\n\n<!-- lgfc-issue-pr-contract:v1:rev=2 -->\npurpose: Second.\n<!-- /lgfc-issue-pr-contract:v1 -->\n"
 }

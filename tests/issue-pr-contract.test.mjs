@@ -84,8 +84,8 @@ describe('issue-pr-contract parsing and selection (#2619)', () => {
     const selection = selectIssuePrContract({
       issue: { number: fixture.issueNumber, body: fixture.issueBody },
       comments: [
-        { id: 1, body: '<!-- issue-pr-contract-status:v1:invalid:rev=1 -->\nsome earlier failure' },
-        { id: 2, body: '<!-- issue-pr-contract-status:v1:valid:rev=1 -->\nlooks good' },
+        { id: 1, body: '<!-- lgfc-issue-pr-contract-status:v1:invalid:rev=1 -->\nsome earlier failure' },
+        { id: 2, body: '<!-- lgfc-issue-pr-contract-status:v1:valid:rev=1 -->\nlooks good' },
       ],
     });
     expect(selection.lastStatus).toEqual({ state: 'valid', rev: 1, commentId: 2 });

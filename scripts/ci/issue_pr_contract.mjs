@@ -4,16 +4,16 @@
 //
 // Marker syntax (docs/reference/ci/issue-pr-contract.md §1):
 //
-//   <!-- issue-pr-contract:v1:rev=<n> -->
+//   <!-- lgfc-issue-pr-contract:v1:rev=<n> -->
 //   key: value
 //   list_key:
 //   - item
-//   <!-- /issue-pr-contract:v1 -->
+//   <!-- /lgfc-issue-pr-contract:v1 -->
 //
 // Validation-status marker (posted as one upserted Issue comment, never in
 // the Issue body):
 //
-//   <!-- issue-pr-contract-status:v1:<valid|invalid>:rev=<n> -->
+//   <!-- lgfc-issue-pr-contract-status:v1:<valid|invalid>:rev=<n> -->
 
 import {
   CONTRACT_ERROR_CODES,
@@ -24,11 +24,11 @@ import {
 } from './pr_contract.mjs';
 import { parseAllowedFiles } from './pr_hygiene_audit.mjs';
 
-const BLOCK_PATTERN = /<!--\s*issue-pr-contract:v1:rev=(\d+)\s*-->([\s\S]*?)<!--\s*\/issue-pr-contract:v1\s*-->/g;
-const STATUS_PATTERN = /<!--\s*issue-pr-contract-status:v1:(valid|invalid):rev=(\d+)\s*-->/;
+const BLOCK_PATTERN = /<!--\s*lgfc-issue-pr-contract:v1:rev=(\d+)\s*-->([\s\S]*?)<!--\s*\/lgfc-issue-pr-contract:v1\s*-->/g;
+const STATUS_PATTERN = /<!--\s*lgfc-issue-pr-contract-status:v1:(valid|invalid):rev=(\d+)\s*-->/;
 
-export const CONTRACT_MARKER_PREFIX = 'issue-pr-contract:v1';
-export const CONTRACT_STATUS_MARKER_PREFIX = 'issue-pr-contract-status:v1';
+export const CONTRACT_MARKER_PREFIX = 'lgfc-issue-pr-contract:v1';
+export const CONTRACT_STATUS_MARKER_PREFIX = 'lgfc-issue-pr-contract-status:v1';
 
 export function buildStatusMarker(state, rev) {
   return `<!-- ${CONTRACT_STATUS_MARKER_PREFIX}:${state}:rev=${rev} -->`;
@@ -44,7 +44,7 @@ function isPlaceholderValue(value = '') {
 }
 
 /**
- * Find every issue-pr-contract:v1 block in the given text. Returns raw
+ * Find every lgfc-issue-pr-contract:v1 block in the given text. Returns raw
  * blocks only; does not validate field content.
  */
 export function findContractBlocks(body = '') {
@@ -123,12 +123,12 @@ export function selectIssuePrContract({ issue = {}, comments = [], authorizedAct
   }
 
   if (blocks.length === 0) {
-    errors.push(contractError(CONTRACT_ERROR_CODES.CONTRACT_MISSING, 'No issue-pr-contract:v1 block found in the Issue body.'));
+    errors.push(contractError(CONTRACT_ERROR_CODES.CONTRACT_MISSING, 'No lgfc-issue-pr-contract:v1 block found in the Issue body.'));
     return { ok: false, block: null, contract: null, lastStatus, errors };
   }
 
   if (blocks.length > 1) {
-    errors.push(contractError(CONTRACT_ERROR_CODES.CONTRACT_DUPLICATE, 'More than one issue-pr-contract:v1 block found.', {
+    errors.push(contractError(CONTRACT_ERROR_CODES.CONTRACT_DUPLICATE, 'More than one lgfc-issue-pr-contract:v1 block found.', {
       count: blocks.length,
     }));
     return { ok: false, block: null, contract: null, lastStatus, errors };

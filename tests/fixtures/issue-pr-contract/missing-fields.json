@@ -1,4 +1,4 @@
 {
   "issueNumber": 9002,
-  "issueBody": "## Scope\n\n### Allowed paths\n\n- `scripts/example.mjs`\n\n<!-- issue-pr-contract:v1:rev=1 -->\nintent_label: intent:feature\nallowed_paths:\n- scripts/example.mjs\nchange_summary: <TODO>\n<!-- /issue-pr-contract:v1 -->\n"
+  "issueBody": "## Scope\n\n### Allowed paths\n\n- `scripts/example.mjs`\n\n<!-- lgfc-issue-pr-contract:v1:rev=1 -->\nintent_label: intent:feature\nallowed_paths:\n- scripts/example.mjs\nchange_summary: <TODO>\n<!-- /lgfc-issue-pr-contract:v1 -->\n"
 }
