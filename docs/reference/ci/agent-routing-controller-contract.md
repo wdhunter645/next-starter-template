@@ -15,6 +15,8 @@ Last Reviewed: 2026-07-29
 
 The controller is a deterministic adapter around four pure stages: event normalization, repository-state resolution, lane eligibility, and one-action planning. Equivalent inputs must produce byte-equivalent revisions and action keys. Automatic events run in `observe`; mutation requires a separately authorized non-main job and expected-state revalidation.
 
+**Confirmed precondition (#2622 Phase 3, 2026-07-29):** automatic, non-PR-event triggers (`issues`, `issue_comment`, `workflow_run`) and the filename-addressed `workflow_dispatch` REST/CLI/web-UI path only work once `.github/workflows/ops-agent-routing-controller.yml` is present on the repository's default branch (`main`) — GitHub resolves those trigger definitions from the default branch, not the component branch the workflow currently lives on. Until promoted, this controller is reachable only via numeric-workflow-ID `workflow_dispatch` (see `docs/how-to/agents/operate-agent-routing.md` §7) or `pull_request`-triggered jobs (which resolve from the PR's own branch and work normally today, e.g. the `evaluate` job on this repo's own PRs).
+
 ## Authority model
 
 - GitHub Issues and committed manifests remain authority.
