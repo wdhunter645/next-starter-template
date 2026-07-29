@@ -86,18 +86,20 @@ jobs:
             const headBranch = headMatch ? headMatch[1] : '';
             const baseBranch = baseMatch ? baseMatch[1] : '';
 
-            const branchExists = async (branch) => {
-              if (!branch) return false;
+            const getBranchSha = async (branch) => {
+              if (!branch) return null;
               try {
-                await github.rest.repos.getBranch({ owner: context.repo.owner, repo: context.repo.repo, branch });
-                return true;
+                const { data } = await github.rest.repos.getBranch({ owner: context.repo.owner, repo: context.repo.repo, branch });
+                return data.commit.sha;
               } catch {
-                return false;
+                return null;
               }
             };
 
-            const headBranchExists = await branchExists(headBranch);
-            const baseBranchExists = await branchExists(baseBranch);
+            const headSha = await getBranchSha(headBranch);
+            const baseSha = await getBranchSha(baseBranch);
+            const headBranchExists = headSha !== null;
+            const baseBranchExists = baseSha !== null;
 
             let hasDiff = false;
             let changedFiles = [];
@@ -135,6 +137,8 @@ jobs:
 
             fs.writeFileSync(process.env.RUNNER_TEMP + '/live_state.json', JSON.stringify({
               headBranchExists,
+              headSha,
+              baseSha,
               hasDiff,
               openPrExists,
               changedFiles,
@@ -182,8 +186,8 @@ jobs:
           name: issue-pr-contract-result-${{ needs.evaluate.outputs.issue_number }}
           path: ${{ runner.temp }}
 
-      - name: Re-read live state and fetch fresh comments (race guard)
-        id: live_check
+      - name: Re-fetch live issue/branch state (race guard)
+        id: refresh
         uses: actions/github-script@v7
         env:
           ISSUE_NUMBER: ${{ needs.evaluate.outputs.issue_number }}
@@ -192,22 +196,81 @@ jobs:
             const fs = require('fs');
             const issueNumber = Number(process.env.ISSUE_NUMBER);
 
-            // Re-read expected state immediately before mutation. A live_state_changed
-            // race (VALIDATE_ERROR_CODES.LIVE_STATE_CHANGED in issue_pr_contract_validate.mjs)
-            // is handled here, not by the read-only evaluate job, which only ever
-            // sees one snapshot and cannot detect staleness against itself.
+            // Re-read every decision-critical fact immediately before mutation
+            // (not just issue-open/label state), mirroring the evaluate job's
+            // evidence gathering, so the drift-check CLI step below can detect
+            // a changed contract, a new commit, or a newly opened PR between
+            // evaluate and mutate — not only a closed Issue or removed label.
             const { data: issue } = await github.rest.issues.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issueNumber,
             });
-            const stillHasTriggerLabel = (issue.labels || []).some((l) => (typeof l === 'string' ? l : l.name) === 'status:pr-ready');
-            const proceed = issue.state === 'open' && stillHasTriggerLabel;
-            core.setOutput('proceed', proceed);
-            if (!proceed) {
-              console.log('live_state_changed: issue closed or trigger label already removed since evaluation; skipping mutation so a fresh event can re-trigger evaluation.');
-              return;
+
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/fresh_issue.json', JSON.stringify({
+              number: issue.number,
+              body: issue.body || '',
+              state: issue.state,
+              labels: (issue.labels || []).map((l) => (typeof l === 'string' ? l : l.name)),
+            }));
+
+            const blockMatch = (issue.body || '').match(/<!--\s*lgfc-issue-pr-contract:v1:rev=\d+\s*-->([\s\S]*?)<!--\s*\/lgfc-issue-pr-contract:v1\s*-->/);
+            const blockText = blockMatch ? blockMatch[1] : '';
+            const headMatch = blockText.match(/head_branch:\s*(\S+)/);
+            const baseMatch = blockText.match(/base_branch:\s*(\S+)/);
+            const headBranch = headMatch ? headMatch[1] : '';
+            const baseBranch = baseMatch ? baseMatch[1] : '';
+
+            const getBranchSha = async (branch) => {
+              if (!branch) return null;
+              try {
+                const { data } = await github.rest.repos.getBranch({ owner: context.repo.owner, repo: context.repo.repo, branch });
+                return data.commit.sha;
+              } catch {
+                return null;
+              }
+            };
+
+            const headSha = await getBranchSha(headBranch);
+            const baseSha = await getBranchSha(baseBranch);
+            const headBranchExists = headSha !== null;
+            const baseBranchExists = baseSha !== null;
+
+            let hasDiff = false;
+            let changedFiles = [];
+            if (headBranchExists && baseBranchExists) {
+              try {
+                const { data: compare } = await github.rest.repos.compareCommitsWithBasehead({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  basehead: `${baseBranch}...${headBranch}`,
+                });
+                hasDiff = compare.status !== 'identical' && (compare.files || []).length > 0;
+                changedFiles = (compare.files || []).map((f) => f.filename);
+              } catch {
+                hasDiff = false;
+              }
             }
+
+            let openPrExists = false;
+            if (headBranch) {
+              const { data: prs } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                head: `${context.repo.owner}:${headBranch}`,
+              });
+              openPrExists = prs.length > 0;
+            }
+
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/fresh_live_state.json', JSON.stringify({
+              headBranchExists,
+              headSha,
+              baseSha,
+              hasDiff,
+              openPrExists,
+              changedFiles,
+            }));
 
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
@@ -219,8 +282,20 @@ jobs:
               comments.map((c) => ({ id: c.id, created_at: c.created_at, body: c.body || '' })),
             ));
 
+      - name: Check for live-state drift since evaluation (race guard)
+        id: drift_check
+        env:
+          ISSUE_PR_CONTRACT_MODE: drift-check
+          ISSUE_PR_CONTRACT_RESULT_JSON: ${{ runner.temp }}/result.json
+          ISSUE_PR_CONTRACT_FRESH_ISSUE_JSON: ${{ runner.temp }}/fresh_issue.json
+          ISSUE_PR_CONTRACT_FRESH_LIVE_STATE_JSON: ${{ runner.temp }}/fresh_live_state.json
+          ISSUE_PR_CONTRACT_DRIFT_OUTPUT_JSON: ${{ runner.temp }}/drift_output.json
+        run: |
+          node scripts/ci/issue_pr_contract_validate.mjs
+          echo "proceed=$(node -e "console.log(JSON.parse(require('fs').readFileSync('${{ runner.temp }}/drift_output.json','utf8')).proceed)")" >> "$GITHUB_OUTPUT"
+
       - name: Render comment and locate upsert target
-        if: steps.live_check.outputs.proceed == 'true'
+        if: steps.drift_check.outputs.proceed == 'true'
         env:
           ISSUE_PR_CONTRACT_RESULT_JSON: ${{ runner.temp }}/result.json
           ISSUE_PR_CONTRACT_COMMENTS_JSON: ${{ runner.temp }}/fresh_comments.json
@@ -228,7 +303,7 @@ jobs:
         run: node scripts/ci/issue_pr_contract_comment.mjs
 
       - name: Upsert comment / remove label
-        if: steps.live_check.outputs.proceed == 'true'
+        if: steps.drift_check.outputs.proceed == 'true'
         uses: actions/github-script@v7
         env:
           ISSUE_NUMBER: ${{ needs.evaluate.outputs.issue_number }}

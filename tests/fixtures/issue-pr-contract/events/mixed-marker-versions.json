@@ -1,0 +1,8 @@
+{
+  "issueNumber": 9106,
+  "issueState": "open",
+  "triggerActor": "wdhunter645",
+  "authorizedActors": ["wdhunter645"],
+  "issueBody": "<!-- lgfc-issue-pr-contract:v1:rev=1 -->\npurpose: Valid v1 block sitting alongside a conflicting future-version block.\nintent_label: intent:feature\npr_class: code\nallowed_paths:\n- scripts/example.mjs\nout_of_scope_changes_present: NO\nexception_issue: not-applicable\nchange_summary: Adds an example script.\nverification_commands:\n- npm test\nverification_results: PASS\nfollow_up_required: NO\nfollow_up_issue: not-applicable\nrollback_summary: Revert the PR.\nhead_branch: cursor/9106-example\nbase_branch: component/example\n<!-- /lgfc-issue-pr-contract:v1 -->\n\n<!-- lgfc-issue-pr-contract:v2:rev=1 -->\npurpose: A later, unsupported-version block that must not be silently ignored.\n<!-- /lgfc-issue-pr-contract:v2 -->\n",
+  "comments": []
+}

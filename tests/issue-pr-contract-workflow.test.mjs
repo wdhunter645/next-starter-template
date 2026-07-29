@@ -5,18 +5,21 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildLiveSnapshot,
+  detectLiveStateDrift,
   evaluateIssuePrContractRequest,
   findVersionedContractMarkers,
   validateBaseHeadSyntax,
   VALIDATE_ERROR_CODES,
   runCli as runValidateCli,
+  runDriftCheckCli,
 } from '../scripts/ci/issue_pr_contract_validate.mjs';
 import {
   findExistingValidationComment,
   renderValidationComment,
   runCli as runCommentCli,
 } from '../scripts/ci/issue_pr_contract_comment.mjs';
-import { CONTRACT_STATUS_MARKER_PREFIX } from '../scripts/ci/issue_pr_contract.mjs';
+import { CONTRACT_STATUS_MARKER_PREFIX, findContractBlocks } from '../scripts/ci/issue_pr_contract.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVENTS_DIR = path.join(__dirname, 'fixtures/issue-pr-contract/events');
@@ -105,6 +108,21 @@ describe('evaluateIssuePrContractRequest (#2620)', () => {
     });
     expect(result.ok).toBe(false);
     expect(result.errors.some((error) => error.code === VALIDATE_ERROR_CODES.DELIVERY_PROFILE_INVALID)).toBe(true);
+  });
+
+  it('fails closed on contract_marker_version_unsupported when a valid v1 block coexists with an unsupported-version block (governance remediation)', () => {
+    const event = readEvent('mixed-marker-versions.json');
+    const result = evaluateIssuePrContractRequest({
+      issue: toIssue(event),
+      comments: event.comments,
+      authorizedActors: event.authorizedActors,
+      liveState: {},
+    });
+    expect(result.ok).toBe(false);
+    expect(result.errors[0].code).toBe(VALIDATE_ERROR_CODES.MARKER_VERSION_UNSUPPORTED);
+    // A conflicting future-version marker must never be silently dropped in
+    // favor of the coexisting valid v1 block.
+    expect(result.contract).toBeNull();
   });
 });
 
@@ -263,5 +281,98 @@ describe('CLI wiring (#2620)', () => {
     expect(output.existingCommentId).toBe(42);
     expect(output.removeLabel).toBe(true);
     expect(output.body).toContain('contract_field_missing');
+  });
+});
+
+describe('live-state drift detection (governance remediation)', () => {
+  it('detectLiveStateDrift finds no drift when a fresh snapshot exactly matches the evaluated one', () => {
+    const snapshot = buildLiveSnapshot({
+      contractBlockText: 'purpose: x\n',
+      contractRev: 1,
+      liveState: { headSha: 'sha-head-1', baseSha: 'sha-base-1', hasDiff: true, changedFiles: ['a.mjs'], openPrExists: false },
+    });
+    expect(detectLiveStateDrift(snapshot, snapshot)).toEqual([]);
+  });
+
+  it('detectLiveStateDrift reports headSha drift when a new commit lands on the head branch after evaluation', () => {
+    const evaluated = buildLiveSnapshot({ contractRev: 1, contractBlockText: 'x', liveState: { headSha: 'sha-head-1', baseSha: 'sha-base-1' } });
+    const fresh = buildLiveSnapshot({ contractRev: 1, contractBlockText: 'x', liveState: { headSha: 'sha-head-2', baseSha: 'sha-base-1' } });
+    expect(detectLiveStateDrift(evaluated, fresh)).toEqual(['headSha']);
+  });
+
+  function buildFixture() {
+    const freshIssueBody = '<!-- lgfc-issue-pr-contract:v1:rev=1 -->\npurpose: x\nhead_branch: cursor/9200-example\nbase_branch: component/example\n<!-- /lgfc-issue-pr-contract:v1 -->\n';
+    const [block] = findContractBlocks(freshIssueBody);
+    const evaluatedLiveState = { headSha: 'sha-head-1', baseSha: 'sha-base-1', hasDiff: true, changedFiles: ['a.mjs'], openPrExists: false };
+    const evaluatedResult = {
+      ok: true,
+      liveSnapshot: buildLiveSnapshot({ contractBlockText: block.innerText, contractRev: block.rev, liveState: evaluatedLiveState }),
+    };
+    return { freshIssueBody, evaluatedLiveState, evaluatedResult };
+  }
+
+  function runDrift({ evaluatedResult, freshIssue, freshLiveState }) {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'issue-pr-contract-drift-cli-'));
+    const resultPath = path.join(tempDir, 'result.json');
+    const freshIssuePath = path.join(tempDir, 'fresh_issue.json');
+    const freshLiveStatePath = path.join(tempDir, 'fresh_live_state.json');
+    const outputPath = path.join(tempDir, 'drift_output.json');
+
+    fs.writeFileSync(resultPath, JSON.stringify(evaluatedResult));
+    fs.writeFileSync(freshIssuePath, JSON.stringify(freshIssue));
+    fs.writeFileSync(freshLiveStatePath, JSON.stringify(freshLiveState));
+
+    const exitCode = runDriftCheckCli({
+      ISSUE_PR_CONTRACT_RESULT_JSON: resultPath,
+      ISSUE_PR_CONTRACT_FRESH_ISSUE_JSON: freshIssuePath,
+      ISSUE_PR_CONTRACT_FRESH_LIVE_STATE_JSON: freshLiveStatePath,
+      ISSUE_PR_CONTRACT_DRIFT_OUTPUT_JSON: outputPath,
+    });
+
+    expect(exitCode).toBe(0);
+    return JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+  }
+
+  it('runDriftCheckCli proceeds when the mutate job re-reads state that exactly matches evaluation', () => {
+    const { freshIssueBody, evaluatedLiveState, evaluatedResult } = buildFixture();
+    const output = runDrift({
+      evaluatedResult,
+      freshIssue: { number: 9200, body: freshIssueBody, state: 'open', labels: ['status:pr-ready'] },
+      freshLiveState: evaluatedLiveState,
+    });
+    expect(output).toEqual({ proceed: true, reasons: [] });
+  });
+
+  it('runDriftCheckCli skips mutation when a new commit landed on head_branch between evaluation and mutation', () => {
+    const { freshIssueBody, evaluatedLiveState, evaluatedResult } = buildFixture();
+    const output = runDrift({
+      evaluatedResult,
+      freshIssue: { number: 9200, body: freshIssueBody, state: 'open', labels: ['status:pr-ready'] },
+      freshLiveState: { ...evaluatedLiveState, headSha: 'sha-head-2' },
+    });
+    expect(output.proceed).toBe(false);
+    expect(output.reasons).toContain('live_state_changed:headSha');
+  });
+
+  it('runDriftCheckCli skips mutation when the Issue closed between evaluation and mutation', () => {
+    const { freshIssueBody, evaluatedLiveState, evaluatedResult } = buildFixture();
+    const output = runDrift({
+      evaluatedResult,
+      freshIssue: { number: 9200, body: freshIssueBody, state: 'closed', labels: ['status:pr-ready'] },
+      freshLiveState: evaluatedLiveState,
+    });
+    expect(output.proceed).toBe(false);
+    expect(output.reasons).toContain('issue_not_open');
+  });
+
+  it('runDriftCheckCli skips mutation when the trigger label was removed between evaluation and mutation', () => {
+    const { freshIssueBody, evaluatedLiveState, evaluatedResult } = buildFixture();
+    const output = runDrift({
+      evaluatedResult,
+      freshIssue: { number: 9200, body: freshIssueBody, state: 'open', labels: [] },
+      freshLiveState: evaluatedLiveState,
+    });
+    expect(output.proceed).toBe(false);
+    expect(output.reasons).toContain('trigger_label_removed');
   });
 });

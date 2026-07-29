@@ -14,7 +14,7 @@
 // this module guessing at staleness from a single evaluation pass.
 
 import fs from 'node:fs';
-import { selectIssuePrContract, validateIssuePrContract } from './issue_pr_contract.mjs';
+import { findContractBlocks, selectIssuePrContract, validateIssuePrContract } from './issue_pr_contract.mjs';
 import { CONTRACT_ERROR_CODES, contractError } from './pr_contract.mjs';
 import { classifyDeliveryProfile } from './delivery_profile.mjs';
 
@@ -85,13 +85,31 @@ export function validateBaseHeadSyntax({ headBranch = '', baseBranch = '' } = {}
 }
 
 /**
+ * Build the decision-critical live-state snapshot an evaluation was based
+ * on, so the mutate job can re-fetch the same facts immediately before
+ * mutating and detect drift (a new commit, an opened PR, an edited
+ * contract) instead of only checking issue-open/label state.
+ */
+export function buildLiveSnapshot({ contractBlockText = null, contractRev = null, liveState = {} } = {}) {
+  return {
+    contractRev,
+    contractBlockText,
+    headSha: liveState.headSha ?? null,
+    baseSha: liveState.baseSha ?? null,
+    hasDiff: liveState.hasDiff ?? null,
+    changedFiles: Array.isArray(liveState.changedFiles) ? [...liveState.changedFiles].sort() : null,
+    openPrExists: liveState.openPrExists ?? null,
+  };
+}
+
+/**
  * Full advisory evaluation for one `status:pr-ready` request.
  *
  * @param {object} args
  * @param {{number:number, body:string, state:string, triggerActor?:string}} args.issue
  * @param {Array} args.comments - Issue comments (for status-marker/staleness lookup).
  * @param {string[]} args.authorizedActors
- * @param {object} args.liveState - headBranchExists, hasDiff, openPrExists, lastValidatedRev.
+ * @param {object} args.liveState - headBranchExists, headSha, baseSha, hasDiff, changedFiles, openPrExists, lastValidatedRev.
  */
 export function evaluateIssuePrContractRequest({
   issue = {},
@@ -105,26 +123,45 @@ export function evaluateIssuePrContractRequest({
     errors.push(contractError(VALIDATE_ERROR_CODES.ISSUE_NOT_OPEN, `Issue #${issue.number} is not open.`, {
       state: issue.state,
     }));
-    return { ok: false, errors, contract: null, rev: null };
+    return { ok: false, errors, contract: null, rev: null, liveSnapshot: buildLiveSnapshot({ liveState }) };
   }
 
   const versionedMarkers = findVersionedContractMarkers(issue.body || '');
   const unsupported = versionedMarkers.filter((marker) => marker.version !== SUPPORTED_MARKER_VERSION);
-  if (unsupported.length > 0 && versionedMarkers.length === unsupported.length) {
+  if (unsupported.length > 0) {
+    // Fail closed whenever ANY unsupported-version marker is present, even
+    // alongside a valid v1 block — a body cannot be allowed to silently
+    // select v1 and ignore a conflicting/ambiguous future-version marker.
     errors.push(contractError(VALIDATE_ERROR_CODES.MARKER_VERSION_UNSUPPORTED, `Only marker version ${SUPPORTED_MARKER_VERSION} is supported.`, {
       foundVersions: [...new Set(unsupported.map((marker) => marker.version))],
     }));
-    return { ok: false, errors, contract: null, rev: null };
+    return { ok: false, errors, contract: null, rev: null, liveSnapshot: buildLiveSnapshot({ liveState }) };
   }
 
   const selection = selectIssuePrContract({ issue, comments, authorizedActors });
   if (!selection.ok) {
-    return { ok: false, errors: selection.errors, contract: selection.contract, rev: selection.contract?.rev ?? null };
+    return {
+      ok: false,
+      errors: selection.errors,
+      contract: selection.contract,
+      rev: selection.contract?.rev ?? null,
+      liveSnapshot: buildLiveSnapshot({
+        contractBlockText: selection.block?.innerText ?? null,
+        contractRev: selection.contract?.rev ?? null,
+        liveState,
+      }),
+    };
   }
+
+  const liveSnapshot = buildLiveSnapshot({
+    contractBlockText: selection.block.innerText,
+    contractRev: selection.contract.rev,
+    liveState,
+  });
 
   const validated = validateIssuePrContract({ issue, contract: selection.contract, liveState });
   if (!validated.ok) {
-    return { ok: false, errors: validated.errors, contract: selection.contract, rev: selection.contract.rev };
+    return { ok: false, errors: validated.errors, contract: selection.contract, rev: selection.contract.rev, liveSnapshot };
   }
 
   const fields = validated.fields;
@@ -150,7 +187,32 @@ export function evaluateIssuePrContractRequest({
     fields,
     deliveryProfile,
     primarySourceIssue: validated.primarySourceIssue,
+    liveSnapshot,
   };
+}
+
+/**
+ * Compare a fresh live-state snapshot (re-read by the mutate job immediately
+ * before mutating) against the snapshot an evaluation was based on. Returns
+ * the list of changed field names, or an empty array if nothing decision-
+ * critical drifted. Any non-empty result means the workflow must skip
+ * mutation (VALIDATE_ERROR_CODES.LIVE_STATE_CHANGED) rather than publish a
+ * result computed against state that no longer holds.
+ */
+export function detectLiveStateDrift(evaluatedSnapshot = {}, freshSnapshot = {}) {
+  const changed = [];
+  const fields = ['contractRev', 'contractBlockText', 'headSha', 'baseSha', 'hasDiff', 'openPrExists'];
+  for (const field of fields) {
+    if (JSON.stringify(evaluatedSnapshot[field] ?? null) !== JSON.stringify(freshSnapshot[field] ?? null)) {
+      changed.push(field);
+    }
+  }
+  const evaluatedFiles = JSON.stringify(evaluatedSnapshot.changedFiles ?? null);
+  const freshFiles = JSON.stringify(freshSnapshot.changedFiles ?? null);
+  if (evaluatedFiles !== freshFiles) {
+    changed.push('changedFiles');
+  }
+  return changed;
 }
 
 function readJsonFile(filePath, fallback) {
@@ -184,6 +246,62 @@ export function runCli(env = process.env) {
   return 0;
 }
 
+/**
+ * Drift-check CLI entrypoint, run by the mutate job's pre-mutation re-check
+ * step. Re-derives a fresh live-state snapshot from GitHub-native evidence
+ * the workflow just re-fetched (fresh issue state/labels/body, fresh
+ * branch SHAs/diff/PR-existence) and compares it against the liveSnapshot
+ * an earlier evaluate-job run computed. Any decision-critical drift, an
+ * issue no longer open, or the trigger label already removed means the
+ * workflow must skip mutation (VALIDATE_ERROR_CODES.LIVE_STATE_CHANGED)
+ * rather than act on a stale decision. Never calls the GitHub API itself —
+ * purely a comparison over JSON the calling workflow step already fetched.
+ */
+export function runDriftCheckCli(env = process.env) {
+  const evaluatedResult = readJsonFile(env.ISSUE_PR_CONTRACT_RESULT_JSON, null);
+  if (!evaluatedResult) {
+    console.error('ISSUE_PR_CONTRACT_RESULT_JSON is required and must point to an existing file.');
+    return 2;
+  }
+  const freshIssue = readJsonFile(env.ISSUE_PR_CONTRACT_FRESH_ISSUE_JSON, null);
+  if (!freshIssue) {
+    console.error('ISSUE_PR_CONTRACT_FRESH_ISSUE_JSON is required and must point to an existing file.');
+    return 2;
+  }
+  const freshLiveState = readJsonFile(env.ISSUE_PR_CONTRACT_FRESH_LIVE_STATE_JSON, {});
+
+  const reasons = [];
+
+  if (freshIssue.state && freshIssue.state !== 'open') {
+    reasons.push('issue_not_open');
+  }
+  if (Array.isArray(freshIssue.labels) && !freshIssue.labels.includes('status:pr-ready')) {
+    reasons.push('trigger_label_removed');
+  }
+
+  const freshBlocks = findContractBlocks(freshIssue.body || '');
+  const freshBlock = freshBlocks.length === 1 ? freshBlocks[0] : null;
+  const freshSnapshot = buildLiveSnapshot({
+    contractBlockText: freshBlock ? freshBlock.innerText : null,
+    contractRev: freshBlock ? freshBlock.rev : null,
+    liveState: freshLiveState,
+  });
+
+  const drift = detectLiveStateDrift(evaluatedResult.liveSnapshot || {}, freshSnapshot);
+  for (const field of drift) {
+    reasons.push(`live_state_changed:${field}`);
+  }
+
+  const result = { proceed: reasons.length === 0, reasons };
+
+  const outputPath = env.ISSUE_PR_CONTRACT_DRIFT_OUTPUT_JSON;
+  if (outputPath) {
+    fs.writeFileSync(outputPath, `${JSON.stringify(result, null, 2)}\n`);
+  }
+  console.log(JSON.stringify(result, null, 2));
+  return 0;
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
-  process.exitCode = runCli();
+  process.exitCode = process.env.ISSUE_PR_CONTRACT_MODE === 'drift-check' ? runDriftCheckCli() : runCli();
 }
