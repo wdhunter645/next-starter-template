@@ -9,6 +9,7 @@ Supporting References:
   - /docs/reference/ci/pr-process-current-state.md
   - /docs/reference/ci/merge-protection-surface.md
   - /docs/reference/ci/pr-workflow-ci-inventory.md
+  - /docs/reference/ci/issue-pr-contract.md
   - /docs/reference/operations/administrative-control-lane-contract.md
   - /docs/reference/operations/operating-lanes-and-promotion-profiles.md
   - /docs/reference/operations/work-queue-and-collaboration-contract.md
@@ -240,6 +241,10 @@ Correct deterministic clerical defects at the earliest safe surface. Route mater
 ## External tools
 
 External reviewers or notifications are advisory unless canonical policy explicitly promotes them. Decisions made outside GitHub must be written back before repository work depends on them.
+
+## Issue-side preclearance (design-stage)
+
+`docs/reference/ci/issue-pr-contract.md` (#2615/#2618) defines a design-stage, versioned Issue-side contract that could validate stable PR-open facts before a PR exists. It does not change this policy and enables nothing by itself; any future validator or label-triggered draft-PR creation still owes this document its stable-facts rules.
 
 ## DIATAXIS placement
 

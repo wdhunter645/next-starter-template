@@ -93,3 +93,7 @@ The remaining exception queue is handled incrementally through routine housekeep
 ## Do not promote without evidence
 
 Do not promote advisory gates to required status or restore PR-body lifecycle mutation without satisfying `/docs/governance/PR_PROCESS.md`.
+
+## Design-stage: Issue-side preclearance
+
+`docs/reference/ci/issue-pr-contract.md` (#2615/#2618) is a design specification for validating stable PR-open facts before a PR exists. It is not implemented against this baseline; no check, label, or workflow in this document changes as a result of that design existing.

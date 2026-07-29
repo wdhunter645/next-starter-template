@@ -24,6 +24,8 @@ For routing, labels, holds, communication, or closeout also read:
 - `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`
 - `docs/ops/pmo/github-issue-closeout-protocol.md`
 
+If the source Issue publishes a marked Issue-side PR contract, also read `docs/reference/ci/issue-pr-contract.md` (design-stage; #2615/#2618).
+
 ## Required inputs
 
 - one primary source Issue;

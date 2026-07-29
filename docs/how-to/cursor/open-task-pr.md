@@ -3,10 +3,14 @@ Doc Type: How-To
 Audience: AI
 Authority Level: Operational Authority
 Owns: Cursor procedure for opening a task PR after review approval
-Does Not Own: Merge authority or GitHub issue closeout
-Canonical Reference: /docs/how-to/cursor/prepare-review-packet.md
-Related Issues: #1449, #1351
-Last Reviewed: 2026-06-11
+Does Not Own: Merge authority, GitHub issue closeout, or PR-body policy (see `docs/governance/PR_PROCESS.md`)
+Canonical Reference: /docs/governance/PR_PROCESS.md
+Supporting References:
+  - /docs/how-to/cursor/prepare-review-packet.md
+  - /.github/pull_request_template.md
+  - /docs/reference/ci/issue-pr-contract.md
+Related Issues: #1449, #1351, #2615, #2618
+Last Reviewed: 2026-07-29
 ---
 
 # Open a Task PR
@@ -32,52 +36,50 @@ Last Reviewed: 2026-06-11
 
 ## PR Body Requirements
 
-The PR body must explicitly include:
+The PR body follows `.github/pull_request_template.md` and stores stable facts
+only — see `docs/governance/PR_PROCESS.md` for the canonical policy. At minimum
+it must include:
 
-- **Source issue line** — for example `- **Issue:** #NNNN`
-- **Documentation source classification** — one of:
-  - `DIATAXIS_FULL`
-  - `DIATAXIS_ROUTED`
-  - `LEGACY_FALLBACK`
-- **Design source of truth** — canonical document path(s) used for the change
-- **File-touch allowlist** — exact paths expected in the diff
-- **Intent label** — the single intent label matching changed paths; for docs-only
-  PRs under `docs/**`, use `docs-only` (do not force `change-ops` for PMO semantics)
+- **Source issue line** — exactly one, for example `- **Issue:** #NNNN`
+- **Intent label and PR class** — `PR class` must be one of the values
+  `scripts/ci/pr_hygiene_audit.mjs` defines as `VALID_PR_CLASSES`
+- **Delivery/profile metadata** — size, delivery model, change mode, target
+  environment, approval/gate/rollback profile, and component branch/master/
+  promotion PR where applicable
+- **Allowed paths** — exact paths expected in the diff, plus an out-of-scope
+  declaration
 - **Change summary** — what changed and why
-- **Build/test/verification** — commands run and results
-- **Documentation updates** — which docs changed and any tracker updates
-- **Acceptance criteria** — checklist mapped to the source issue
-- **Required pre-review self-check** — confirm allowlist, headers, and gates
-- **Scope disclosures** — docs-only, no workflow/runtime changes, known out-of-scope
-  validation failures, etc.
-- **Post-merge issue disposition** — when applicable: comment-only, close after
-  merge, or defer to ChatGPT; state that GitHub issue closeout occurs after merge
-  unless specifically authorized
-- **Queue / dependency-map status** (launched-program queue tasks) —
-  dependency-map result (`pass` / `fail` / `not-applicable`), next queue item
-  (issue number and title, `halt — <reason>`, or `not-applicable`), and
-  continue/halt decision (`continue` / `halt` / `not-applicable`); use
-  `not-applicable` for all three fields on one-off tasks or programs without an
-  approved dependency map
-- **Post-merge readiness contract** — before marking a PR ready for review, make
-  sure the body contains the required post-merge closeout sections, exact
-  file-touch allowlist, no `TODO`/`TBD`/`placeholder` tokens, and explicit
-  trusted-reviewer dispositions in the `review-comment:<id>` format when the
-  reviewer-response surface requires them
+- **Verification** — local verification commands/results and CI verification
+  expectations
+- **Acceptance criteria** — checklist mapped to the source issue, plus a
+  follow-up-issue declaration
+- **Rollback summary**
+- **Reviewer / bot review attestation** — left unchecked at PR-open time;
+  lifecycle-dependent state is never authored ahead of time (see
+  `docs/reference/ci/issue-pr-contract.md`)
+
+Do not add draft/review/merge/CI/approval/queue/hold/closeout state to the PR
+body — that state lives on GitHub-native surfaces (checks, reviews, review
+threads, labels) per `docs/governance/PR_PROCESS.md`.
 
 Keep exactly one primary source issue in the PR body before merge. A wrong primary
 issue number is still a pre-merge defect to correct when noticed; post-merge
 closeout may deterministically repair that clerical mismatch only when exactly one
 issue clearly owns the delivered scope.
 
+When the source Issue publishes a marked Issue-side PR contract per
+`docs/reference/ci/issue-pr-contract.md`, prefer sourcing these stable facts from
+that contract instead of re-deriving them ad hoc.
+
 ## Validation
 
 Before opening the PR, run the validation commands named in the source issue. When
 repo-wide checks fail only on known pre-existing out-of-scope files, disclose that
-in the PR body without fixing unrelated paths. After the PR opens, the
-`post-merge-readiness` job is expected to block merge until the PR body, changed
-files, and trusted-reviewer disposition evidence satisfy the post-merge closeout
-contract.
+in the PR body without fixing unrelated paths. After the PR opens, the advisory
+`pr-hygiene` and `diff-scope` checks (see `docs/reference/ci/pr-process-current-state.md`
+for which checks are currently required versus advisory) validate the body against
+the actual diff; `gate-post-merge-readiness.yml` is manual-backfill-only and does
+not block merge.
 
 ## Stop Conditions
 

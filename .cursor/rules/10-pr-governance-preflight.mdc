@@ -10,6 +10,7 @@ For PR creation, PR updates, issue linkage, scope control, labels, or acceptance
 1. `.agents/skills/lgfc-pr-governance/SKILL.md`
 2. `.github/pull_request_template.md`
 3. `docs/how-to/cursor/open-task-pr.md` when opening a task PR
+4. `docs/reference/ci/issue-pr-contract.md` when the source Issue publishes a marked Issue-side PR contract
 
 ## Required before implementation
 
