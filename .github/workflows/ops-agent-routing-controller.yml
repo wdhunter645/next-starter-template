@@ -767,11 +767,77 @@ jobs:
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
           GITLEAKS_CONFIG: .gitleaks.toml
 
-      - name: Post-merge verification — quality
-        id: verify-quality
+      - name: Post-merge verification — quality — structure
+        id: verify-quality-structure
         if: steps.merge.outputs.merged == 'true' && contains(steps.create.outputs.requiredGates, 'quality')
         continue-on-error: true
-        run: npm run typecheck && npm test
+        run: npm run check:structure
+
+      - name: Post-merge verification — quality — backend reference guard
+        id: verify-quality-backend-guard
+        if: steps.merge.outputs.merged == 'true' && contains(steps.create.outputs.requiredGates, 'quality')
+        continue-on-error: true
+        run: bash scripts/ci/backend_reference_guard.sh
+
+      - name: Post-merge verification — quality — no tracked ZIPs
+        id: verify-quality-no-zips
+        if: steps.merge.outputs.merged == 'true' && contains(steps.create.outputs.requiredGates, 'quality')
+        continue-on-error: true
+        run: bash scripts/ci/check_no_tracked_zips.sh
+
+      - name: Post-merge verification — quality — ZIP history taint
+        id: verify-quality-zip-history
+        if: steps.merge.outputs.merged == 'true' && contains(steps.create.outputs.requiredGates, 'quality')
+        continue-on-error: true
+        env:
+          GITHUB_BASE_SHA: ${{ steps.refresh.outputs.baseSha }}
+          GITHUB_HEAD_SHA: ${{ steps.merge.outputs.mergeSha }}
+        run: bash scripts/ci/verify_zip_history_pr.sh
+
+      - name: Post-merge verification — quality — typecheck
+        id: verify-quality-typecheck
+        if: steps.merge.outputs.merged == 'true' && contains(steps.create.outputs.requiredGates, 'quality') && steps.quality_plan.outputs.run_typecheck == 'true'
+        continue-on-error: true
+        run: npm run typecheck
+
+      - name: Post-merge verification — quality — lint
+        id: verify-quality-lint
+        if: steps.merge.outputs.merged == 'true' && contains(steps.create.outputs.requiredGates, 'quality') && steps.quality_plan.outputs.run_lint == 'true'
+        continue-on-error: true
+        run: npm run lint
+
+      - name: Post-merge verification — quality — unit tests
+        id: verify-quality-test
+        if: steps.merge.outputs.merged == 'true' && contains(steps.create.outputs.requiredGates, 'quality') && steps.quality_plan.outputs.run_test == 'true'
+        continue-on-error: true
+        run: npm test
+
+      - name: Post-merge verification — quality — production build
+        id: verify-quality-build
+        if: steps.merge.outputs.merged == 'true' && contains(steps.create.outputs.requiredGates, 'quality') && steps.quality_plan.outputs.run_build == 'true'
+        continue-on-error: true
+        run: npm run build
+
+      - name: Determine post-merge gate outcome
+        id: post_merge_gate_outcome
+        if: steps.merge.outputs.merged == 'true'
+        run: |
+          quality_failed=false
+          if [ "${{ contains(steps.create.outputs.requiredGates, 'quality') }}" = "true" ]; then
+            for outcome in "${{ steps.verify-quality-structure.outcome }}" "${{ steps.verify-quality-backend-guard.outcome }}" "${{ steps.verify-quality-no-zips.outcome }}" "${{ steps.verify-quality-zip-history.outcome }}" "${{ steps.verify-quality-typecheck.outcome }}" "${{ steps.verify-quality-lint.outcome }}" "${{ steps.verify-quality-test.outcome }}" "${{ steps.verify-quality-build.outcome }}"; do
+              [ "$outcome" = "failure" ] && quality_failed=true
+            done
+          fi
+          if [ "$quality_failed" = "true" ]; then
+            echo "quality_passed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "quality_passed=true" >> "$GITHUB_OUTPUT"
+          fi
+          if [ "$quality_failed" = "true" ] || [ "${{ steps.verify-secret-scan.outcome }}" = "failure" ]; then
+            echo "all_passed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "all_passed=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Record admission evidence on source Issue
         if: always() && steps.refresh.outputs.hasMutation == 'true'
@@ -811,7 +877,8 @@ jobs:
               if (merged) {
                 lines.push(`Post-merge verification: ${'${{ steps.verify-secret-scan.outcome }}' === 'success' ? 'secret scan passed' : 'secret scan FAILED'}`);
                 if ((output.requiredGates || []).includes('quality')) {
-                  lines.push(`Post-merge quality re-check: ${'${{ steps.verify-quality.outcome }}' === 'success' ? 'passed' : 'FAILED'}`);
+                  const qualityPassed = '${{ steps.post_merge_gate_outcome.outputs.quality_passed }}' === 'true';
+                  lines.push(`Post-merge quality re-check: ${qualityPassed ? 'passed' : 'FAILED'}`);
                 }
               }
               body = lines.join('\n');
