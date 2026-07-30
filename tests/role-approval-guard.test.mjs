@@ -4,6 +4,10 @@ import {
   evaluateRoleApprovalGuard,
   parseSourceIssueNumber,
 } from '../scripts/ci/role_approval_guard.mjs';
+import {
+  applyRoleApprovalToIntegrationResult,
+  evaluateComponentIntegrationWithRoleApproval,
+} from '../scripts/ci/component_integration_role_adapter.mjs';
 
 const headSha = 'a'.repeat(40);
 
@@ -23,6 +27,32 @@ function approvalComment(overrides = {}) {
     body: `${APPROVAL_MARKER}\nAPPROVED FOR INTEGRATION\nSource Issue: #${values.sourceIssue}\nPR: #${values.prNumber}\nHead SHA: ${values.headSha}\nReviewer role: ${values.reviewerRole}\nReviewer actor: ${values.reviewerActor}\nImplementation actor: ${values.implementationActor}\nDecision: ${values.decision}`,
   };
 }
+
+function protectedProfile() {
+  return {
+    body: [
+      '- **Issue:** #2622',
+      '- Size: medium',
+      '- Delivery model: B-child',
+      '- Change mode: project',
+      '- Target environment: component',
+      '- Approval profile: protected-change-review',
+      '- Gate profile: component-child',
+      '- Rollback profile: multi-step',
+      '- Component branch: component/issue-contract-draft-pr',
+      '- Component master: #2615',
+    ].join('\n'),
+    baseRef: 'component/issue-contract-draft-pr',
+    headRef: 'cursor/2622-example',
+    baseBehindComponentHead: 0,
+  };
+}
+
+const greenChecks = [
+  { name: 'GATE — Quality Checks', conclusion: 'success' },
+  { name: 'GATE — Diff Scope', conclusion: 'success' },
+  { name: 'GATE — Secret Scan', conclusion: 'success' },
+];
 
 describe('role approval guard', () => {
   it('parses the source Issue from the stable PR body field', () => {
@@ -70,7 +100,7 @@ describe('role approval guard', () => {
     expect(result.blockedReasons).toEqual([]);
   });
 
-  it('rejects stale-head, wrong-PR, wrong-role, and implementer approval events', () => {
+  it('rejects stale-head, wrong-PR, wrong-role, wrong-actor, and self-approval events', () => {
     const base = {
       prBody: '- **Issue:** #2622',
       changedFiles: ['scripts/ci/example.mjs'],
@@ -89,6 +119,13 @@ describe('role approval guard', () => {
       expect(result.approved).toBe(false);
       expect(result.blockedReasons.map((reason) => reason.code)).toContain('missing-role-approval');
     }
+
+    const atlasSelfApproval = evaluateRoleApprovalGuard({
+      ...base,
+      implementationActor: 'ChatGPT / Atlas',
+      comments: [approvalComment({ implementationActor: 'ChatGPT / Atlas' })],
+    });
+    expect(atlasSelfApproval.approved).toBe(false);
   });
 
   it('fails closed when protected scope has no source Issue', () => {
@@ -103,5 +140,59 @@ describe('role approval guard', () => {
     expect(result.required).toBe(true);
     expect(result.approved).toBe(false);
     expect(result.blockedReasons.map((reason) => reason.code)).toContain('missing-source-issue');
+  });
+});
+
+describe('component integration role adapter', () => {
+  it('keeps protected integration blocked when the exact-head approval is absent', () => {
+    const result = evaluateComponentIntegrationWithRoleApproval({
+      profile: protectedProfile(),
+      checks: greenChecks,
+      changedFiles: ['scripts/ci/example.mjs'],
+      headSha,
+      prNumber: 3001,
+      sourceIssueComments: [],
+      implementationActor: 'Claude Code',
+    });
+
+    expect(result.eligible).toBe(false);
+    expect(result.requiresChatReview).toBe(true);
+    expect(result.blockedReasons.map((reason) => reason.code)).toContain('missing-role-approval');
+  });
+
+  it('removes only the protected-change blocker after a valid exact-head approval', () => {
+    const result = evaluateComponentIntegrationWithRoleApproval({
+      profile: protectedProfile(),
+      checks: greenChecks,
+      changedFiles: ['scripts/ci/example.mjs'],
+      headSha,
+      prNumber: 3001,
+      sourceIssueComments: [approvalComment()],
+      implementationActor: 'Claude Code',
+    });
+
+    expect(result.eligible).toBe(true);
+    expect(result.requiresChatReview).toBe(false);
+    expect(result.blockedReasons).toEqual([]);
+    expect(result.roleApproval).toMatchObject({ required: true, approved: true });
+  });
+
+  it('preserves unrelated blockers even when role approval is valid', () => {
+    const integration = {
+      eligible: false,
+      blockedReasons: [
+        { code: 'protected_change', message: 'review required' },
+        { code: 'failed_check', message: 'quality failed' },
+      ],
+      requiresChatReview: true,
+    };
+    const approved = applyRoleApprovalToIntegrationResult(integration, {
+      required: true,
+      approved: true,
+      blockedReasons: [],
+    });
+
+    expect(approved.eligible).toBe(false);
+    expect(approved.blockedReasons.map((reason) => reason.code)).toEqual(['failed_check']);
   });
 });
