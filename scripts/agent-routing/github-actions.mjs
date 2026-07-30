@@ -1,4 +1,6 @@
 import { buildStatusMarker } from '../ci/issue_pr_contract.mjs';
+import { renderPrBody } from '../ci/pr_body_renderer.mjs';
+import { validateRenderedPrBody } from '../ci/pr_contract.mjs';
 
 const ALLOWED_MUTATIONS = new Set([
   'set_labels',
@@ -68,6 +70,28 @@ export function buildDraftPrPlan(mutation, freshState = {}) {
     };
   }
 
+  // Render through the canonical #2619 renderer instead of a second,
+  // hand-built template — the ADJUSTMENT on #2622 found the workflow's
+  // previous inline two-line body failed shared hygiene validation.
+  const body = renderPrBody({
+    issue: { number: mutation.issue },
+    contract: { fields: mutation.contractFields || {} },
+    deliveryProfile: mutation.deliveryProfile || {},
+  });
+  const changedFiles = Array.isArray(freshState.changedFiles) ? freshState.changedFiles : [];
+  const rendered = validateRenderedPrBody({
+    body,
+    baseRef: mutation.baseBranch,
+    headRef: mutation.headBranch,
+    changedFiles,
+  });
+  // Fail closed: a rendered body that cannot pass the same hygiene/
+  // diff-scope/delivery-profile validation live PRs are held to must
+  // create no PR (#2622 acceptance criterion).
+  if (!rendered.ok) {
+    return { ok: false, reason: 'rendered_body_invalid', renderedBodyErrors: rendered.errors };
+  }
+
   return {
     ok: true,
     reason: 'authorized',
@@ -76,6 +100,8 @@ export function buildDraftPrPlan(mutation, freshState = {}) {
       base: mutation.baseBranch,
       draft: true,
       issue: mutation.issue,
+      title: `Draft: source Issue #${mutation.issue}`,
+      body,
     },
     commentUpdateTemplate: {
       issue: mutation.issue,
