@@ -1,5 +1,6 @@
 import { stableHash } from './lib/stable.mjs';
 import { isFourLaneEnabled, planFourLaneAction } from './four-lane-runtime.mjs';
+import { resolveEnvironmentTier, requiredGatesForTier } from './environment-profiles.mjs';
 
 function plan(snapshot, klass, reason, mutations = []) {
   const base = {
@@ -64,6 +65,57 @@ function planCreateDraftPr(snapshot, mode) {
   ]);
 }
 
+/**
+ * #2622 (revised design): plan ADMIT_ENVIRONMENT_PR once #2620's advisory
+ * contract validation is clean, only in the dedicated `admit` mode — never
+ * reachable from `advance`/`integrate`/`normalize`, so it can never change
+ * the existing #2621 draft-PR-only behavior those modes already have.
+ * Requires the contract's base branch to resolve to an implemented
+ * auto-admission tier (sandbox or development); `main`/Production and any
+ * not-yet-implemented tier (e.g. Transition) fall closed to a noop.
+ */
+function planAdmitEnvironmentPr(snapshot, mode) {
+  const contract = snapshot.issuePrContract;
+  if (!contract || contract.status === 'missing') return null;
+  if (mode !== 'admit') return null;
+
+  if (contract.actorAuthorized === false) return plan(snapshot, 'noop', 'contract_actor_unauthorized');
+  if (contract.status !== 'valid') return plan(snapshot, 'noop', 'contract_invalid');
+  if (!contract.headBranch || !contract.baseBranch) return plan(snapshot, 'noop', 'contract_branch_missing');
+  if (contract.hasDiff === false) return plan(snapshot, 'noop', 'contract_diff_empty');
+  if (contract.baseBranch === 'main') return plan(snapshot, 'noop', 'production_main_boundary');
+
+  const environmentTier = resolveEnvironmentTier(contract.baseBranch);
+  if (!environmentTier) return plan(snapshot, 'noop', 'environment_not_eligible_for_auto_admission');
+
+  if (contract.existingPr) {
+    return plan(snapshot, 'noop', 'existing_pr_reconciled', [
+      {
+        type: 'update_contract_comment',
+        issue: snapshot.identity.taskIssue,
+        rev: contract.rev,
+        prUrl: contract.existingPr.url || null,
+      },
+    ]);
+  }
+
+  return plan(snapshot, 'admit_environment_pr', 'contract_valid_ready_for_environment_admission', [
+    {
+      type: 'admit_environment_pr',
+      issue: snapshot.identity.taskIssue,
+      headBranch: contract.headBranch,
+      baseBranch: contract.baseBranch,
+      expectedHeadSha: contract.headSha,
+      expectedBaseSha: contract.baseSha,
+      contractRev: contract.rev,
+      contractFields: contract.fields || null,
+      deliveryProfile: contract.deliveryProfile || null,
+      environmentTier,
+      requiredGates: requiredGatesForTier(environmentTier),
+    },
+  ]);
+}
+
 function planConservative(snapshot, policy = {}) {
   const mode = policy.mode || 'observe';
   if (!snapshot || snapshot.ambiguous) return plan(snapshot || { identity: {}, revision: 'missing' }, 'halt', 'ambiguous_or_missing_state');
@@ -74,6 +126,9 @@ function planConservative(snapshot, policy = {}) {
 
   const draftPrPlan = planCreateDraftPr(snapshot, mode);
   if (draftPrPlan) return draftPrPlan;
+
+  const admitPrPlan = planAdmitEnvironmentPr(snapshot, mode);
+  if (admitPrPlan) return admitPrPlan;
 
   const failedRequiredCheck = (snapshot.checks || []).find(
     (check) => check.required !== false && check.status === 'completed' && check.conclusion === 'failure',

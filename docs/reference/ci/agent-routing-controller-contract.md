@@ -5,8 +5,8 @@ Authority Level: Project Runtime Contract
 Owns: Project #2294 controller inputs, outputs, action classes, state revisions, alert/claim records, permission boundaries, and rollout modes
 Does Not Own: Product decisions, credentials, repository settings, production approval, or automatic merge to main
 Canonical Reference: /docs/explanation/projects/agent-issue-polling-handoff-routing-design.md
-Related Issues: #2294, #2546, #2550, #2554, #2593-#2601, #2621, #2639, #2640
-Last Reviewed: 2026-07-29
+Related Issues: #2294, #2546, #2550, #2554, #2593-#2601, #2621, #2622, #2639, #2640
+Last Reviewed: 2026-07-30
 ---
 
 # Agent Routing Controller Contract
@@ -59,6 +59,7 @@ A snapshot contains project/task identity, current labels, latest valid canonica
 - `operational_incident_route`: classified incident requires Day-2 or corrective implementation routing.
 - `operational_hold_release`: evidence-backed hold release and project resume.
 - `create_draft_pr` (#2621): #2620's advisory Issue-contract validation is current, authorized, and diffed; opens a draft PR only, and only from `advance`/`integrate` mode.
+- `admit_environment_pr` (#2622, revised progressive-admission design): #2620's advisory Issue-contract validation is current, authorized, diffed, and targets an implemented non-production environment tier (`sandbox/*` or a non-`main` component branch); opens a non-draft PR, runs that tier's required gates synchronously inside the same run, and auto-merges on success — only from `admit` mode.
 
 Every mutation includes the expected state revision and stable action key. The adapter re-reads live state before applying it.
 
@@ -81,6 +82,23 @@ The snapshot's `issuePrContract` field (built by `scripts/agent-routing/evidence
 `github-actions.mjs`'s `buildDraftPrPlan` re-validates a `create_draft_pr` mutation against freshly re-read live state immediately before mutating (issue still open, actor still authorized, head/base SHA and contract revision unchanged, no PR opened since planning) and returns the exact `pulls.create` request plus a `commentUpdateTemplate` for recording the PR URL and contract revision on the existing marked validation-status comment (`lgfc-issue-pr-contract-status:v1`, reusing #2619's `buildStatusMarker`) — never a second comment. Neither function calls the GitHub API; `.github/workflows/ops-agent-routing-controller.yml`'s `create-draft-pr` job does, via thin `github-script` steps between two `node scripts/agent-routing/controller.mjs` CLI calls (`AGENT_ROUTING_CLI_MODE=plan` default, then `mutate`).
 
 `create_draft_pr` is reachable only through that job's explicit `workflow_dispatch` (`authorize_mutation: true`, a scoped `issue_number`, `mode: advance|integrate`) — never automatically off the `status:pr-ready` label event, which #2620's advisory validator already owns exclusively. This keeps the two workflows from becoming competing controllers over the same trigger.
+
+## ADMIT_ENVIRONMENT_PR evidence and guards (#2622, revised progressive-admission design)
+
+`planAdmitEnvironmentPr` (in `action-planner.mjs`) is reachable only in `admit` mode — never from `advance`/`integrate`/`normalize`, so it can never change `create_draft_pr`'s existing behavior — and fails closed with a specific reason before ever building a mutation, using the same evidence and most of the same checks as `planCreateDraftPr` above, plus one more:
+
+| Condition | Reason |
+| --- | --- |
+| (all `planCreateDraftPr` checks above) | (same reasons) |
+| `resolveEnvironmentTier(base_branch)` resolves to `null` (`main`, or any tier not yet implemented, e.g. Transition) | `environment_not_eligible_for_auto_admission` |
+
+`scripts/agent-routing/environment-profiles.mjs` owns tier resolution (`sandbox/*` → `sandbox`; any other non-`main` branch → `development`; `main` → `null`, never eligible) and each tier's required inline gate list (`sandbox`: secret scan only; `development`: secret scan + the existing `quality` implementation). Gate coverage is monotonic: `sandbox ⊂ development` (Transition/Production are not implemented by this mutation).
+
+`github-actions.mjs`'s `buildAdmitPrPlan` re-validates an `admit_environment_pr` mutation against freshly re-read live state the same way `buildDraftPrPlan` does (shared `renderAndValidateBody` helper — one render/validate path, not two), plus rejects `base_branch === 'main'` and any environment tier outside `{sandbox, development}` as defense in depth even though the planner already filters both. It returns a non-draft `pulls.create` request (auto-merge requires a non-draft PR) plus the resolved tier and required-gate list; it never calls the GitHub API and never merges.
+
+`.github/workflows/ops-agent-routing-controller.yml`'s `admit-environment-pr` job creates the PR, then runs each required gate as a job step reusing the exact scripts/actions the `pull_request`-triggered `gitleaks`/`quality` workflows use (`gitleaks/gitleaks-action@v2`; `scripts/ci/delivery_profile.mjs` + `scripts/ci/pr_class_quality_plan.mjs` for class-aware build/typecheck/lint/test selection) — synchronously, inside the same `workflow_dispatch` run, specifically to avoid GitHub's `action_required` gate on `pull_request`-triggered runs opened by the default `GITHUB_TOKEN` (see `docs/governance/CI-AND-VERIFICATION.md`). Only if every required gate succeeds does it merge (`merge_method: squash`) via `pulls.merge`, then re-runs the same gates against the merged target as direct post-merge verification, and records the PR URL, tier, gate results, merge SHA, and verification outcome on the same marked status comment `create_draft_pr` uses.
+
+`admit_environment_pr` is reachable only through that job's explicit `workflow_dispatch` (`authorize_mutation: true`, a scoped `issue_number`, `mode: admit`) — never automatically off any label or PR event, and never reachable for `base_branch: main`.
 
 ## Alerts, claims, and dead letters
 

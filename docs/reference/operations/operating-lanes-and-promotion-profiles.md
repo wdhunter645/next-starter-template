@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Canonical lane, role, promotion-profile, transition, communication, runner, and hold-state definitions
 Does Not Own: Current team-member assignments, workflow implementation details, repository settings, or production credentials
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2640, #2641, #2639
-Last Reviewed: 2026-07-19
+Related Issues: #2640, #2641, #2639, #2622
+Last Reviewed: 2026-07-30
 ---
 
 # Operating Lanes and Promotion Profiles
@@ -47,8 +47,8 @@ Current team members are mapped to these roles in the canonical agent-team polic
 
 | Profile | Entry | Required controls | Exit |
 | --- | --- | --- | --- |
-| Sandbox | PMO / Engineering authorizes an isolated experiment | Scaled-down build/test, secret scan, isolation, reproducibility; no production bindings | Discard, retain evidence, or adopt into Development |
-| Development | Approved work package or adopted Sandbox result | Automated PR build/test/security/scope/metadata checks; protected-change routing; eligible non-main integration | Integrated Development result selected for Promotion Candidate |
+| Sandbox | PMO / Engineering authorizes an isolated experiment | Required inline secret scan only; no production bindings; automatic merge once the required check passes (#2622) | Discard, retain evidence, or adopt into Development |
+| Development | Approved work package or adopted Sandbox result | Required inline secret scan plus the existing quality check (build/typecheck/lint/test); PR hygiene/scope/reviewer/design/documentation remain advisory unless explicitly promoted; protected-change routing; automatic non-main integration once required gates pass (#2622) | Integrated Development result selected for Promotion Candidate |
 | Promotion Candidate | Defined integrated Development SHA and release scope | Full applicable regression, integration, load/performance, security, migration, rollback, deployment-rehearsal, readiness, gap, and standards validation | Go/No-Go for Production |
 | Production | Approved Promotion Candidate with no unreviewed drift | Full production authority, controlled promotion, deployment, rollback readiness, and live verification | Public feature under Day-2 Operations |
 
@@ -82,26 +82,26 @@ Production promotion must identify the exact approved Promotion Candidate SHA or
 
 ### Sandbox gates
 
-Required only to protect repository and environment safety:
+Required, executing synchronously inside the authorized controller run rather than waiting on `pull_request`-triggered workflows (#2622; those runs are placed in `action_required` by GitHub when opened by the default `GITHUB_TOKEN` — see `docs/governance/CI-AND-VERIFICATION.md`):
 
-- basic build or syntax validation when applicable;
-- targeted tests for the experiment;
-- secret scan;
-- production-isolation check;
-- reproducibility note;
-- branch protection against Production promotion.
+- repository secret scan (`gitleaks`).
+
+No universal build, typecheck, lint, test, reviewer, documentation, design, hygiene, or diff-scope gate is required for Sandbox admission. Issue-specific targeted checks may run when explicitly requested; they do not become universal Sandbox gates. Production-isolation (the target must resolve to an authorized `sandbox/*` branch) is a controller safety precondition, not a gate.
 
 ### Development gates
 
-Automated and high-frequency:
+Required, executing the same way as Sandbox's inline gate (#2622):
 
-- build, type, lint, and relevant tests;
-- secret and security checks;
-- scope and allowlist checks;
-- metadata and branch-profile validation;
-- protected-path detection;
-- component branch freshness and state;
-- deterministic eligibility for non-main integration.
+- the Sandbox secret scan;
+- the repository's existing `quality` implementation, using its current class-aware build/typecheck/lint/test behavior.
+
+Advisory in Development unless a source Issue explicitly promotes one for a bounded change:
+
+- PR hygiene and stable metadata;
+- diff scope and allowlist validation;
+- reviewer-response completion;
+- design authority;
+- documentation and DIATAXIS authority.
 
 A machine result should be recorded as automated eligibility or automated approval, not as a human Engineering judgment.
 
@@ -178,6 +178,7 @@ They may:
 - observe and normalize events;
 - route authorized actions;
 - execute deterministic checks or bounded automation;
+- automatically merge an authorized Sandbox or Development admission once that tier's required inline gates pass (#2622), and record the outcome and direct post-merge verification on the source Issue;
 - publish acknowledgments and evidence;
 - apply or clear authorized state markers;
 - alert when delivery or communication fails.

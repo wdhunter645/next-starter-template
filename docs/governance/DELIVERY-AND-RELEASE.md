@@ -5,8 +5,8 @@ Authority Level: Domain Policy
 Owns: Delivery models, Sandbox/Development/Promotion Candidate/Production profiles, integration and promotion boundaries, approval profiles, rollback policy, and release-unit promotion rules
 Does Not Own: Current team-member assignments, PMO sizing, CI implementation, environment-isolation proof, or emergency stabilization procedures
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2495, #2640, #2641
-Last Reviewed: 2026-07-19
+Related Issues: #2495, #2640, #2641, #2622
+Last Reviewed: 2026-07-30
 ---
 
 # Delivery and Release
@@ -26,21 +26,24 @@ Canonical profile definitions live in `docs/reference/operations/operating-lanes
 
 ### Sandbox
 
-Sandbox is an optional, isolated PMO / Engineering proof-of-concept profile.
+Sandbox is an optional, isolated PMO / Engineering proof-of-concept profile, and the fastest of the three non-production admission tiers (#2622).
 
-- remote isolated branch;
-- scaled-down build/test, secret, isolation, and reproducibility checks;
+- remote isolated `sandbox/*` branch, created from the current Development base on first use;
+- required gate: the repository's secret scan (`gitleaks`) only — no universal build, typecheck, lint, test, reviewer, documentation, design-authority, PR-hygiene, or diff-scope gate is required for Sandbox admission;
+- the required gate executes synchronously inside the same authorized controller run that creates the PR, not as a separate `pull_request`-triggered workflow (`docs/governance/CI-AND-VERIFICATION.md` owns why);
+- eligible work automatically merges into the Sandbox target once the required check passes; a failing check blocks merge and leaves durable evidence on the source Issue;
 - no production credentials, writes, or bindings;
 - no direct path to Promotion Candidate or Production;
 - output may be discarded, retained as evidence, or adopted into Development.
 
 ### Development
 
-Development is the primary Model B implementation profile.
+Development is the primary Model B implementation profile, and the second non-production admission tier (#2622).
 
-- work targets a non-production component branch;
-- automated PR gates validate build, tests, security, scope, metadata, protected paths, freshness, and component state;
-- eligible non-protected work may integrate automatically into the component branch;
+- work targets a non-production component branch (including a dedicated `component/<release-unit>` branch);
+- required gates: the Sandbox secret scan plus the repository's existing `quality` implementation (its current class-aware build/typecheck/lint/test behavior), both executing synchronously inside the same authorized controller run;
+- current PR hygiene, diff scope, reviewer-response, design-authority, and documentation findings remain advisory in Development unless a source Issue explicitly promotes one for a bounded change;
+- eligible non-protected work automatically merges into the component branch once the required gates pass;
 - protected or material design concerns route to PR Approver / Engineering;
 - independent work may continue while prior work is review- or administration-pending.
 
@@ -216,8 +219,8 @@ The rollback package defines, as applicable:
 
 | Boundary | Decision authority | Automated integration |
 | --- | --- | --- |
-| Sandbox experiment | PMO / Engineering | Yes within isolated Sandbox when safety checks pass |
-| Development child, non-protected | Deterministic CI eligibility under Delivery policy | Yes to non-main component branch |
+| Sandbox experiment | PMO / Engineering | Yes — automatic merge into the isolated Sandbox target once the required inline secret scan passes |
+| Development child, non-protected | Deterministic CI eligibility under Delivery policy | Yes — automatic merge to the non-main component branch once the required inline secret-scan and quality gates pass |
 | Development child, protected/material | PR Approver / Engineering | No until approval |
 | Promotion Candidate Go/No-Go | PMO / Engineering, PR Approver / Engineering, and other required roles | No |
 | Production promotion | Production authority plus required Engineering approval | No |
