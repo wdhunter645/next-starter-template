@@ -293,6 +293,41 @@ describe('buildDraftPrPlan pre-mutation re-validation (#2621)', () => {
     expect(result.request).toBeUndefined();
   });
 
+  // PR #2952 review findings (discussion_r3681547395 / discussion_r3681547453):
+  // buildDraftPrPlan must never treat a missing, empty, or failed
+  // changed-file computation as "no files changed" — that would let
+  // diff-scope validation trivially pass with zero files to compare
+  // against, even though contractFields/deliveryProfile would otherwise
+  // render a passing body.
+  it('fails closed when freshState.changedFiles is undefined', () => {
+    const { changedFiles, ...freshStateWithoutChangedFiles } = freshState;
+    const result = buildDraftPrPlan(mutation, freshStateWithoutChangedFiles);
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('changed_files_missing');
+    expect(result.request).toBeUndefined();
+  });
+
+  it('fails closed when freshState.changedFiles is an empty array', () => {
+    const result = buildDraftPrPlan(mutation, { ...freshState, changedFiles: [] });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('changed_files_missing');
+    expect(result.request).toBeUndefined();
+  });
+
+  it('fails closed when freshState.changedFiles is not an array', () => {
+    const result = buildDraftPrPlan(mutation, { ...freshState, changedFiles: null });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('changed_files_missing');
+    expect(result.request).toBeUndefined();
+  });
+
+  it('fails closed when the workflow flags a failed changed-file compare, even if a stale changedFiles list is also present', () => {
+    const result = buildDraftPrPlan(mutation, { ...freshState, changedFilesComputeFailed: true });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('changed_files_compute_failed');
+    expect(result.request).toBeUndefined();
+  });
+
   it('never authorizes a create_draft_pr request targeting main, independent of rendered-body validity', () => {
     const mainMutation = { ...mutation, baseBranch: 'main', expectedRevision: 'x' };
     expect(validateMutation(mainMutation, { revision: 'x' }).reason).toBe('automatic_main_merge_prohibited');

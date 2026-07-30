@@ -76,4 +76,22 @@ describe('buildDraftPrPlan rendered-body fail-closed behavior (#2622)', () => {
     expect(Array.isArray(result.renderedBodyErrors)).toBe(true);
     expect(result.renderedBodyErrors.length).toBeGreaterThan(0);
   });
+
+  // PR #2952 review findings: a missing/empty/failed changed-file
+  // computation must fail closed before rendered-body validation even
+  // runs, not be silently treated as "no files changed".
+  it('creates no PR request when freshState carries no changed-file evidence at all', () => {
+    const { changedFiles, ...freshStateWithoutChangedFiles } = freshState;
+    const result = buildDraftPrPlan(mutation, freshStateWithoutChangedFiles);
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('changed_files_missing');
+    expect(result.request).toBeUndefined();
+  });
+
+  it('creates no PR request when the workflow reports the diff compare failed', () => {
+    const result = buildDraftPrPlan(mutation, { ...freshState, changedFilesComputeFailed: true });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('changed_files_compute_failed');
+    expect(result.request).toBeUndefined();
+  });
 });
