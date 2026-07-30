@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Shared delivery-profile metadata values, parser fields, classification invariants, protected path baseline, and CLI contract
 Does Not Own: Auto-integration enablement, branch protection settings, workflow behavior, or production promotion approval
 Canonical Reference: /docs/ops/implementation-plans/two-model-delivery-system/implementation-plan.md
-Last Reviewed: 2026-07-13
+Last Reviewed: 2026-07-30
 ---
 
 # Delivery Profile Contract
@@ -121,7 +121,7 @@ not silently downgrade one delivery model to another.
 
 ### Model B child
 
-- Base branch: `component/**`
+- Base branch: `component/**` or `sandbox/**` (#2622 progressive non-production admission — the Sandbox environment tier reuses the Model B child delivery model, just an earlier, less-gated target)
 - Target environment: `component`
 - Gate profile: `component-child`
 - Rollback profile: `multi-step`

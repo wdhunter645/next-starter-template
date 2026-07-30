@@ -23,7 +23,7 @@ on:
         required: true
         type: choice
         default: observe
-        options: [observe, normalize, advance, integrate]
+        options: [observe, normalize, advance, integrate, admit]
       authorize_mutation:
         description: Explicitly authorize bounded non-main mutation
         required: true
@@ -360,3 +360,467 @@ jobs:
               await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber, body });
             }
             console.log(`create-draft-pr: opened ${pr.html_url}`);
+
+  # #2622 (revised design): ADMIT_ENVIRONMENT_PR. Progressive non-production
+  # environment admission — Sandbox and Development tiers only (Stage A;
+  # Transition/Production are not implemented by this job). Required gates
+  # run synchronously inside this same workflow_dispatch execution, reusing
+  # the exact scripts the pull_request-triggered gitleaks/quality workflows
+  # use, because GitHub places pull_request-triggered runs opened by
+  # GITHUB_TOKEN in `action_required` and this job must not wait on them
+  # (#2622 root-cause investigation, comment 5130744446). Never targets
+  # `main` (enforced independently in environment-profiles.mjs and
+  # github-actions.mjs) and never merges unless every required gate for the
+  # resolved tier succeeds.
+  admit-environment-pr:
+    name: Plan and apply ADMIT_ENVIRONMENT_PR
+    needs: [evaluate, bounded-mutation-gate]
+    if: |
+      github.event_name == 'workflow_dispatch' && inputs.authorize_mutation == true
+      && inputs.mode == 'admit' && inputs.issue_number != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout trusted repository code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Gather live evidence
+        id: gather
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER_INPUT: ${{ inputs.issue_number }}
+        with:
+          script: |
+            const fs = require('fs');
+            const issueNumber = Number(process.env.ISSUE_NUMBER_INPUT);
+
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+            });
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              per_page: 100,
+            });
+
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/issue.json', JSON.stringify({
+              number: issue.number,
+              body: issue.body || '',
+              state: issue.state,
+              triggerActor: context.actor,
+            }));
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/comments.json', JSON.stringify(
+              comments.map((c) => ({ id: c.id, created_at: c.created_at, body: c.body || '' })),
+            ));
+
+            const blockMatch = (issue.body || '').match(/<!--\s*lgfc-issue-pr-contract:v1:rev=\d+\s*-->([\s\S]*?)<!--\s*\/lgfc-issue-pr-contract:v1\s*-->/);
+            const blockText = blockMatch ? blockMatch[1] : '';
+            const headMatch = blockText.match(/head_branch:\s*(\S+)/);
+            const baseMatch = blockText.match(/base_branch:\s*(\S+)/);
+            const headBranch = headMatch ? headMatch[1] : '';
+            const baseBranch = baseMatch ? baseMatch[1] : '';
+
+            const getBranchSha = async (branch) => {
+              if (!branch) return null;
+              try {
+                const { data } = await github.rest.repos.getBranch({ owner: context.repo.owner, repo: context.repo.repo, branch });
+                return data.commit.sha;
+              } catch {
+                return null;
+              }
+            };
+            const headSha = await getBranchSha(headBranch);
+            const baseSha = await getBranchSha(baseBranch);
+
+            let hasDiff = false;
+            let changedFiles = [];
+            if (headSha && baseSha) {
+              try {
+                const { data: compare } = await github.rest.repos.compareCommitsWithBasehead({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  basehead: `${baseBranch}...${headBranch}`,
+                });
+                hasDiff = compare.status !== 'identical' && (compare.files || []).length > 0;
+                changedFiles = (compare.files || []).map((f) => f.filename);
+              } catch {
+                hasDiff = false;
+              }
+            }
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/live_state.json', JSON.stringify({ headBranchExists: headSha !== null, headSha, baseSha, hasDiff, changedFiles }));
+
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner, repo: context.repo.repo, state: 'open', head: `${context.repo.owner}:${headBranch}`,
+            });
+            const existingPr = prs.length > 0 ? { number: prs[0].number, url: prs[0].html_url, headBranch, sourceIssue: issueNumber, state: 'open' } : null;
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/existing_pr.json', JSON.stringify(existingPr));
+
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/authorized_actors.json', JSON.stringify((process.env.AUTHORIZED_ACTORS || '').split(',').map((s) => s.trim()).filter(Boolean)));
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/issue_identity.json', JSON.stringify({ number: issue.number, projectIssue: null, projectBranch: null, taskId: null, state: issue.state, labels: (issue.labels || []).map((l) => (typeof l === 'string' ? l : l.name)) }));
+
+      - name: Evaluate #2620 contract request
+        env:
+          ISSUE_PR_CONTRACT_ISSUE_JSON: ${{ runner.temp }}/issue.json
+          ISSUE_PR_CONTRACT_COMMENTS_JSON: ${{ runner.temp }}/comments.json
+          ISSUE_PR_CONTRACT_LIVE_STATE_JSON: ${{ runner.temp }}/live_state.json
+          ISSUE_PR_CONTRACT_AUTHORIZED_ACTORS_JSON: ${{ runner.temp }}/authorized_actors.json
+          ISSUE_PR_CONTRACT_RESULT_JSON: ${{ runner.temp }}/validation_result.json
+        run: node scripts/ci/issue_pr_contract_validate.mjs
+
+      - name: Plan ADMIT_ENVIRONMENT_PR
+        id: plan
+        env:
+          AGENT_ROUTING_ISSUE_JSON: ${{ runner.temp }}/issue_identity.json
+          ISSUE_PR_CONTRACT_RESULT_JSON: ${{ runner.temp }}/validation_result.json
+          AGENT_ROUTING_EXISTING_PR_JSON: ${{ runner.temp }}/existing_pr.json
+          AGENT_ROUTING_MODE: ${{ inputs.mode }}
+          AGENT_ROUTING_PLAN_OUTPUT_JSON: ${{ runner.temp }}/plan_result.json
+          AGENT_ROUTING_PLAN_ONLY_OUTPUT_JSON: ${{ runner.temp }}/plan.json
+        run: node scripts/agent-routing/controller.mjs
+
+      - name: Re-read live state immediately before mutation (race guard)
+        id: refresh
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER_INPUT: ${{ inputs.issue_number }}
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + '/plan.json', 'utf8'));
+            const mutation = (plan.mutations || []).find((m) => m.type === 'admit_environment_pr');
+            if (!mutation) {
+              console.log(`admit-environment-pr: plan class was '${plan.class}', not admit_environment_pr. Nothing to do.`);
+              fs.writeFileSync(process.env.RUNNER_TEMP + '/fresh_state.json', JSON.stringify({}));
+              core.setOutput('hasMutation', 'false');
+              return;
+            }
+            core.setOutput('hasMutation', 'true');
+
+            const issueNumber = Number(process.env.ISSUE_NUMBER_INPUT);
+            const { data: issue } = await github.rest.issues.get({ owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber });
+            const getBranchSha = async (branch) => {
+              try {
+                const { data } = await github.rest.repos.getBranch({ owner: context.repo.owner, repo: context.repo.repo, branch });
+                return data.commit.sha;
+              } catch {
+                return null;
+              }
+            };
+            const headSha = await getBranchSha(mutation.headBranch);
+            const baseSha = await getBranchSha(mutation.baseBranch);
+            core.setOutput('headSha', headSha || '');
+            core.setOutput('baseSha', baseSha || '');
+            const { data: prs } = await github.rest.pulls.list({ owner: context.repo.owner, repo: context.repo.repo, state: 'open', head: `${context.repo.owner}:${mutation.headBranch}` });
+            const pullRequests = prs.map((pr) => ({ state: 'open', headBranch: mutation.headBranch, sourceIssue: issueNumber, url: pr.html_url }));
+
+            // Fresh changed-file list, computed the same fail-closed way as
+            // create-draft-pr's refresh step (PR #2952/#2953).
+            let changedFiles = [];
+            let changedFilesComputeFailed = false;
+            if (headSha && baseSha) {
+              try {
+                const { data: compare } = await github.rest.repos.compareCommitsWithBasehead({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  basehead: `${mutation.baseBranch}...${mutation.headBranch}`,
+                });
+                changedFiles = (compare.files || []).map((f) => f.filename);
+              } catch {
+                changedFiles = [];
+                changedFilesComputeFailed = true;
+              }
+            } else {
+              changedFilesComputeFailed = true;
+            }
+
+            const blockMatch = (issue.body || '').match(/<!--\s*lgfc-issue-pr-contract:v1:rev=(\d+)\s*-->/);
+            const authorizedActors = (process.env.AUTHORIZED_ACTORS || '').split(',').map((s) => s.trim()).filter(Boolean);
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/fresh_state.json', JSON.stringify({
+              issueOpen: issue.state === 'open',
+              actorAuthorized: authorizedActors.length === 0 || authorizedActors.includes(context.actor),
+              headSha,
+              baseSha,
+              contractRev: blockMatch ? Number(blockMatch[1]) : null,
+              pullRequests,
+              changedFiles,
+              changedFilesComputeFailed,
+            }));
+
+            // Plain changed-files list for delivery_profile.mjs /
+            // pr_class_quality_plan.mjs (Development tier's inline quality
+            // gate reads this the same way gate-quality.yml does).
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/changed_files.txt', changedFiles.join('\n') + '\n');
+
+      - name: Build admit-PR request
+        id: build_raw
+        if: steps.refresh.outputs.hasMutation == 'true'
+        env:
+          AGENT_ROUTING_CLI_MODE: admit_mutate
+          AGENT_ROUTING_PLAN_JSON: ${{ runner.temp }}/plan.json
+          AGENT_ROUTING_FRESH_STATE_JSON: ${{ runner.temp }}/fresh_state.json
+          AGENT_ROUTING_ADMIT_PR_OUTPUT_JSON: ${{ runner.temp }}/admit_pr.json
+        run: node scripts/agent-routing/controller.mjs
+
+      - name: Create environment PR
+        id: create
+        if: steps.refresh.outputs.hasMutation == 'true'
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER_INPUT: ${{ inputs.issue_number }}
+          BUILD_OUTPUT_FILE: ${{ runner.temp }}/admit_pr.json
+        with:
+          script: |
+            const fs = require('fs');
+            const issueNumber = Number(process.env.ISSUE_NUMBER_INPUT);
+            const output = JSON.parse(fs.readFileSync(process.env.BUILD_OUTPUT_FILE, 'utf8'));
+
+            core.setOutput('ok', String(output.ok === true));
+            if (!output.ok) {
+              console.log(`admit-environment-pr: not proceeding — ${output.reason}. No PR created.`);
+              if (output.renderedBodyErrors) {
+                console.log(`admit-environment-pr: rendered-body validation errors: ${JSON.stringify(output.renderedBodyErrors)}`);
+              }
+              return;
+            }
+
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: output.request.title,
+              head: output.request.head,
+              base: output.request.base,
+              draft: false,
+              body: output.request.body,
+            });
+
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/pr_body.md', output.request.body);
+            core.setOutput('prNumber', String(pr.number));
+            core.setOutput('prUrl', pr.html_url);
+            core.setOutput('headBranch', output.request.head);
+            core.setOutput('baseBranch', output.request.base);
+            core.setOutput('environmentTier', output.environmentTier);
+            core.setOutput('requiredGates', JSON.stringify(output.requiredGates || []));
+            console.log(`admit-environment-pr: opened ${pr.html_url} (${output.environmentTier})`);
+
+      - name: Checkout environment PR head content for inline gates
+        if: steps.create.outputs.ok == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.create.outputs.headBranch }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Inline gate — secret scan
+        id: secret-scan
+        if: steps.create.outputs.ok == 'true'
+        continue-on-error: true
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+      - name: Inline gate — quality — structure
+        id: quality-structure
+        if: steps.create.outputs.ok == 'true' && contains(steps.create.outputs.requiredGates, 'quality')
+        continue-on-error: true
+        run: npm run check:structure
+
+      - name: Inline gate — quality — backend reference guard
+        id: quality-backend-guard
+        if: steps.create.outputs.ok == 'true' && contains(steps.create.outputs.requiredGates, 'quality')
+        continue-on-error: true
+        run: bash scripts/ci/backend_reference_guard.sh
+
+      - name: Inline gate — quality — no tracked ZIPs
+        id: quality-no-zips
+        if: steps.create.outputs.ok == 'true' && contains(steps.create.outputs.requiredGates, 'quality')
+        continue-on-error: true
+        run: bash scripts/ci/check_no_tracked_zips.sh
+
+      - name: Inline gate — quality — ZIP history taint
+        id: quality-zip-history
+        if: steps.create.outputs.ok == 'true' && contains(steps.create.outputs.requiredGates, 'quality')
+        continue-on-error: true
+        env:
+          GITHUB_BASE_SHA: ${{ steps.refresh.outputs.baseSha }}
+          GITHUB_HEAD_SHA: ${{ steps.refresh.outputs.headSha }}
+        run: bash scripts/ci/verify_zip_history_pr.sh
+
+      - name: Inline gate — quality — classify delivery profile
+        id: quality_delivery_profile
+        if: steps.create.outputs.ok == 'true' && contains(steps.create.outputs.requiredGates, 'quality')
+        continue-on-error: true
+        env:
+          PR_BODY_FILE: ${{ runner.temp }}/pr_body.md
+          PR_BASE_REF: ${{ steps.create.outputs.baseBranch }}
+          PR_HEAD_REF: ${{ steps.create.outputs.headBranch }}
+          CHANGED_FILES_FILE: ${{ runner.temp }}/changed_files.txt
+          DELIVERY_PROFILE_RESULT_JSON: ${{ runner.temp }}/delivery_profile.json
+        run: node scripts/ci/delivery_profile.mjs
+
+      - name: Inline gate — quality — class-aware quality plan
+        id: quality_plan
+        if: steps.create.outputs.ok == 'true' && contains(steps.create.outputs.requiredGates, 'quality')
+        continue-on-error: true
+        env:
+          PR_CLASS_BODY_FILE: ${{ runner.temp }}/pr_body.md
+          PR_BASE_REF: ${{ steps.create.outputs.baseBranch }}
+          PR_HEAD_REF: ${{ steps.create.outputs.headBranch }}
+          CHANGED_FILES_FILE: ${{ runner.temp }}/changed_files.txt
+          DELIVERY_PROFILE_JSON: ${{ runner.temp }}/delivery_profile.json
+        run: node scripts/ci/pr_class_quality_plan.mjs
+
+      - name: Inline gate — quality — typecheck
+        id: quality-typecheck
+        if: steps.create.outputs.ok == 'true' && contains(steps.create.outputs.requiredGates, 'quality') && steps.quality_plan.outputs.run_typecheck == 'true'
+        continue-on-error: true
+        run: npm run typecheck
+
+      - name: Inline gate — quality — lint
+        id: quality-lint
+        if: steps.create.outputs.ok == 'true' && contains(steps.create.outputs.requiredGates, 'quality') && steps.quality_plan.outputs.run_lint == 'true'
+        continue-on-error: true
+        run: npm run lint
+
+      - name: Inline gate — quality — unit tests
+        id: quality-test
+        if: steps.create.outputs.ok == 'true' && contains(steps.create.outputs.requiredGates, 'quality') && steps.quality_plan.outputs.run_test == 'true'
+        continue-on-error: true
+        run: npm test
+
+      - name: Inline gate — quality — production build
+        id: quality-build
+        if: steps.create.outputs.ok == 'true' && contains(steps.create.outputs.requiredGates, 'quality') && steps.quality_plan.outputs.run_build == 'true'
+        continue-on-error: true
+        run: npm run build
+
+      - name: Determine gate outcome
+        id: gate_outcome
+        if: steps.create.outputs.ok == 'true'
+        run: |
+          failed=false
+          [ "${{ steps.secret-scan.outcome }}" = "failure" ] && failed=true
+          if [ "${{ contains(steps.create.outputs.requiredGates, 'quality') }}" = "true" ]; then
+            for outcome in "${{ steps.quality-structure.outcome }}" "${{ steps.quality-backend-guard.outcome }}" "${{ steps.quality-no-zips.outcome }}" "${{ steps.quality-zip-history.outcome }}" "${{ steps.quality_delivery_profile.outcome }}" "${{ steps.quality_plan.outcome }}" "${{ steps.quality-typecheck.outcome }}" "${{ steps.quality-lint.outcome }}" "${{ steps.quality-test.outcome }}" "${{ steps.quality-build.outcome }}"; do
+              [ "$outcome" = "failure" ] && failed=true
+            done
+          fi
+          if [ "$failed" = "true" ]; then
+            echo "all_passed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "all_passed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Merge admitted environment PR
+        id: merge
+        if: steps.create.outputs.ok == 'true' && steps.gate_outcome.outputs.all_passed == 'true'
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ steps.create.outputs.prNumber }}
+        with:
+          script: |
+            const { data: merged } = await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: Number(process.env.PR_NUMBER),
+              merge_method: 'squash',
+            });
+            core.setOutput('merged', String(merged.merged === true));
+            core.setOutput('mergeSha', merged.sha || '');
+            console.log(`admit-environment-pr: merged #${process.env.PR_NUMBER} as ${merged.sha}`);
+
+      - name: Checkout merged environment target for post-merge verification
+        id: post_merge_checkout
+        if: steps.merge.outputs.merged == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.create.outputs.baseBranch }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Post-merge verification — secret scan
+        id: verify-secret-scan
+        if: steps.merge.outputs.merged == 'true'
+        continue-on-error: true
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+      - name: Post-merge verification — quality
+        id: verify-quality
+        if: steps.merge.outputs.merged == 'true' && contains(steps.create.outputs.requiredGates, 'quality')
+        continue-on-error: true
+        run: npm run typecheck && npm test
+
+      - name: Record admission evidence on source Issue
+        if: always() && steps.refresh.outputs.hasMutation == 'true'
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER_INPUT: ${{ inputs.issue_number }}
+          BUILD_OUTPUT_FILE: ${{ runner.temp }}/admit_pr.json
+        with:
+          script: |
+            const fs = require('fs');
+            const issueNumber = Number(process.env.ISSUE_NUMBER_INPUT);
+            const output = JSON.parse(fs.readFileSync(process.env.BUILD_OUTPUT_FILE, 'utf8'));
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber, per_page: 100,
+            });
+
+            let body;
+            if (!output.ok) {
+              body = `<!-- lgfc-issue-pr-contract-status:v1:invalid:rev=${output.reason === 'stale_contract_revision' ? 'unknown' : ''} -->\nADMIT_ENVIRONMENT_PR not proceeding — ${output.reason}. No PR created.`;
+            } else {
+              const marker = output.commentUpdateTemplate.marker;
+              const prUrl = '${{ steps.create.outputs.prUrl }}';
+              const gatesPassed = '${{ steps.gate_outcome.outputs.all_passed }}' === 'true';
+              const merged = '${{ steps.merge.outputs.merged }}' === 'true';
+              const mergeSha = '${{ steps.merge.outputs.mergeSha }}';
+              const lines = [
+                marker,
+                `Environment PR: ${prUrl}`,
+                `Environment tier: ${output.environmentTier}`,
+                `Required gates: ${(output.requiredGates || []).join(', ')}`,
+                `Required gates passed: ${gatesPassed ? 'YES' : 'NO'}`,
+                merged
+                  ? `Automatically merged: YES (merge SHA ${mergeSha})`
+                  : 'Automatically merged: NO — a required gate failed; the PR remains open for disposition.',
+              ];
+              if (merged) {
+                lines.push(`Post-merge verification: ${'${{ steps.verify-secret-scan.outcome }}' === 'success' ? 'secret scan passed' : 'secret scan FAILED'}`);
+                if ((output.requiredGates || []).includes('quality')) {
+                  lines.push(`Post-merge quality re-check: ${'${{ steps.verify-quality.outcome }}' === 'success' ? 'passed' : 'FAILED'}`);
+                }
+              }
+              body = lines.join('\n');
+            }
+
+            const markerPrefix = output.ok ? output.commentUpdateTemplate.marker.split(':rev=')[0] : 'lgfc-issue-pr-contract-status:v1';
+            const existing = comments.find((c) => (c.body || '').includes(markerPrefix));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber, body });
+            }

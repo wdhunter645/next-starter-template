@@ -5,8 +5,8 @@ Authority Level: Domain Policy
 Owns: Gate profiles, check classification, deterministic evidence, validation ownership, promotion verification criteria, failure routing, remediation boundaries, and post-merge verification ownership
 Does Not Own: Delivery Model A/B selection, agent approval routing, branch-protection UI settings, workflow YAML implementation, product/UX behavior, or platform isolation claims
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2689, #2686
-Last Reviewed: 2026-07-21
+Related Issues: #2689, #2686, #2622
+Last Reviewed: 2026-07-30
 ---
 
 # CI and Verification
@@ -120,13 +120,19 @@ Rules:
 
 | Profile | Verification bar owned by this domain |
 | --- | --- |
-| **Sandbox** | Scaled-down safety checks; isolation proof required before any mutating claim |
-| **Development** | Gate profile checks for the target (component-child or equivalent); allowlist and issue accounting intact |
+| **Sandbox** | Required inline secret scan only; no other universal gate. Isolation proof (target is an authorized `sandbox/*` branch, never `main`/Production) required before any mutating claim |
+| **Development** | Required inline secret scan plus the existing `quality` implementation (class-aware build/typecheck/lint/test); PR hygiene, diff scope, reviewer response, design authority, and documentation findings remain advisory unless explicitly promoted for a bounded change; allowlist and issue accounting intact |
 | **Promotion Candidate** | Full applicable qualification: integrated candidate identity, required checks on the candidate, standards reconciliation, rollback package, disposition of gaps |
 | **Production** | Exact approved candidate; no unreviewed drift; required Production and Engineering authority; live verification plan |
 | **Day-2** | Production health, incident, and recovery verification under Operations policy |
 
 Skipping a mandatory profile is a protected stop. Sandbox must not jump to Promotion Candidate or Production. Development must not jump to Production.
+
+### Non-production gate execution mechanism (#2622)
+
+GitHub places `pull_request`-triggered workflow runs in `action_required` (blocked pending manual approval) whenever the PR itself was opened or synchronized using the default `GITHUB_TOKEN` — a platform-wide policy, not a repository or organization setting (confirmed via GitHub's own changelog; see `docs/ops/reports/issue-pr-contract-pilot-evidence.md` Finding 8 and #2622 comment 5130744446). Waiting on those blocked runs would make automatic Sandbox/Development admission indefinitely stall on a human clicking "Approve and run."
+
+Required non-production gates therefore execute **synchronously inside the same authorized `workflow_dispatch` controller run** that creates and admits the PR — reusing the exact scripts/actions the `pull_request`-triggered `gitleaks`/`quality` workflows use (`gitleaks/gitleaks-action@v2`; `scripts/ci/delivery_profile.mjs` and `scripts/ci/pr_class_quality_plan.mjs` for class-aware build/typecheck/lint/test selection), never a second, weaker implementation. The existing `pull_request`-triggered workflows may still publish advisory evidence when they do run, but they are not the required execution path for automatic non-production admission. Production retains the complete gate set, required human/Production authority, and manual merge — this mechanism does not apply to Production and cannot be used to reach `main`.
 
 ## Failure routing and remediation boundaries
 
@@ -150,6 +156,7 @@ Routine bounded correction is not a repository-wide stop. Material inability to 
 | Remediation after post-merge failure | Authorized remediation workflows + Implementation / Operations |
 | Documentation evidence (for example DIATAXIS post-merge) | Supporting evidence workflows; not a second closeout owner |
 | Production runtime health after deploy | Day-2 Operations / Operations and Recovery domain |
+| Sandbox/Development environment admission verification (#2622) | The same controller run invokes post-merge verification directly (re-running the tier's required gates against the merged target) immediately after auto-merge, and records the result on the source Issue — not dependent on any bot-created `pull_request` event |
 
 Supporting post-merge workflows must not race the same automatic mutation boundary as the single closeout owner.
 

@@ -193,6 +193,53 @@ describe('classifyDeliveryProfile', () => {
     });
   });
 
+  it('classifies Model B child PRs targeting an authorized sandbox/* base as valid (#2622 progressive admission)', () => {
+    const profile = classify(
+      {
+        size: 'small',
+        deliveryModel: 'B-child',
+        targetEnvironment: 'component',
+        approvalProfile: 'component-auto-integration',
+        gateProfile: 'component-child',
+        rollbackProfile: 'multi-step',
+        componentBranch: 'sandbox/issue-contract-draft-pr',
+        componentMaster: '#2622',
+      },
+      {
+        baseRef: 'sandbox/issue-contract-draft-pr',
+        headRef: 'cursor/2622-sandbox-example',
+        changedFiles: ['docs/ops/reports/example.md'],
+      },
+    );
+
+    expect(profile.errors).toEqual([]);
+  });
+
+  it('still rejects a Model B child PR whose base is neither component/** nor sandbox/**', () => {
+    const profile = classify(
+      {
+        deliveryModel: 'B-child',
+        targetEnvironment: 'component',
+        approvalProfile: 'component-auto-integration',
+        gateProfile: 'component-child',
+        rollbackProfile: 'multi-step',
+        componentBranch: 'feature/not-authorized',
+        componentMaster: '#2622',
+      },
+      {
+        baseRef: 'feature/not-authorized',
+        headRef: 'cursor/2622-example',
+        changedFiles: ['docs/ops/reports/example.md'],
+      },
+    );
+
+    expect(profile.errors).toContainEqual(expect.objectContaining({
+      code: 'invalid_baseRef',
+      expected: 'component/** or sandbox/**',
+      value: 'feature/not-authorized',
+    }));
+  });
+
   it('classifies protected Model B child PRs for Chat review', () => {
     const profile = classify(
       {

@@ -103,6 +103,16 @@ function isComponentRef(ref) {
   return /^component\/[^/].*/.test(String(ref || ''));
 }
 
+// #2622 progressive non-production admission: Model B child PRs may also
+// target an authorized `sandbox/*` branch, not only `component/**` — the
+// Sandbox environment tier reuses the same delivery model, just a
+// different (earlier, less-gated) target. Scoped to this one base-ref
+// check only; component-branch identity, B-promotion's headRef check, and
+// every other Model B rule are unchanged.
+function isComponentOrSandboxBaseRef(ref) {
+  return isComponentRef(ref) || /^sandbox\/[^/].*/.test(String(ref || ''));
+}
+
 function isValidComponentMasterIssue(ref) {
   return /^#\d+$/.test(String(ref || '').trim());
 }
@@ -249,9 +259,9 @@ export function classifyDeliveryProfile({
     );
     pushExpectedError(errors, 'gateProfile', metadata.gateProfile, 'component-child');
     pushExpectedError(errors, 'rollbackProfile', metadata.rollbackProfile, 'multi-step');
-    if (!isComponentRef(baseRef)) {
-      errors.push(deliveryError('invalid_baseRef', 'Model B child PRs must target component/**.', {
-        expected: 'component/**',
+    if (!isComponentOrSandboxBaseRef(baseRef)) {
+      errors.push(deliveryError('invalid_baseRef', 'Model B child PRs must target component/** or sandbox/**.', {
+        expected: 'component/** or sandbox/**',
         value: baseRef,
       }));
     }

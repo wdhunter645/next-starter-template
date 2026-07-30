@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { resolveRepositoryState } from './state-resolver.mjs';
 import { planAction } from './action-planner.mjs';
-import { buildDraftPrPlan } from './github-actions.mjs';
+import { buildDraftPrPlan, buildAdmitPrPlan } from './github-actions.mjs';
 import { normalizeIssuePrContractEvidence } from './evidence-adapters/issue-pr-contract.mjs';
 
 const SUPPORTED_EVENTS = new Set([
@@ -115,9 +115,37 @@ export function runCreateDraftPrMutationCli(env = process.env) {
   return 0;
 }
 
+/**
+ * CLI entrypoint (#2622 revised design): re-validates a previously computed
+ * admit_environment_pr mutation against freshly re-read live state and
+ * builds the exact PR-creation request for automatic non-production
+ * environment admission, or a fail-closed reason. Never calls the GitHub
+ * API itself, and never merges — that is a separate, later workflow step
+ * gated on every required inline gate passing.
+ */
+export function runAdmitPrMutationCli(env = process.env) {
+  const plan = readJsonFile(env.AGENT_ROUTING_PLAN_JSON, null);
+  if (!plan) {
+    console.error('AGENT_ROUTING_PLAN_JSON is required and must point to an existing file.');
+    return 2;
+  }
+  const freshState = readJsonFile(env.AGENT_ROUTING_FRESH_STATE_JSON, {});
+  const mutation = (plan.mutations || []).find((item) => item.type === 'admit_environment_pr') || null;
+
+  const result = buildAdmitPrPlan(mutation, freshState);
+
+  const outputPath = env.AGENT_ROUTING_ADMIT_PR_OUTPUT_JSON;
+  if (outputPath) {
+    fs.writeFileSync(outputPath, `${JSON.stringify(result, null, 2)}\n`);
+  }
+  console.log(JSON.stringify(result, null, 2));
+  return 0;
+}
+
 const CLI_MODE_HANDLERS = {
   plan: runCreateDraftPrPlanCli,
   mutate: runCreateDraftPrMutationCli,
+  admit_mutate: runAdmitPrMutationCli,
 };
 
 if (import.meta.url === `file://${process.argv[1]}`) {
