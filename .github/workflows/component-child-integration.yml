@@ -22,6 +22,7 @@ permissions:
   contents: read
   pull-requests: write
   checks: write
+  issues: write
 
 jobs:
   component-child-integration:
@@ -33,11 +34,6 @@ jobs:
        github.event.workflow_run.conclusion != null &&
        github.event.workflow_run.event == 'pull_request')
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Resolve pull request number
         id: pr
         env:
@@ -49,7 +45,6 @@ jobs:
           elif [ "${{ github.event_name }}" = "workflow_run" ]; then
             PR_NUMBER="$(jq -r '.workflow_run.pull_requests[0].number // empty' "$GITHUB_EVENT_PATH")"
             if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
-              # Fallback: locate an open PR for the workflow head SHA targeting component/**
               HEAD_SHA="$(jq -r '.workflow_run.head_sha // empty' "$GITHUB_EVENT_PATH")"
               PR_NUMBER="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/pulls" \
                 --jq '[.[] | select(.base.ref|test("^component/")) | .number][0] // empty')"
@@ -91,7 +86,8 @@ jobs:
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          jq -r '.body' "$RUNNER_TEMP/pr.json" > "$RUNNER_TEMP/pr_body.md"
+
+          jq -r '.body // ""' "$RUNNER_TEMP/pr.json" > "$RUNNER_TEMP/pr_body.md"
           jq -r '.base.ref' "$RUNNER_TEMP/pr.json" > "$RUNNER_TEMP/base_ref.txt"
           jq -r '.head.ref' "$RUNNER_TEMP/pr.json" > "$RUNNER_TEMP/head_ref.txt"
           jq -r '.head.sha' "$RUNNER_TEMP/pr.json" > "$RUNNER_TEMP/head_sha.txt"
@@ -102,17 +98,44 @@ jobs:
             | jq -s 'add // []' > "$RUNNER_TEMP/reviews.json"
           gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/labels" --paginate \
             | jq -s 'add // []' > "$RUNNER_TEMP/labels.json"
-          # Include timestamps/ids so the evaluator can keep the latest
-          # authoritative result per required check name.
           gh api "repos/${GITHUB_REPOSITORY}/commits/$(cat "$RUNNER_TEMP/head_sha.txt")/check-runs" --paginate \
             | jq -s '[.[].check_runs[] | {name, conclusion, status, completed_at, started_at, id}]' \
             > "$RUNNER_TEMP/checks.json"
+
+          SOURCE_ISSUE="$(node --input-type=module -e "
+            import fs from 'node:fs';
+            const body = fs.readFileSync(process.argv[1], 'utf8');
+            const match = body.match(/^\\s*-?\\s*(?:\\*\\*)?Issue:(?:\\*\\*)?\\s*#(\\d+)\\b/im);
+            process.stdout.write(match?.[1] || '0');
+          " "$RUNNER_TEMP/pr_body.md")"
+          if [ "$SOURCE_ISSUE" != "0" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/${SOURCE_ISSUE}/comments" --paginate \
+              | jq -s 'add // []' > "$RUNNER_TEMP/source_issue_comments.json"
+          else
+            echo '[]' > "$RUNNER_TEMP/source_issue_comments.json"
+          fi
+
+          HEAD_REF="$(jq -r '.head.ref' "$RUNNER_TEMP/pr.json")"
+          IMPLEMENTATION_ACTOR=""
+          case "$HEAD_REF" in
+            atlas/*) IMPLEMENTATION_ACTOR="ChatGPT / Atlas" ;;
+          esac
+
           {
             echo "base_ref=$(jq -r '.base.ref' "$RUNNER_TEMP/pr.json")"
-            echo "head_ref=$(jq -r '.head.ref' "$RUNNER_TEMP/pr.json")"
+            echo "head_ref=${HEAD_REF}"
             echo "head_sha=$(jq -r '.head.sha' "$RUNNER_TEMP/pr.json")"
+            echo "source_issue=${SOURCE_ISSUE}"
+            echo "implementation_actor=${IMPLEMENTATION_ACTOR}"
             echo "skip=false"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout trusted component base
+        if: steps.pr.outputs.skip != 'true' && steps.pr_meta.outputs.skip != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr_meta.outputs.base_ref }}
+          fetch-depth: 0
 
       - name: Resolve component branch freshness
         id: freshness
@@ -140,15 +163,9 @@ jobs:
           COMPONENT_HEAD="${{ steps.freshness.outputs.component_head }}"
           STATUS_JSON="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${COMPONENT_HEAD}/status")"
           STATE="$(echo "$STATUS_JSON" | jq -r '.state')"
-          # Hold is never inferred from pending/absent combined status.
-          # Explicit hold labels are evaluated in the Node eligibility script.
           case "$STATE" in
-            failure|error)
-              echo "state=red" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo "state=green" >> "$GITHUB_OUTPUT"
-              ;;
+            failure|error) echo "state=red" >> "$GITHUB_OUTPUT" ;;
+            *) echo "state=green" >> "$GITHUB_OUTPUT" ;;
           esac
           echo "branch=${BASE_REF}" >> "$GITHUB_OUTPUT"
           echo "combined_status=${STATE}" >> "$GITHUB_OUTPUT"
@@ -164,11 +181,58 @@ jobs:
           COMPONENT_INTEGRATION_CHECKS_JSON: ${{ runner.temp }}/checks.json
           COMPONENT_INTEGRATION_REVIEWS_JSON: ${{ runner.temp }}/reviews.json
           COMPONENT_INTEGRATION_LABELS_JSON: ${{ runner.temp }}/labels.json
+          COMPONENT_INTEGRATION_SOURCE_ISSUE_COMMENTS_JSON: ${{ runner.temp }}/source_issue_comments.json
           COMPONENT_INTEGRATION_STATE: ${{ steps.component_state.outputs.state }}
           COMPONENT_INTEGRATION_BASE_BEHIND: ${{ steps.freshness.outputs.behind }}
           COMPONENT_INTEGRATION_HEAD_SHA: ${{ steps.pr_meta.outputs.head_sha }}
+          COMPONENT_INTEGRATION_PR_NUMBER: ${{ steps.pr.outputs.number }}
+          COMPONENT_INTEGRATION_IMPLEMENTATION_ACTOR: ${{ steps.pr_meta.outputs.implementation_actor }}
           COMPONENT_INTEGRATION_RESULT_JSON: ${{ runner.temp }}/component_integration_result.json
-        run: node scripts/ci/component_integration_eligibility.mjs
+        run: node scripts/ci/component_integration_role_adapter.mjs
+
+      - name: Return protected PR without approval to draft
+        if: steps.eligibility.outputs.role_approval_required == 'true' && steps.eligibility.outputs.role_approval_present != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          PR_NODE_ID="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq .node_id)"
+          gh api graphql \
+            -f query='mutation($pullRequestId: ID!) { convertPullRequestToDraft(input: {pullRequestId: $pullRequestId}) { pullRequest { isDraft } } }' \
+            -f pullRequestId="$PR_NODE_ID"
+
+      - name: Upsert exact-head PR review request
+        if: steps.eligibility.outputs.role_approval_required == 'true' && steps.eligibility.outputs.role_approval_present != 'true' && steps.pr_meta.outputs.source_issue != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_ISSUE: ${{ steps.pr_meta.outputs.source_issue }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          HEAD_SHA: ${{ steps.pr_meta.outputs.head_sha }}
+        run: |
+          MARKER="<!-- lgfc-role-approval-guard:v1 -->"
+          BODY_FILE="$RUNNER_TEMP/role_approval_request.md"
+          cat > "$BODY_FILE" <<EOF
+          ${MARKER}
+          ## PR REVIEW REQUEST — EXACT-HEAD ATLAS APPROVAL REQUIRED
+
+          **Source Issue:** #${SOURCE_ISSUE}
+          **PR:** #${PR_NUMBER}
+          **Head SHA:** \`${HEAD_SHA}\`
+          **Status:** protected component PR held in draft
+
+          ChatGPT / Atlas must inspect this exact head and either record the blocker or post the canonical \`<!-- lgfc-role-approval:v1 -->\` approval event on this Issue. Any head change invalidates the disposition.
+          EOF
+
+          COMMENT_ID="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${SOURCE_ISSUE}/comments" --paginate \
+            --jq ".[] | select(.body | contains(\"${MARKER}\")) | select(.body | contains(\"**PR:** #${PR_NUMBER}\")) | .id" \
+            | tail -n 1)"
+          if [ -n "$COMMENT_ID" ]; then
+            jq -n --rawfile body "$BODY_FILE" '{body: $body}' \
+              | gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" --input -
+          else
+            jq -n --rawfile body "$BODY_FILE" '{body: $body}' \
+              | gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${SOURCE_ISSUE}/comments" --input -
+          fi
 
       - name: Publish component integration check
         if: always() && steps.pr.outputs.skip != 'true' && steps.pr_meta.outputs.skip != 'true'
@@ -192,12 +256,11 @@ jobs:
             'Component integration eligibility: ' + (result.eligible ? 'eligible' : 'blocked'),
             'Component state: ' + process.env.COMPONENT_STATE,
             'Requires Chat review: ' + (result.requiresChatReview ? 'yes' : 'no'),
+            'Exact-head role approval: ' + (result.roleApproval?.required ? (result.roleApproval.approved ? 'present' : 'missing') : 'not required'),
           ];
           if (result.blockedReasons.length) {
             lines.push('', 'Blocked reasons:');
-            for (const reason of result.blockedReasons) {
-              lines.push('- ' + reason.code + ': ' + reason.message);
-            }
+            for (const reason of result.blockedReasons) lines.push('- ' + reason.code + ': ' + reason.message);
           }
           fs.writeFileSync('${RESULT_FILE}'.replace('.json', '_summary.txt'), lines.join('\n'));
           "
