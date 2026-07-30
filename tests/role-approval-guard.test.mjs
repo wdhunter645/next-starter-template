@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   APPROVAL_MARKER,
+  DEFAULT_AUTHORIZED_APPROVAL_ACCOUNTS,
   evaluateRoleApprovalGuard,
+  isAuthorizedApprovalAccount,
+  parseApprovalComment,
   parseSourceIssueNumber,
 } from '../scripts/ci/role_approval_guard.mjs';
 import {
@@ -10,6 +13,7 @@ import {
 } from '../scripts/ci/component_integration_role_adapter.mjs';
 
 const headSha = 'a'.repeat(40);
+const AUTHORIZED_LOGIN = DEFAULT_AUTHORIZED_APPROVAL_ACCOUNTS[0];
 
 function approvalComment(overrides = {}) {
   const values = {
@@ -17,13 +21,20 @@ function approvalComment(overrides = {}) {
     prNumber: 3001,
     headSha,
     reviewerRole: 'PR Approver / Engineering',
-    reviewerActor: 'ChatGPT / Atlas',
+    reviewerActor: 'ChatGPT',
     implementationActor: 'Claude Code',
     decision: 'APPROVED FOR INTEGRATION',
+    id: 1,
+    login: AUTHORIZED_LOGIN,
+    accountType: 'User',
+    authorAssociation: 'OWNER',
     ...overrides,
   };
 
   return {
+    id: values.id,
+    author_association: values.authorAssociation,
+    user: { login: values.login, type: values.accountType },
     body: `${APPROVAL_MARKER}\nAPPROVED FOR INTEGRATION\nSource Issue: #${values.sourceIssue}\nPR: #${values.prNumber}\nHead SHA: ${values.headSha}\nReviewer role: ${values.reviewerRole}\nReviewer actor: ${values.reviewerActor}\nImplementation actor: ${values.implementationActor}\nDecision: ${values.decision}`,
   };
 }
@@ -72,7 +83,7 @@ describe('role approval guard', () => {
     expect(result).toMatchObject({ required: false, approved: true, sourceIssue: 2622 });
   });
 
-  it('blocks a protected PR without an exact-head Atlas approval event', () => {
+  it('blocks a protected PR without an exact-head approval-evidence event', () => {
     const result = evaluateRoleApprovalGuard({
       prBody: '- **Issue:** #2622\n- Approval profile: component-auto-integration',
       changedFiles: ['.github/workflows/example.yml'],
@@ -96,7 +107,13 @@ describe('role approval guard', () => {
       implementationActor: 'Claude Code',
     });
 
-    expect(result).toMatchObject({ required: true, approved: true, sourceIssue: 2622 });
+    expect(result).toMatchObject({
+      required: true,
+      approved: true,
+      sourceIssue: 2622,
+      acceptedLogin: AUTHORIZED_LOGIN,
+      acceptedAuthorAssociation: 'OWNER',
+    });
     expect(result.blockedReasons).toEqual([]);
   });
 
@@ -120,12 +137,26 @@ describe('role approval guard', () => {
       expect(result.blockedReasons.map((reason) => reason.code)).toContain('missing-role-approval');
     }
 
-    const atlasSelfApproval = evaluateRoleApprovalGuard({
+    const selfApproval = evaluateRoleApprovalGuard({
       ...base,
-      implementationActor: 'ChatGPT / Atlas',
-      comments: [approvalComment({ implementationActor: 'ChatGPT / Atlas' })],
+      implementationActor: 'ChatGPT',
+      comments: [approvalComment({ implementationActor: 'ChatGPT' })],
     });
-    expect(atlasSelfApproval.approved).toBe(false);
+    expect(selfApproval.approved).toBe(false);
+  });
+
+  it('rejects the retired "ChatGPT / Atlas" terminology as a reviewer-actor value', () => {
+    const result = evaluateRoleApprovalGuard({
+      prBody: '- **Issue:** #2622',
+      changedFiles: ['scripts/ci/example.mjs'],
+      comments: [approvalComment({ reviewerActor: 'ChatGPT / Atlas' })],
+      prNumber: 3001,
+      headSha,
+      implementationActor: 'Claude Code',
+    });
+
+    expect(result.approved).toBe(false);
+    expect(result.blockedReasons.map((reason) => reason.code)).toContain('missing-role-approval');
   });
 
   it('fails closed when protected scope has no source Issue', () => {
@@ -140,6 +171,67 @@ describe('role approval guard', () => {
     expect(result.required).toBe(true);
     expect(result.approved).toBe(false);
     expect(result.blockedReasons.map((reason) => reason.code)).toContain('missing-source-issue');
+  });
+
+  describe('GitHub-account provenance (not authenticated separation of duties)', () => {
+    it('rejects an otherwise-perfectly-formed approval event posted by an unauthorized outside account', () => {
+      const result = evaluateRoleApprovalGuard({
+        prBody: '- **Issue:** #2622',
+        changedFiles: ['scripts/ci/example.mjs'],
+        comments: [approvalComment({ login: 'random-outside-collaborator' })],
+        prNumber: 3001,
+        headSha,
+        implementationActor: 'Claude Code',
+      });
+
+      expect(result.approved).toBe(false);
+      const reason = result.blockedReasons.find((entry) => entry.code === 'unauthorized-approval-account');
+      expect(reason).toBeTruthy();
+      expect(reason.observedLogins).toEqual(['random-outside-collaborator']);
+    });
+
+    it('rejects an approval event posted by a bot account even if the login is on the authorized list', () => {
+      const result = evaluateRoleApprovalGuard({
+        prBody: '- **Issue:** #2622',
+        changedFiles: ['scripts/ci/example.mjs'],
+        comments: [approvalComment({ login: AUTHORIZED_LOGIN, accountType: 'Bot' })],
+        prNumber: 3001,
+        headSha,
+        implementationActor: 'Claude Code',
+      });
+
+      expect(result.approved).toBe(false);
+      expect(result.blockedReasons.map((reason) => reason.code)).toContain('unauthorized-approval-account');
+    });
+
+    it('accepts a custom authorized-accounts list distinct from the default', () => {
+      const result = evaluateRoleApprovalGuard({
+        prBody: '- **Issue:** #2622',
+        changedFiles: ['scripts/ci/example.mjs'],
+        comments: [approvalComment({ login: 'a-different-authorized-account' })],
+        prNumber: 3001,
+        headSha,
+        implementationActor: 'Claude Code',
+        authorizedAccounts: ['a-different-authorized-account'],
+      });
+
+      expect(result.approved).toBe(true);
+      expect(result.acceptedLogin).toBe('a-different-authorized-account');
+    });
+
+    it('documents the shared-identity limitation: account authorization alone cannot separate ChatGPT from Claude Code', () => {
+      // Both a genuine-looking approval and a self-serving one are posted by
+      // the SAME authorized GitHub account. isAuthorizedApprovalAccount
+      // accepts both identically — GitHub-native provenance has no way to
+      // tell them apart. The only thing standing between them is the
+      // free-text self-declaration check below, which a forger controls.
+      const genuine = parseApprovalComment(approvalComment());
+      const selfServing = parseApprovalComment(approvalComment({ implementationActor: 'ChatGPT' }));
+
+      expect(isAuthorizedApprovalAccount(genuine, DEFAULT_AUTHORIZED_APPROVAL_ACCOUNTS)).toBe(true);
+      expect(isAuthorizedApprovalAccount(selfServing, DEFAULT_AUTHORIZED_APPROVAL_ACCOUNTS)).toBe(true);
+      expect(genuine.login).toBe(selfServing.login);
+    });
   });
 });
 
@@ -174,7 +266,38 @@ describe('component integration role adapter', () => {
     expect(result.eligible).toBe(true);
     expect(result.requiresChatReview).toBe(false);
     expect(result.blockedReasons).toEqual([]);
-    expect(result.roleApproval).toMatchObject({ required: true, approved: true });
+    expect(result.roleApproval).toMatchObject({ required: true, approved: true, acceptedLogin: AUTHORIZED_LOGIN });
+  });
+
+  it('keeps protected integration blocked when the approval event comes from an unauthorized account', () => {
+    const result = evaluateComponentIntegrationWithRoleApproval({
+      profile: protectedProfile(),
+      checks: greenChecks,
+      changedFiles: ['scripts/ci/example.mjs'],
+      headSha,
+      prNumber: 3001,
+      sourceIssueComments: [approvalComment({ login: 'random-outside-collaborator' })],
+      implementationActor: 'Claude Code',
+    });
+
+    expect(result.eligible).toBe(false);
+    expect(result.blockedReasons.map((reason) => reason.code)).toContain('unauthorized-approval-account');
+  });
+
+  it('honors a custom authorized-approval-accounts list passed through the adapter', () => {
+    const result = evaluateComponentIntegrationWithRoleApproval({
+      profile: protectedProfile(),
+      checks: greenChecks,
+      changedFiles: ['scripts/ci/example.mjs'],
+      headSha,
+      prNumber: 3001,
+      sourceIssueComments: [approvalComment({ login: 'a-different-authorized-account' })],
+      implementationActor: 'Claude Code',
+      authorizedApprovalAccounts: ['a-different-authorized-account'],
+    });
+
+    expect(result.eligible).toBe(true);
+    expect(result.roleApproval.acceptedLogin).toBe('a-different-authorized-account');
   });
 
   it('preserves unrelated blockers even when role approval is valid', () => {

@@ -6,7 +6,7 @@ import {
   renderIntegrationReport,
 } from './component_integration_eligibility.mjs';
 import { parseImplementationActor } from './reviewer_lifecycle_gate.mjs';
-import { evaluateRoleApprovalGuard } from './role_approval_guard.mjs';
+import { DEFAULT_AUTHORIZED_APPROVAL_ACCOUNTS, evaluateRoleApprovalGuard } from './role_approval_guard.mjs';
 
 function readJson(path, fallback) {
   if (!path || !fs.existsSync(path)) return fallback;
@@ -61,6 +61,7 @@ export function evaluateComponentIntegrationWithRoleApproval({
   prNumber = 0,
   sourceIssueComments = [],
   implementationActor = '',
+  authorizedApprovalAccounts = DEFAULT_AUTHORIZED_APPROVAL_ACCOUNTS,
 } = {}) {
   const resolvedImplementationActor = implementationActor || parseImplementationActor(profile.body || '');
   const integration = evaluateComponentIntegration({
@@ -81,6 +82,7 @@ export function evaluateComponentIntegrationWithRoleApproval({
     prNumber,
     headSha,
     implementationActor: resolvedImplementationActor,
+    authorizedAccounts: authorizedApprovalAccounts,
   });
 
   return applyRoleApprovalToIntegrationResult(integration, roleApproval);
@@ -98,6 +100,10 @@ export function runCli(env = process.env) {
   const labels = readJson(env.COMPONENT_INTEGRATION_LABELS_JSON, []);
   const sourceIssueComments = readJson(env.COMPONENT_INTEGRATION_SOURCE_ISSUE_COMMENTS_JSON, []);
   const changedFiles = readLines(env.COMPONENT_INTEGRATION_CHANGED_FILES_FILE || env.CHANGED_FILES_FILE);
+  const authorizedApprovalAccounts = readJson(
+    env.COMPONENT_INTEGRATION_ROLE_APPROVAL_AUTHORIZED_ACCOUNTS_JSON,
+    [...DEFAULT_AUTHORIZED_APPROVAL_ACCOUNTS],
+  );
 
   if (env.PR_BODY_FILE && fs.existsSync(env.PR_BODY_FILE)) {
     profile.body = fs.readFileSync(env.PR_BODY_FILE, 'utf8');
@@ -122,11 +128,16 @@ export function runCli(env = process.env) {
     implementationActor: env.COMPONENT_INTEGRATION_IMPLEMENTATION_ACTOR
       || profile.implementationActor
       || parseImplementationActor(profile.body || ''),
+    authorizedApprovalAccounts,
   });
 
   const roleLine = result.roleApproval?.required
-    ? `\n- Exact-head role approval: ${result.roleApproval.approved ? 'present' : 'missing'}`
-    : '\n- Exact-head role approval: not required';
+    ? `\n- Exact-head role approval evidence: ${
+      result.roleApproval.approved
+        ? `present (account: ${result.roleApproval.acceptedLogin || 'unknown'})`
+        : 'missing'
+    }\n- Note: this is exact-head structured approval evidence, not authenticated reviewer identity — the shared repository-owner account does not distinguish ChatGPT from other automation.`
+    : '\n- Exact-head role approval evidence: not required';
   console.log(`${renderIntegrationReport(result)}${roleLine}`);
 
   if (env.COMPONENT_INTEGRATION_RESULT_JSON) {
@@ -139,6 +150,7 @@ export function runCli(env = process.env) {
   setOutput('component_state', result.componentState, env.GITHUB_OUTPUT);
   setOutput('role_approval_required', result.roleApproval?.required || false, env.GITHUB_OUTPUT);
   setOutput('role_approval_present', result.roleApproval?.approved || false, env.GITHUB_OUTPUT);
+  setOutput('role_approval_accepted_login', result.roleApproval?.acceptedLogin || '', env.GITHUB_OUTPUT);
   return 0;
 }
 
