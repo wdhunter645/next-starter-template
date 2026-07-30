@@ -272,7 +272,13 @@ jobs:
             // Fresh changed-file list (not the plan-time snapshot) so
             // validateRenderedPrBody() checks the rendered body's Allowed
             // paths against the actual diff immediately before pulls.create.
+            // A failed or skipped compare must never be silently treated as
+            // "zero files changed" — that would let diff-scope validation
+            // trivially pass with no trustworthy diff evidence (PR #2952
+            // review finding, discussion_r3681547453). changedFilesComputeFailed
+            // signals that to buildDraftPrPlan, which fails closed on it.
             let changedFiles = [];
+            let changedFilesComputeFailed = false;
             if (headSha && baseSha) {
               try {
                 const { data: compare } = await github.rest.repos.compareCommitsWithBasehead({
@@ -283,7 +289,10 @@ jobs:
                 changedFiles = (compare.files || []).map((f) => f.filename);
               } catch {
                 changedFiles = [];
+                changedFilesComputeFailed = true;
               }
+            } else {
+              changedFilesComputeFailed = true;
             }
 
             const blockMatch = (issue.body || '').match(/<!--\s*lgfc-issue-pr-contract:v1:rev=(\d+)\s*-->/);
@@ -296,6 +305,7 @@ jobs:
               contractRev: blockMatch ? Number(blockMatch[1]) : null,
               pullRequests,
               changedFiles,
+              changedFilesComputeFailed,
             }));
 
       - name: Build draft-PR request

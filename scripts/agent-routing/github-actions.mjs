@@ -54,6 +54,15 @@ export function buildDraftPrPlan(mutation, freshState = {}) {
   if (freshState.headSha !== mutation.expectedHeadSha) return { ok: false, reason: 'stale_head_sha' };
   if (freshState.baseSha !== mutation.expectedBaseSha) return { ok: false, reason: 'stale_base_sha' };
   if (freshState.contractRev !== mutation.contractRev) return { ok: false, reason: 'stale_contract_revision' };
+  // Fail closed rather than silently defaulting to [] — an unset or failed
+  // changed-file computation must never be treated as "no files changed",
+  // since that lets diff-scope validation trivially pass with zero files to
+  // compare against (PR #2952 review findings, discussion_r3681547395 /
+  // discussion_r3681547453).
+  if (freshState.changedFilesComputeFailed === true) return { ok: false, reason: 'changed_files_compute_failed' };
+  if (!Array.isArray(freshState.changedFiles) || freshState.changedFiles.length === 0) {
+    return { ok: false, reason: 'changed_files_missing' };
+  }
 
   const existing = (freshState.pullRequests || []).find((pr) => pr.state === 'open'
     && (pr.headBranch === mutation.headBranch || pr.sourceIssue === mutation.issue));
@@ -78,12 +87,11 @@ export function buildDraftPrPlan(mutation, freshState = {}) {
     contract: { fields: mutation.contractFields || {} },
     deliveryProfile: mutation.deliveryProfile || {},
   });
-  const changedFiles = Array.isArray(freshState.changedFiles) ? freshState.changedFiles : [];
   const rendered = validateRenderedPrBody({
     body,
     baseRef: mutation.baseBranch,
     headRef: mutation.headBranch,
-    changedFiles,
+    changedFiles: freshState.changedFiles,
   });
   // Fail closed: a rendered body that cannot pass the same hygiene/
   // diff-scope/delivery-profile validation live PRs are held to must
