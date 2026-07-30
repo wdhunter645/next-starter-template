@@ -22,6 +22,15 @@ permissions:
   contents: read
   pull-requests: write
   checks: write
+  issues: write
+
+env:
+  # Accounts authorized to post an exact-head `<!-- lgfc-role-approval:v1 -->`
+  # approval-evidence event. This does not authenticate the PR Approver /
+  # Engineering role holder specifically — ChatGPT and Claude Code currently
+  # both write through this same account — it only rejects evidence posted
+  # by an outside collaborator or a bot.
+  ROLE_APPROVAL_AUTHORIZED_ACCOUNTS: wdhunter645
 
 jobs:
   component-child-integration:
@@ -33,11 +42,6 @@ jobs:
        github.event.workflow_run.conclusion != null &&
        github.event.workflow_run.event == 'pull_request')
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Resolve pull request number
         id: pr
         env:
@@ -49,7 +53,6 @@ jobs:
           elif [ "${{ github.event_name }}" = "workflow_run" ]; then
             PR_NUMBER="$(jq -r '.workflow_run.pull_requests[0].number // empty' "$GITHUB_EVENT_PATH")"
             if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
-              # Fallback: locate an open PR for the workflow head SHA targeting component/**
               HEAD_SHA="$(jq -r '.workflow_run.head_sha // empty' "$GITHUB_EVENT_PATH")"
               PR_NUMBER="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/pulls" \
                 --jq '[.[] | select(.base.ref|test("^component/")) | .number][0] // empty')"
@@ -91,7 +94,8 @@ jobs:
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          jq -r '.body' "$RUNNER_TEMP/pr.json" > "$RUNNER_TEMP/pr_body.md"
+
+          jq -r '.body // ""' "$RUNNER_TEMP/pr.json" > "$RUNNER_TEMP/pr_body.md"
           jq -r '.base.ref' "$RUNNER_TEMP/pr.json" > "$RUNNER_TEMP/base_ref.txt"
           jq -r '.head.ref' "$RUNNER_TEMP/pr.json" > "$RUNNER_TEMP/head_ref.txt"
           jq -r '.head.sha' "$RUNNER_TEMP/pr.json" > "$RUNNER_TEMP/head_sha.txt"
@@ -102,17 +106,52 @@ jobs:
             | jq -s 'add // []' > "$RUNNER_TEMP/reviews.json"
           gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/labels" --paginate \
             | jq -s 'add // []' > "$RUNNER_TEMP/labels.json"
-          # Include timestamps/ids so the evaluator can keep the latest
-          # authoritative result per required check name.
           gh api "repos/${GITHUB_REPOSITORY}/commits/$(cat "$RUNNER_TEMP/head_sha.txt")/check-runs" --paginate \
             | jq -s '[.[].check_runs[] | {name, conclusion, status, completed_at, started_at, id}]' \
             > "$RUNNER_TEMP/checks.json"
+
+          SOURCE_ISSUE="$(node --input-type=module -e "
+            import fs from 'node:fs';
+            const body = fs.readFileSync(process.argv[1], 'utf8');
+            const match = body.match(/^\\s*-?\\s*(?:\\*\\*)?Issue:(?:\\*\\*)?\\s*#(\\d+)\\b/im);
+            process.stdout.write(match?.[1] || '0');
+          " "$RUNNER_TEMP/pr_body.md")"
+          if [ "$SOURCE_ISSUE" != "0" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/${SOURCE_ISSUE}/comments" --paginate \
+              | jq -s 'add // []' > "$RUNNER_TEMP/source_issue_comments.json"
+          else
+            echo '[]' > "$RUNNER_TEMP/source_issue_comments.json"
+          fi
+
+          HEAD_REF="$(jq -r '.head.ref' "$RUNNER_TEMP/pr.json")"
+          IMPLEMENTATION_ACTOR=""
+          case "$HEAD_REF" in
+            atlas/*) IMPLEMENTATION_ACTOR="ChatGPT" ;;
+          esac
+
+          node --input-type=module -e "
+            import fs from 'node:fs';
+            fs.writeFileSync(
+              process.argv[1],
+              JSON.stringify((process.env.ROLE_APPROVAL_AUTHORIZED_ACCOUNTS || '').split(',').map((s) => s.trim()).filter(Boolean)),
+            );
+          " "$RUNNER_TEMP/role_approval_authorized_accounts.json"
+
           {
             echo "base_ref=$(jq -r '.base.ref' "$RUNNER_TEMP/pr.json")"
-            echo "head_ref=$(jq -r '.head.ref' "$RUNNER_TEMP/pr.json")"
+            echo "head_ref=${HEAD_REF}"
             echo "head_sha=$(jq -r '.head.sha' "$RUNNER_TEMP/pr.json")"
+            echo "source_issue=${SOURCE_ISSUE}"
+            echo "implementation_actor=${IMPLEMENTATION_ACTOR}"
             echo "skip=false"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout trusted component base
+        if: steps.pr.outputs.skip != 'true' && steps.pr_meta.outputs.skip != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr_meta.outputs.base_ref }}
+          fetch-depth: 0
 
       - name: Resolve component branch freshness
         id: freshness
@@ -140,15 +179,9 @@ jobs:
           COMPONENT_HEAD="${{ steps.freshness.outputs.component_head }}"
           STATUS_JSON="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${COMPONENT_HEAD}/status")"
           STATE="$(echo "$STATUS_JSON" | jq -r '.state')"
-          # Hold is never inferred from pending/absent combined status.
-          # Explicit hold labels are evaluated in the Node eligibility script.
           case "$STATE" in
-            failure|error)
-              echo "state=red" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo "state=green" >> "$GITHUB_OUTPUT"
-              ;;
+            failure|error) echo "state=red" >> "$GITHUB_OUTPUT" ;;
+            *) echo "state=green" >> "$GITHUB_OUTPUT" ;;
           esac
           echo "branch=${BASE_REF}" >> "$GITHUB_OUTPUT"
           echo "combined_status=${STATE}" >> "$GITHUB_OUTPUT"
@@ -164,11 +197,92 @@ jobs:
           COMPONENT_INTEGRATION_CHECKS_JSON: ${{ runner.temp }}/checks.json
           COMPONENT_INTEGRATION_REVIEWS_JSON: ${{ runner.temp }}/reviews.json
           COMPONENT_INTEGRATION_LABELS_JSON: ${{ runner.temp }}/labels.json
+          COMPONENT_INTEGRATION_SOURCE_ISSUE_COMMENTS_JSON: ${{ runner.temp }}/source_issue_comments.json
           COMPONENT_INTEGRATION_STATE: ${{ steps.component_state.outputs.state }}
           COMPONENT_INTEGRATION_BASE_BEHIND: ${{ steps.freshness.outputs.behind }}
           COMPONENT_INTEGRATION_HEAD_SHA: ${{ steps.pr_meta.outputs.head_sha }}
+          COMPONENT_INTEGRATION_PR_NUMBER: ${{ steps.pr.outputs.number }}
+          COMPONENT_INTEGRATION_IMPLEMENTATION_ACTOR: ${{ steps.pr_meta.outputs.implementation_actor }}
+          COMPONENT_INTEGRATION_ROLE_APPROVAL_AUTHORIZED_ACCOUNTS_JSON: ${{ runner.temp }}/role_approval_authorized_accounts.json
           COMPONENT_INTEGRATION_RESULT_JSON: ${{ runner.temp }}/component_integration_result.json
-        run: node scripts/ci/component_integration_eligibility.mjs
+        run: node scripts/ci/component_integration_role_adapter.mjs
+
+      - name: Return protected PR without approval to draft
+        if: steps.eligibility.outputs.role_approval_required == 'true' && steps.eligibility.outputs.role_approval_present != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          PR_NODE_ID="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq .node_id)"
+          gh api graphql \
+            -f query='mutation($pullRequestId: ID!) { convertPullRequestToDraft(input: {pullRequestId: $pullRequestId}) { pullRequest { isDraft } } }' \
+            -f pullRequestId="$PR_NODE_ID"
+
+      - name: Upsert exact-head PR review request
+        if: steps.eligibility.outputs.role_approval_required == 'true' && steps.eligibility.outputs.role_approval_present != 'true' && steps.pr_meta.outputs.source_issue != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_ISSUE: ${{ steps.pr_meta.outputs.source_issue }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          HEAD_SHA: ${{ steps.pr_meta.outputs.head_sha }}
+        run: |
+          MARKER="<!-- lgfc-role-approval-guard:v1 -->"
+          BODY_FILE="$RUNNER_TEMP/role_approval_request.md"
+          cat > "$BODY_FILE" <<EOF
+          ${MARKER}
+          ## PR REVIEW REQUEST — EXACT-HEAD APPROVAL-EVIDENCE REQUIRED
+
+          **Source Issue:** #${SOURCE_ISSUE}
+          **PR:** #${PR_NUMBER}
+          **Head SHA:** \`${HEAD_SHA}\`
+          **Status:** protected component PR held in draft
+
+          ChatGPT (PR Approver / Engineering) must inspect this exact head and either record the blocker or post the canonical \`<!-- lgfc-role-approval:v1 -->\` approval-evidence event on this Issue. Any head change invalidates the disposition.
+
+          Note: this control provides exact-head structured approval evidence and stale-disposition prevention. It cannot cryptographically distinguish ChatGPT from other automation writing through the shared \`wdhunter645\` repository-owner account.
+          EOF
+
+          COMMENT_ID="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${SOURCE_ISSUE}/comments" --paginate \
+            --jq ".[] | select(.body | contains(\"${MARKER}\")) | select(.body | contains(\"**PR:** #${PR_NUMBER}\")) | .id" \
+            | tail -n 1)"
+          if [ -n "$COMMENT_ID" ]; then
+            jq -n --rawfile body "$BODY_FILE" '{body: $body}' \
+              | gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" --input -
+          else
+            jq -n --rawfile body "$BODY_FILE" '{body: $body}' \
+              | gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${SOURCE_ISSUE}/comments" --input -
+          fi
+
+      - name: Upsert missing-source-issue explanation on the PR
+        if: steps.eligibility.outputs.role_approval_required == 'true' && steps.eligibility.outputs.role_approval_present != 'true' && steps.pr_meta.outputs.source_issue == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          HEAD_SHA: ${{ steps.pr_meta.outputs.head_sha }}
+        run: |
+          MARKER="<!-- lgfc-role-approval-guard-missing-source:v1 -->"
+          BODY_FILE="$RUNNER_TEMP/missing_source_explanation.md"
+          cat > "$BODY_FILE" <<EOF
+          ${MARKER}
+          ## PROTECTED PR RETURNED TO DRAFT — NO SOURCE ISSUE RESOLVED
+
+          **Head SHA:** \`${HEAD_SHA}\`
+
+          This PR touches a protected path (or declares \`Approval profile: protected-change-review\`) and therefore requires an exact-head \`<!-- lgfc-role-approval:v1 -->\` approval-evidence event on its authoritative source Issue before component auto-integration. No \`- **Issue:** #<number>\` field could be parsed from the current PR body, so no review request could be routed anywhere and the PR was returned to draft with no other visible explanation.
+
+          Add a stable \`- **Issue:** #<number>\` line identifying the authoritative source Issue, then push again so this control can route the required review request.
+          EOF
+
+          COMMENT_ID="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" --paginate \
+            --jq ".[] | select(.body | contains(\"${MARKER}\")) | .id" \
+            | tail -n 1)"
+          if [ -n "$COMMENT_ID" ]; then
+            jq -n --rawfile body "$BODY_FILE" '{body: $body}' \
+              | gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" --input -
+          else
+            jq -n --rawfile body "$BODY_FILE" '{body: $body}' \
+              | gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" --input -
+          fi
 
       - name: Publish component integration check
         if: always() && steps.pr.outputs.skip != 'true' && steps.pr_meta.outputs.skip != 'true'
@@ -193,22 +307,42 @@ jobs:
             'Component state: ' + process.env.COMPONENT_STATE,
             'Requires Chat review: ' + (result.requiresChatReview ? 'yes' : 'no'),
           ];
+          if (result.roleApproval?.required) {
+            lines.push('Exact-head role approval evidence: ' + (result.roleApproval.approved ? 'present' : 'missing'));
+            if (result.roleApproval.approved) {
+              lines.push('Approval-evidence account: ' + (result.roleApproval.acceptedLogin || 'unknown') + ' (association: ' + (result.roleApproval.acceptedAuthorAssociation || 'unknown') + ')');
+            }
+            lines.push('Note: exact-head structured approval evidence, not authenticated reviewer identity — the shared wdhunter645 account does not distinguish ChatGPT from other automation.');
+          } else {
+            lines.push('Exact-head role approval evidence: not required');
+          }
           if (result.blockedReasons.length) {
             lines.push('', 'Blocked reasons:');
-            for (const reason of result.blockedReasons) {
-              lines.push('- ' + reason.code + ': ' + reason.message);
-            }
+            for (const reason of result.blockedReasons) lines.push('- ' + reason.code + ': ' + reason.message);
           }
           fs.writeFileSync('${RESULT_FILE}'.replace('.json', '_summary.txt'), lines.join('\n'));
           "
           SUMMARY="$(cat "$RUNNER_TEMP/component_integration_result_summary.txt")"
-          gh api "repos/${GITHUB_REPOSITORY}/check-runs" \
-            -f name='Component Integration Eligibility' \
-            -f head_sha="$(cat "$RUNNER_TEMP/head_sha.txt")" \
-            -f status=completed \
-            -f conclusion="$CONCLUSION" \
-            -f output[title]='Component child auto-integration' \
-            -f output[summary]="$SUMMARY"
+          HEAD_SHA="$(cat "$RUNNER_TEMP/head_sha.txt")"
+          # Update the same check-run record for this name/head SHA rather than
+          # accumulating a new one on every re-evaluation of the same commit.
+          EXISTING_CHECK_ID="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/check-runs" --paginate \
+            | jq -s '[.[].check_runs[] | select(.name == "Component Integration Eligibility")] | sort_by(.id) | last | .id // empty')"
+          if [ -n "$EXISTING_CHECK_ID" ] && [ "$EXISTING_CHECK_ID" != "null" ]; then
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/check-runs/${EXISTING_CHECK_ID}" \
+              -f status=completed \
+              -f conclusion="$CONCLUSION" \
+              -f output[title]='Component child auto-integration' \
+              -f output[summary]="$SUMMARY"
+          else
+            gh api "repos/${GITHUB_REPOSITORY}/check-runs" \
+              -f name='Component Integration Eligibility' \
+              -f head_sha="$HEAD_SHA" \
+              -f status=completed \
+              -f conclusion="$CONCLUSION" \
+              -f output[title]='Component child auto-integration' \
+              -f output[summary]="$SUMMARY"
+          fi
 
       - name: Enable auto-merge for eligible child PRs
         if: steps.eligibility.outputs.eligible == 'true' && steps.pr.outputs.skip != 'true' && steps.pr_meta.outputs.skip != 'true'
