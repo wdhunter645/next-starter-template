@@ -8,6 +8,42 @@ import { planAction } from '../../scripts/agent-routing/action-planner.mjs';
 import { validateMutation, buildDraftPrPlan } from '../../scripts/agent-routing/github-actions.mjs';
 import { normalizeIssuePrContractEvidence, findExistingDraftPr } from '../../scripts/agent-routing/evidence-adapters/issue-pr-contract.mjs';
 import { runCreateDraftPrPlanCli, runCreateDraftPrMutationCli } from '../../scripts/agent-routing/controller.mjs';
+import { validateRenderedPrBody } from '../../scripts/ci/pr_contract.mjs';
+import { buildPrHygieneReport } from '../../scripts/ci/pr_hygiene_audit.mjs';
+
+// Shared, self-consistent Model B child contract/delivery-profile fixture
+// (field values mirror tests/fixtures/issue-pr-contract/valid-b-child.json)
+// so the rendered PR body used across these tests passes hygiene,
+// diff-scope, and delivery-profile validation on first render.
+const contractFields = {
+  primary_source_issue: 9101,
+  purpose: 'Add an example script and its unit test.',
+  intent_label: 'intent:feature',
+  pr_class: 'code',
+  allowed_paths: ['scripts/example.mjs'],
+  out_of_scope_changes_present: 'NO',
+  exception_issue: 'not-applicable',
+  change_summary: 'Adds an example script and its unit test.',
+  verification_commands: ['npm test'],
+  verification_results: 'PASS',
+  follow_up_required: 'NO',
+  follow_up_issue: 'not-applicable',
+  rollback_summary: 'Revert the PR.',
+  head_branch: 'cursor/9101-example',
+  base_branch: 'component/example',
+};
+
+const deliveryProfile = {
+  deliveryModel: 'B-child',
+  size: 'small',
+  changeMode: 'project',
+  targetEnvironment: 'component',
+  approvalProfile: 'component-auto-integration',
+  gateProfile: 'component-child',
+  rollbackProfile: 'multi-step',
+  componentBranch: 'component/example',
+  componentMaster: '#100',
+};
 
 const baseTask = {
   project: { issueNumber: 2615, lifecycle: 'active', projectBranch: 'component/issue-contract-draft-pr' },
@@ -25,7 +61,8 @@ const validValidationResult = {
   ok: true,
   rev: 1,
   errors: [],
-  fields: { head_branch: 'cursor/9101-example', base_branch: 'component/example' },
+  fields: contractFields,
+  deliveryProfile,
   liveSnapshot: {
     headSha: 'sha-head-1',
     baseSha: 'sha-base-1',
@@ -55,6 +92,8 @@ describe('normalizeIssuePrContractEvidence (#2621)', () => {
       baseSha: 'sha-base-1',
       hasDiff: true,
       changedFiles: ['scripts/example.mjs'],
+      fields: contractFields,
+      deliveryProfile,
       existingPr: null,
     });
   });
@@ -96,6 +135,8 @@ describe('planAction CREATE_DRAFT_PR (#2621)', () => {
         expectedHeadSha: 'sha-head-1',
         expectedBaseSha: 'sha-base-1',
         contractRev: 1,
+        contractFields,
+        deliveryProfile,
       },
     ]);
   });
@@ -187,6 +228,8 @@ describe('buildDraftPrPlan pre-mutation re-validation (#2621)', () => {
     expectedHeadSha: 'sha-head-1',
     expectedBaseSha: 'sha-base-1',
     contractRev: 1,
+    contractFields,
+    deliveryProfile,
   };
   const freshState = {
     issueOpen: true,
@@ -195,13 +238,64 @@ describe('buildDraftPrPlan pre-mutation re-validation (#2621)', () => {
     baseSha: 'sha-base-1',
     contractRev: 1,
     pullRequests: [],
+    changedFiles: ['scripts/example.mjs'],
   };
 
-  it('builds the draft-PR request when fresh state exactly matches the plan', () => {
+  it('builds the draft-PR request when fresh state exactly matches the plan, rendered through the canonical renderer (#2622)', () => {
     const result = buildDraftPrPlan(mutation, freshState);
     expect(result.ok).toBe(true);
-    expect(result.request).toEqual({ head: 'cursor/9101-example', base: 'component/example', draft: true, issue: 9101 });
+    expect(result.request.head).toBe('cursor/9101-example');
+    expect(result.request.base).toBe('component/example');
+    expect(result.request.draft).toBe(true);
+    expect(result.request.issue).toBe(9101);
+    expect(result.request.title).toBe('Draft: source Issue #9101');
+
+    // The rendered body must pass the exact same hygiene/diff-scope/
+    // delivery-profile validation live PRs are held to — not the
+    // hand-built two-line body #2622's Phase 3 pilot found failing.
+    const hygiene = buildPrHygieneReport({ body: result.request.body, changedFiles: freshState.changedFiles });
+    expect(hygiene.isClean).toBe(true);
+
+    const rendered = validateRenderedPrBody({
+      body: result.request.body,
+      baseRef: mutation.baseBranch,
+      headRef: mutation.headBranch,
+      changedFiles: freshState.changedFiles,
+    });
+    expect(rendered.ok).toBe(true);
+    expect(rendered.delivery.errors).toEqual([]);
+
+    for (const field of ['Delivery model', 'Gate profile', 'Component branch', 'Component master', 'Approval profile', 'Rollback profile', 'Size', 'Change mode', 'Target environment']) {
+      expect(result.request.body).toContain(`${field}:`);
+    }
+    expect(result.request.body).toContain('Allowed paths:');
+    expect(result.request.body).toContain('`scripts/example.mjs`');
+
     expect(result.commentUpdateTemplate.marker).toContain('lgfc-issue-pr-contract-status:v1:valid:rev=1');
+  });
+
+  it('fails closed and creates no PR request when the actual diff falls outside the rendered Allowed paths (#2622)', () => {
+    const result = buildDraftPrPlan(mutation, {
+      ...freshState,
+      changedFiles: [...freshState.changedFiles, 'scripts/unrelated-out-of-scope.mjs'],
+    });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('rendered_body_invalid');
+    expect(result.request).toBeUndefined();
+    expect(result.renderedBodyErrors.length).toBeGreaterThan(0);
+  });
+
+  it('fails closed and creates no PR request when the contract fields needed to render are missing (#2622)', () => {
+    const incompleteMutation = { ...mutation, contractFields: {} };
+    const result = buildDraftPrPlan(incompleteMutation, freshState);
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('rendered_body_invalid');
+    expect(result.request).toBeUndefined();
+  });
+
+  it('never authorizes a create_draft_pr request targeting main, independent of rendered-body validity', () => {
+    const mainMutation = { ...mutation, baseBranch: 'main', expectedRevision: 'x' };
+    expect(validateMutation(mainMutation, { revision: 'x' }).reason).toBe('automatic_main_merge_prohibited');
   });
 
   it('fails closed when a new commit landed on head_branch since planning', () => {
@@ -265,10 +359,12 @@ describe('CLI wiring (#2621)', () => {
       mutations: [{
         type: 'create_draft_pr', issue: 9101, headBranch: 'cursor/9101-example', baseBranch: 'component/example',
         expectedHeadSha: 'sha-head-1', expectedBaseSha: 'sha-base-1', contractRev: 1,
+        contractFields, deliveryProfile,
       }],
     }));
     fs.writeFileSync(freshStatePath, JSON.stringify({
       issueOpen: true, actorAuthorized: true, headSha: 'sha-head-1', baseSha: 'sha-base-1', contractRev: 1, pullRequests: [],
+      changedFiles: ['scripts/example.mjs'],
     }));
 
     const exitCode = runCreateDraftPrMutationCli({
@@ -281,5 +377,7 @@ describe('CLI wiring (#2621)', () => {
     const output = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
     expect(output.ok).toBe(true);
     expect(output.request.head).toBe('cursor/9101-example');
+    expect(output.request.body).toContain('Allowed paths:');
+    expect(output.request.body).toContain('`scripts/example.mjs`');
   });
 });

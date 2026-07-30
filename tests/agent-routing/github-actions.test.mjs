@@ -44,3 +44,36 @@ describe('buildDraftPrPlan (non-create_draft_pr input)', () => {
     expect(buildDraftPrPlan(null, {})).toEqual({ ok: false, reason: 'unsupported_mutation' });
   });
 });
+
+describe('buildDraftPrPlan rendered-body fail-closed behavior (#2622)', () => {
+  const mutation = {
+    type: 'create_draft_pr',
+    issue: 42,
+    headBranch: 'cursor/42-example',
+    baseBranch: 'component/example',
+    expectedHeadSha: 'sha-head',
+    expectedBaseSha: 'sha-base',
+    contractRev: 1,
+    // Deliberately omitted: contractFields, deliveryProfile — the
+    // rendered body must fail hygiene/delivery-profile validation
+    // rather than silently produce a PR request with placeholder content.
+  };
+  const freshState = {
+    issueOpen: true,
+    actorAuthorized: true,
+    headSha: 'sha-head',
+    baseSha: 'sha-base',
+    contractRev: 1,
+    pullRequests: [],
+    changedFiles: ['scripts/example.mjs'],
+  };
+
+  it('creates no PR request when the mutation carries no contract fields/delivery profile to render', () => {
+    const result = buildDraftPrPlan(mutation, freshState);
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('rendered_body_invalid');
+    expect(result.request).toBeUndefined();
+    expect(Array.isArray(result.renderedBodyErrors)).toBe(true);
+    expect(result.renderedBodyErrors.length).toBeGreaterThan(0);
+  });
+});

@@ -269,6 +269,23 @@ jobs:
             const { data: prs } = await github.rest.pulls.list({ owner: context.repo.owner, repo: context.repo.repo, state: 'open', head: `${context.repo.owner}:${mutation.headBranch}` });
             const pullRequests = prs.map((pr) => ({ state: 'open', headBranch: mutation.headBranch, sourceIssue: issueNumber, url: pr.html_url }));
 
+            // Fresh changed-file list (not the plan-time snapshot) so
+            // validateRenderedPrBody() checks the rendered body's Allowed
+            // paths against the actual diff immediately before pulls.create.
+            let changedFiles = [];
+            if (headSha && baseSha) {
+              try {
+                const { data: compare } = await github.rest.repos.compareCommitsWithBasehead({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  basehead: `${mutation.baseBranch}...${mutation.headBranch}`,
+                });
+                changedFiles = (compare.files || []).map((f) => f.filename);
+              } catch {
+                changedFiles = [];
+              }
+            }
+
             const blockMatch = (issue.body || '').match(/<!--\s*lgfc-issue-pr-contract:v1:rev=(\d+)\s*-->/);
             const authorizedActors = (process.env.AUTHORIZED_ACTORS || '').split(',').map((s) => s.trim()).filter(Boolean);
             fs.writeFileSync(process.env.RUNNER_TEMP + '/fresh_state.json', JSON.stringify({
@@ -278,6 +295,7 @@ jobs:
               baseSha,
               contractRev: blockMatch ? Number(blockMatch[1]) : null,
               pullRequests,
+              changedFiles,
             }));
 
       - name: Build draft-PR request
@@ -304,17 +322,20 @@ jobs:
 
             if (!output.ok) {
               console.log(`create-draft-pr: not proceeding — ${output.reason}. No PR created.`);
+              if (output.renderedBodyErrors) {
+                console.log(`create-draft-pr: rendered-body validation errors: ${JSON.stringify(output.renderedBodyErrors)}`);
+              }
               return;
             }
 
             const { data: pr } = await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `Draft: source Issue #${output.request.issue}`,
+              title: output.request.title,
               head: output.request.head,
               base: output.request.base,
               draft: true,
-              body: `- **Issue:** #${output.request.issue}\n\nOpened by the #2294 CREATE_DRAFT_PR action (#2621) from a clean, current advisory contract validation.`,
+              body: output.request.body,
             });
 
             const comments = await github.paginate(github.rest.issues.listComments, {

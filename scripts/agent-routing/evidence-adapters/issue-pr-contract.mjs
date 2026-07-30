@@ -26,6 +26,8 @@ export function normalizeIssuePrContractEvidence(validationResult, existingPr = 
       baseSha: null,
       hasDiff: null,
       changedFiles: [],
+      fields: null,
+      deliveryProfile: null,
       existingPr,
     };
   }
@@ -44,6 +46,11 @@ export function normalizeIssuePrContractEvidence(validationResult, existingPr = 
     baseSha: snapshot.baseSha ?? null,
     hasDiff: snapshot.hasDiff ?? null,
     changedFiles: Array.isArray(snapshot.changedFiles) ? snapshot.changedFiles : [],
+    // Carried through unchanged so the CREATE_DRAFT_PR mutation can render
+    // the canonical PR body (scripts/ci/pr_body_renderer.mjs) without
+    // re-deriving contract/delivery-profile semantics a second time.
+    fields: validationResult.fields ?? null,
+    deliveryProfile: validationResult.deliveryProfile ?? null,
     existingPr,
   };
 }

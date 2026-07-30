@@ -56,6 +56,10 @@ function planCreateDraftPr(snapshot, mode) {
       expectedHeadSha: contract.headSha,
       expectedBaseSha: contract.baseSha,
       contractRev: contract.rev,
+      // Carried through so buildDraftPrPlan can render the canonical PR
+      // body (scripts/ci/pr_body_renderer.mjs) instead of a hand-built one.
+      contractFields: contract.fields || null,
+      deliveryProfile: contract.deliveryProfile || null,
     },
   ]);
 }
