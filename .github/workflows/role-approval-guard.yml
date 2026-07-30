@@ -1,0 +1,169 @@
+name: GATE — Role Approval Presence
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - 'component/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: write
+
+jobs:
+  role-approval-guard:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.state == 'open'
+    steps:
+      - name: Checkout trusted base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 1
+
+      - name: Collect PR and source-Issue evidence
+        id: evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH" > "$RUNNER_TEMP/pr_body.md"
+          jq -r '.pull_request.head.sha' "$GITHUB_EVENT_PATH" > "$RUNNER_TEMP/head_sha.txt"
+          jq -r '.pull_request.draft' "$GITHUB_EVENT_PATH" > "$RUNNER_TEMP/draft.txt"
+
+          gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files" --paginate \
+            | jq -r '.[].filename' > "$RUNNER_TEMP/changed_files.txt"
+
+          SOURCE_ISSUE="$(node --input-type=module -e "
+            import fs from 'node:fs';
+            import { parseSourceIssueNumber } from './scripts/ci/role_approval_guard.mjs';
+            process.stdout.write(String(parseSourceIssueNumber(fs.readFileSync(process.argv[1], 'utf8'))));
+          " "$RUNNER_TEMP/pr_body.md")"
+
+          if [ -n "$SOURCE_ISSUE" ] && [ "$SOURCE_ISSUE" != "0" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/${SOURCE_ISSUE}/comments" --paginate \
+              | jq -s 'add // []' > "$RUNNER_TEMP/source_issue_comments.json"
+          else
+            echo '[]' > "$RUNNER_TEMP/source_issue_comments.json"
+          fi
+
+          {
+            echo "source_issue=${SOURCE_ISSUE:-0}"
+            echo "head_sha=$(cat "$RUNNER_TEMP/head_sha.txt")"
+            echo "draft=$(cat "$RUNNER_TEMP/draft.txt")"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Evaluate exact-head role approval
+        id: guard
+        continue-on-error: true
+        env:
+          PR_BODY_FILE: ${{ runner.temp }}/pr_body.md
+          CHANGED_FILES_FILE: ${{ runner.temp }}/changed_files.txt
+          SOURCE_ISSUE_COMMENTS_JSON: ${{ runner.temp }}/source_issue_comments.json
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ steps.evidence.outputs.head_sha }}
+          ROLE_APPROVAL_RESULT_JSON: ${{ runner.temp }}/role_approval_result.json
+        run: node scripts/ci/role_approval_guard.mjs
+
+      - name: Publish role approval check
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ steps.evidence.outputs.head_sha }}
+          REQUIRED: ${{ steps.guard.outputs.required }}
+          APPROVED: ${{ steps.guard.outputs.approved }}
+        run: |
+          CONCLUSION="success"
+          TITLE="Role approval not required"
+          if [ "$REQUIRED" = "true" ] && [ "$APPROVED" = "true" ]; then
+            TITLE="Exact-head Atlas approval present"
+          elif [ "$REQUIRED" = "true" ]; then
+            CONCLUSION="failure"
+            TITLE="Exact-head Atlas approval missing"
+          fi
+
+          SUMMARY="$(node --input-type=module -e "
+            import fs from 'node:fs';
+            const path = process.argv[1];
+            const result = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, 'utf8')) : { blockedReasons: [] };
+            const lines = [
+              'Role approval required: ' + (result.required ? 'yes' : 'no'),
+              'Role approval present: ' + (result.approved ? 'yes' : 'no'),
+              'Source Issue: ' + (result.sourceIssue ? '#' + result.sourceIssue : 'missing'),
+            ];
+            if (result.matchingCommentId) lines.push('Approval comment ID: ' + result.matchingCommentId);
+            if (result.blockedReasons?.length) {
+              lines.push('', 'Blocked reasons:');
+              for (const reason of result.blockedReasons) lines.push('- ' + reason.code + ': ' + reason.message);
+            }
+            process.stdout.write(lines.join('\n'));
+          " "$RUNNER_TEMP/role_approval_result.json")"
+
+          gh api "repos/${GITHUB_REPOSITORY}/check-runs" \
+            -f name='GATE — Role Approval Presence' \
+            -f head_sha="$HEAD_SHA" \
+            -f status=completed \
+            -f conclusion="$CONCLUSION" \
+            -f output[title]="$TITLE" \
+            -f output[summary]="$SUMMARY"
+
+      - name: Return unapproved protected PR to draft
+        if: steps.guard.outputs.required == 'true' && steps.guard.outputs.approved != 'true' && steps.evidence.outputs.draft != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          PR_NODE_ID="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq .node_id)"
+          gh api graphql \
+            -f query='mutation($pullRequestId: ID!) { convertPullRequestToDraft(input: {pullRequestId: $pullRequestId}) { pullRequest { isDraft } } }' \
+            -f pullRequestId="$PR_NODE_ID"
+
+      - name: Upsert source-Issue review request
+        if: steps.guard.outputs.required == 'true' && steps.guard.outputs.approved != 'true' && steps.evidence.outputs.source_issue != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_ISSUE: ${{ steps.evidence.outputs.source_issue }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ steps.evidence.outputs.head_sha }}
+        run: |
+          MARKER="<!-- lgfc-role-approval-guard:v1 -->"
+          BODY_FILE="$RUNNER_TEMP/guard_comment.md"
+          cat > "$BODY_FILE" <<EOF
+          ${MARKER}
+          ## PR REVIEW REQUEST — EXACT-HEAD ATLAS APPROVAL REQUIRED
+
+          **Source Issue:** #${SOURCE_ISSUE}
+          **PR:** #${PR_NUMBER}
+          **Head SHA:** \`${HEAD_SHA}\`
+          **Status:** protected component PR held in draft
+
+          ChatGPT / Atlas must inspect the current head and either record the exact blocker or post this exact-head approval event on this Issue:
+
+          \`\`\`text
+          <!-- lgfc-role-approval:v1 -->
+          APPROVED FOR INTEGRATION
+          Source Issue: #${SOURCE_ISSUE}
+          PR: #${PR_NUMBER}
+          Head SHA: ${HEAD_SHA}
+          Reviewer role: PR Approver / Engineering
+          Reviewer actor: ChatGPT / Atlas
+          Implementation actor: Claude Code
+          Decision: APPROVED FOR INTEGRATION
+          \`\`\`
+
+          Any head change invalidates the approval. After a valid approval event exists, Implementation / Operations may mark the unchanged PR ready again.
+          EOF
+
+          COMMENT_ID="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${SOURCE_ISSUE}/comments" --paginate \
+            --jq ".[] | select(.body | contains(\"${MARKER}\")) | select(.body | contains(\"**PR:** #${PR_NUMBER}\")) | .id" \
+            | tail -n 1)"
+
+          if [ -n "$COMMENT_ID" ]; then
+            jq -n --rawfile body "$BODY_FILE" '{body: $body}' \
+              | gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" --input -
+          else
+            jq -n --rawfile body "$BODY_FILE" '{body: $body}' \
+              | gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${SOURCE_ISSUE}/comments" --input -
+          fi
