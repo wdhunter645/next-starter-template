@@ -5,8 +5,8 @@ Authority Level: Domain Policy
 Owns: Platform architecture ownership, environment classification, preview/component/production boundaries, credentials and external-service decision rules, deployment/migration/rollback platform boundaries, and platform escalation
 Does Not Own: Delivery Model A/B selection, agent approval routing, CI gate implementation, product/UX behavior, or day-to-day operator checklists
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2688, #2686
-Last Reviewed: 2026-07-21
+Related Issues: #2688, #2686, #2622
+Last Reviewed: 2026-07-31
 ---
 
 # Platform and Environment
@@ -24,7 +24,7 @@ Delivery model selection remains in `docs/governance/PMO-PORTFOLIO.md` and `docs
 | Role | Actor | Owns in this domain |
 | --- | --- | --- |
 | **Product Authority** | Bill | Platform go/no-go that changes product risk; credentials, cost, vendor, or business authorization; final judgment when isolation or hosting model is material |
-| **PMO / Engineering** | ChatGPT | Platform documentation package authorship; environment classification completeness; primary PR review for platform/environment policy and protected platform changes |
+| **PMO / Engineering** | ChatGPT or Claude Code | Platform documentation package authorship; environment classification completeness; primary PR review for platform/environment policy and protected platform changes |
 | **Implementation / Operations** | Cursor | Scoped implementation of approved platform docs and allowlisted platform work; no self-approval of platform authority |
 | **PR Approver / Engineering** | ChatGPT (Bill alternate) | Approval and merge of platform/environment PRs per delivery profile; not a substitute for Product Authority on credentials, cost, or material isolation decisions |
 | **Supporting platform references** | `docs/reference/platform/**` | Resource inventories, isolation classifications, and operational platform facts only |

@@ -5,8 +5,8 @@ Authority Level: Operational
 Owns: Operator procedure when a merged PR still carries failed required pre-merge checks, including verification of automatic remediation and manual fallback when automation does not run
 Does Not Own: Merge authorization, branch protection policy, workflow YAML implementation, or gate definition changes
 Canonical Reference: /docs/reference/ci/post-merge-validation-surface.md
-Related Issues: #2376, #2374, #2380, #2373
-Last Reviewed: 2026-07-08
+Related Issues: #2376, #2374, #2380, #2373, #2622
+Last Reviewed: 2026-07-31
 ---
 
 # Merged PR With Failed Pre-Gate — Operator Follow-Up
@@ -44,7 +44,7 @@ Canonical example (Phase 0 launch, 2026-07-08):
 | Role | Owns |
 | --- | --- |
 | Bill | Final merge authorization; deciding whether merge proceeds with a failed required check |
-| ChatGPT | Governance review, remediation routing, merge-readiness synthesis, authorized issue/PR comments |
+| ChatGPT or Claude Code | Governance review, remediation routing, merge-readiness synthesis, authorized issue/PR comments |
 | Cursor | Scoped implementation or docs PRs when a source issue authorizes them; must not infer merge exceptions from chat |
 | Post-Merge Detection | Validates merged state and triggers remediation issue creation or update when validation fails |
 

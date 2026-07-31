@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   APPROVAL_MARKER,
+  AUTHORIZED_REVIEWER_ACTORS,
   DEFAULT_AUTHORIZED_APPROVAL_ACCOUNTS,
   evaluateRoleApprovalGuard,
   isAuthorizedApprovalAccount,
@@ -117,7 +118,7 @@ describe('role approval guard', () => {
     expect(result.blockedReasons).toEqual([]);
   });
 
-  it('rejects stale-head, wrong-PR, wrong-role, wrong-actor, and self-approval events', () => {
+  it('rejects stale-head, wrong-PR, wrong-role, and an actor not on the authorized-reviewer list', () => {
     const base = {
       prBody: '- **Issue:** #2622',
       changedFiles: ['scripts/ci/example.mjs'],
@@ -130,19 +131,45 @@ describe('role approval guard', () => {
       approvalComment({ headSha: 'b'.repeat(40) }),
       approvalComment({ prNumber: 3002 }),
       approvalComment({ reviewerRole: 'Implementation / Operations' }),
-      approvalComment({ reviewerActor: 'Claude Code' }),
+      approvalComment({ reviewerActor: 'Codex' }),
     ]) {
       const result = evaluateRoleApprovalGuard({ ...base, comments: [comment] });
       expect(result.approved).toBe(false);
       expect(result.blockedReasons.map((reason) => reason.code)).toContain('missing-role-approval');
     }
+  });
 
-    const selfApproval = evaluateRoleApprovalGuard({
-      ...base,
-      implementationActor: 'ChatGPT',
-      comments: [approvalComment({ implementationActor: 'ChatGPT' })],
-    });
-    expect(selfApproval.approved).toBe(false);
+  it('rejects self-approval for either co-holder of PR Approver / Engineering', () => {
+    for (const actor of AUTHORIZED_REVIEWER_ACTORS) {
+      const selfApproval = evaluateRoleApprovalGuard({
+        prBody: '- **Issue:** #2622',
+        changedFiles: ['scripts/ci/example.mjs'],
+        prNumber: 3001,
+        headSha,
+        implementationActor: actor,
+        comments: [approvalComment({ reviewerActor: actor, implementationActor: actor })],
+      });
+      expect(selfApproval.approved).toBe(false);
+    }
+  });
+
+  // docs/governance/AGENT-TEAM.md: PR Approver / Engineering is co-held by
+  // ChatGPT and Claude Code — either may post the approval-evidence event,
+  // as long as the reviewer and implementer are not the same actor.
+  it('accepts an approval event from either co-holder of PR Approver / Engineering', () => {
+    for (const actor of AUTHORIZED_REVIEWER_ACTORS) {
+      const result = evaluateRoleApprovalGuard({
+        prBody: '- **Issue:** #2622',
+        changedFiles: ['scripts/ci/example.mjs'],
+        comments: [approvalComment({ reviewerActor: actor, implementationActor: 'Cursor Local' })],
+        prNumber: 3001,
+        headSha,
+        implementationActor: 'Cursor Local',
+      });
+
+      expect(result.approved).toBe(true);
+      expect(result.blockedReasons).toEqual([]);
+    }
   });
 
   it('rejects the retired "ChatGPT / Atlas" terminology as a reviewer-actor value', () => {

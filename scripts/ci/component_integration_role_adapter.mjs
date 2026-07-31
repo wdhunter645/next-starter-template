@@ -136,7 +136,7 @@ export function runCli(env = process.env) {
       result.roleApproval.approved
         ? `present (account: ${result.roleApproval.acceptedLogin || 'unknown'})`
         : 'missing'
-    }\n- Note: this is exact-head structured approval evidence, not authenticated reviewer identity — the shared repository-owner account does not distinguish ChatGPT from other automation.`
+    }\n- Note: this is exact-head structured approval evidence, not authenticated reviewer identity — the shared repository-owner account does not distinguish ChatGPT or Claude Code (both hold PR Approver / Engineering) from other automation.`
     : '\n- Exact-head role approval evidence: not required';
   console.log(`${renderIntegrationReport(result)}${roleLine}`);
 
