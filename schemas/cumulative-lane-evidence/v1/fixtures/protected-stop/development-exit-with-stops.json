@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "lgfc-cumulative-evidence:v1",
+  "idempotencyKey": "development-exit-protected-stop-001",
+  "sourceIssue": 2882,
+  "workUnitId": "2678-001",
+  "lane": "development",
+  "transition": "exit",
+  "candidateSha": null,
+  "actorRole": "implementation_operations",
+  "actor": "Cursor Local",
+  "timestamp": "2026-07-31T15:20:00.000Z",
+  "result": "blocked",
+  "evidenceRefs": [
+    { "kind": "issue", "uri": "https://github.com/wdhunter645/next-starter-template/issues/2882" }
+  ],
+  "supersedes": null,
+  "protectedStops": ["scopeOrAllowlistConflict", "blockingReviewThreads"],
+  "nextExpectedTransition": "hold",
+  "summary": "Protected stops must fail-closed on Development exit.",
+  "laneFields": {
+    "sourceIssue": 2882,
+    "objective": "Define cumulative evidence schema and lane requirements",
+    "allowlist": ["docs/reference/operations/cumulative-lane-evidence-contract.md"],
+    "implementationSummary": "Exit attempted while protected stops active",
+    "verification": { "result": "PASS" },
+    "reviewDispositions": "unresolved threads",
+    "limitationsAndRollback": "stop and escalate",
+    "componentCandidate": "component/cumulative-lane-evidence"
+  }
+}

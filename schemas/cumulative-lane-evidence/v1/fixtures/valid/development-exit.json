@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "lgfc-cumulative-evidence:v1",
+  "idempotencyKey": "development-exit-2678-demo-001",
+  "sourceIssue": 2882,
+  "workUnitId": "2678-001",
+  "lane": "development",
+  "transition": "exit",
+  "candidateSha": null,
+  "actorRole": "pr_approver_engineering",
+  "actor": "Claude Code",
+  "timestamp": "2026-07-31T15:00:00.000Z",
+  "result": "pass",
+  "evidenceRefs": [
+    { "kind": "pr", "uri": "https://github.com/wdhunter645/next-starter-template/pull/0" },
+    { "kind": "check_run", "uri": "quality" }
+  ],
+  "supersedes": null,
+  "protectedStops": [],
+  "nextExpectedTransition": "enter",
+  "summary": "Development candidate integrated; ready for Promotion Candidate qualification.",
+  "laneFields": {
+    "sourceIssue": 2882,
+    "objective": "Define cumulative evidence schema and lane requirements",
+    "allowlist": [
+      "docs/reference/operations/cumulative-lane-evidence-contract.md",
+      "schemas/cumulative-lane-evidence/v1/**",
+      "scripts/cumulative-lane-evidence/**",
+      "tests/cumulative-lane-evidence/**"
+    ],
+    "implementationSummary": "Schema, lane matrix, fixtures, and validator tests.",
+    "verification": { "commands": ["npx vitest run tests/cumulative-lane-evidence"], "result": "PASS" },
+    "reviewDispositions": "Independent Engineering review required; builder does not self-approve.",
+    "limitationsAndRollback": "Schema-only; revert component PR; no Production state.",
+    "componentCandidate": "component/cumulative-lane-evidence"
+  }
+}

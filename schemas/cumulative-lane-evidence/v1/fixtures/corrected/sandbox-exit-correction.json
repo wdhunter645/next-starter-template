@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "lgfc-cumulative-evidence:v1",
+  "idempotencyKey": "sandbox-exit-corrected-001",
+  "sourceIssue": 2882,
+  "workUnitId": "2678-001",
+  "lane": "sandbox",
+  "transition": "correct",
+  "candidateSha": null,
+  "actorRole": "implementation_operations",
+  "actor": "Cursor Local",
+  "timestamp": "2026-07-31T14:10:00.000Z",
+  "result": "pass",
+  "evidenceRefs": [
+    {
+      "kind": "document",
+      "uri": "docs/reference/operations/cumulative-lane-evidence-contract.md"
+    }
+  ],
+  "supersedes": "sandbox-exit-2678-demo-001",
+  "protectedStops": [],
+  "nextExpectedTransition": "enter",
+  "summary": "Corrected Sandbox disposition from retain_as_evidence to adopt_to_development.",
+  "laneFields": {
+    "hypothesis": "Append-only evidence events can encode Sandbox exit without Production path.",
+    "isolationBoundary": "component/cumulative-lane-evidence only; no main mutation",
+    "observedResult": "Schema and fixtures validate; no workflow change.",
+    "disposition": "adopt_to_development",
+    "carriedRisks": ["writer/adapters deferred to #2883"]
+  }
+}

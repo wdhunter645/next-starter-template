@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "lgfc-cumulative-evidence:v1",
+  "idempotencyKey": "production-closeout-2678-demo-001",
+  "sourceIssue": 2882,
+  "workUnitId": "2678-001",
+  "lane": "production",
+  "transition": "closeout",
+  "candidateSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "actorRole": "administration_communications",
+  "actor": "Deterministic CI",
+  "timestamp": "2026-07-31T17:00:00.000Z",
+  "result": "pass",
+  "evidenceRefs": [
+    { "kind": "deployment", "uri": "production" },
+    { "kind": "issue", "uri": "https://github.com/wdhunter645/next-starter-template/issues/2882" }
+  ],
+  "supersedes": null,
+  "protectedStops": [],
+  "nextExpectedTransition": null,
+  "summary": "Production closeout complete with full cumulative record.",
+  "laneFields": {
+    "approvedCandidateSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "mergeOrDeployEvidence": { "mergeSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+    "environmentChangeRecord": "none",
+    "liveVerification": "PASS",
+    "incidentRollbackStatus": "none",
+    "finalRisksAndFollowUps": [],
+    "reconciliation": {
+      "sourceIssue": 2882,
+      "parentProject": 2678,
+      "release": "cumulative-lane-evidence-v1"
+    }
+  }
+}

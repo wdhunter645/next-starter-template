@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "lgfc-cumulative-evidence:v1",
+  "idempotencyKey": "sandbox-exit-2678-demo-001",
+  "sourceIssue": 2882,
+  "workUnitId": "2678-001",
+  "lane": "sandbox",
+  "transition": "exit",
+  "candidateSha": null,
+  "actorRole": "implementation_operations",
+  "actor": "Cursor Local",
+  "timestamp": "2026-07-31T14:01:00.000Z",
+  "result": "pass",
+  "evidenceRefs": [
+    {
+      "kind": "document",
+      "uri": "docs/reference/operations/cumulative-lane-evidence-contract.md"
+    }
+  ],
+  "supersedes": null,
+  "protectedStops": [],
+  "nextExpectedTransition": "enter",
+  "summary": "Duplicate of sandbox-exit-2678-demo-001 — must be suppressed.",
+  "laneFields": {
+    "hypothesis": "Duplicate suppression works by idempotencyKey.",
+    "isolationBoundary": "component/cumulative-lane-evidence only",
+    "observedResult": "Identical key as prior valid event",
+    "disposition": "adopt_to_development",
+    "carriedRisks": []
+  }
+}
