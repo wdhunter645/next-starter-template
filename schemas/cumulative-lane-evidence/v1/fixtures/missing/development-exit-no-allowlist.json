@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "lgfc-cumulative-evidence:v1",
+  "idempotencyKey": "development-exit-missing-allowlist",
+  "sourceIssue": 2882,
+  "workUnitId": "2678-001",
+  "lane": "development",
+  "transition": "exit",
+  "candidateSha": null,
+  "actorRole": "implementation_operations",
+  "actor": "Cursor Local",
+  "timestamp": "2026-07-31T15:05:00.000Z",
+  "result": "fail",
+  "evidenceRefs": [],
+  "supersedes": null,
+  "protectedStops": [],
+  "nextExpectedTransition": null,
+  "summary": "Missing allowlist must fail matrix validation on Development exit.",
+  "laneFields": {
+    "sourceIssue": 2882,
+    "objective": "Define cumulative evidence schema and lane requirements",
+    "implementationSummary": "Incomplete exit package",
+    "verification": { "result": "NOT RUN" },
+    "reviewDispositions": "none",
+    "limitationsAndRollback": "n/a",
+    "componentCandidate": "component/cumulative-lane-evidence"
+  }
+}
