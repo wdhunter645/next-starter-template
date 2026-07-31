@@ -6,7 +6,7 @@ Owns: Canonical lane, role, promotion-profile, transition, communication, runner
 Does Not Own: Current team-member assignments, workflow implementation details, repository settings, or production credentials
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
 Related Issues: #2640, #2641, #2639, #2622
-Last Reviewed: 2026-07-30
+Last Reviewed: 2026-07-31
 ---
 
 # Operating Lanes and Promotion Profiles
@@ -151,6 +151,18 @@ The minimum canonical vocabulary is:
 - `CLOSEOUT`
 
 Issues and PRs carry durable authority and evidence. Labels carry current machine-readable routing/state. Check runs carry deterministic evidence. External notifications accelerate attention but do not become authority unless written back to GitHub.
+
+### Agent-mention discipline
+
+A GitHub `@`-mention (for example `@claude`) is a notification hint, not authority and not a guaranteed dispatch. The GitHub App installation it depends on is scoped by event type and can be reconfigured independently of this repository, and a human may always choose to answer a mention through a different surface (for example, pasting the comment into a chat interface) instead of letting installed automation act on it. Neither condition is visible from inside the repository, so a mention alone must never be read as proof that the intended role received or acted on the event.
+
+Every communication event above that is meant to reach a specific execution role must say so in plain text, independent of any mention, using the existing `Target role / lane:` field or the shorter form:
+
+```text
+Target: <role> — <agent/actor> @<mention>
+```
+
+Absence of a durable response (a matching `RESUME`, `IMPLEMENTATION HANDOFF`, `PROBLEM FOUND`, etc.) after a reasonable interval is evidence the mention did not reach its intended target — escalate through Administration & Communications rather than re-sending the same mention unchanged.
 
 ## 7. Problem-adjustment ownership
 
