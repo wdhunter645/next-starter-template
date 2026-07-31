@@ -61,33 +61,37 @@ jobs:
           fi
           export WATCH_RC
           export RESULT_FILE
-          python3 - <<'PY'
-import json
-import os
-import sys
-from pathlib import Path
-
-raw = Path(os.environ["RESULT_FILE"]).read_text().strip()
-rc = int(os.environ.get("WATCH_RC", "1"))
-if not raw:
-    print("classification=failed_empty_result", file=sys.stderr)
-    sys.exit(1)
-try:
-    data = json.loads(raw)
-except json.JSONDecodeError as exc:
-    print(f"classification=failed_invalid_json:{exc}", file=sys.stderr)
-    sys.exit(1)
-classification = str(data.get("classification") or "unknown")
-print("classification=" + classification)
-if classification in ("healthy", "healthy_quiet") and rc != 0:
-    print("non-zero exit cannot be classified healthy", file=sys.stderr)
-    sys.exit(1)
-if rc != 0 and classification not in (
-    "rebuild_required",
-    "rebuild_deferred",
-    "manual_review_required",
-    "failed",
-):
-    print(f"unexpected classification with non-zero exit: {classification}", file=sys.stderr)
-    sys.exit(1)
-PY
+          # Inline node (not a Python heredoc): JS is indentation-insensitive,
+          # so the validator can live inside this YAML block scalar safely.
+          node -e '
+            const fs = require("fs");
+            const raw = fs.readFileSync(process.env.RESULT_FILE, "utf8").trim();
+            const rc = parseInt(process.env.WATCH_RC || "1", 10);
+            if (!raw) {
+              console.error("classification=failed_empty_result");
+              process.exit(1);
+            }
+            let data;
+            try {
+              data = JSON.parse(raw);
+            } catch (err) {
+              console.error("classification=failed_invalid_json:" + err.message);
+              process.exit(1);
+            }
+            const classification = String(data.classification || "unknown");
+            console.log("classification=" + classification);
+            if (["healthy", "healthy_quiet"].includes(classification) && rc !== 0) {
+              console.error("non-zero exit cannot be classified healthy");
+              process.exit(1);
+            }
+            const nonHealthyAllowed = [
+              "rebuild_required",
+              "rebuild_deferred",
+              "manual_review_required",
+              "failed",
+            ];
+            if (rc !== 0 && !nonHealthyAllowed.includes(classification)) {
+              console.error("unexpected classification with non-zero exit: " + classification);
+              process.exit(1);
+            }
+          '
