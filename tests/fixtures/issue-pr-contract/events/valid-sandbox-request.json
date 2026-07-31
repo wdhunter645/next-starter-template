@@ -1,0 +1,11 @@
+{
+  "issueNumber": 9102,
+  "issueState": "open",
+  "triggerActor": "wdhunter645",
+  "authorizedActors": ["wdhunter645"],
+  "headBranch": "cursor/9102-example",
+  "baseBranch": "sandbox/example",
+  "changedFiles": ["docs/ops/reports/example.md"],
+  "issueBody": "## PMO intake (required before launch)\n\n```text\nSize: small\nDelivery model: B-child\nChange mode: project\nTarget environment: component\nApproval profile: component-auto-integration\nGate profile: component-child\nRollback profile: multi-step\nComponent branch: sandbox/example\nComponent master: #100\nPromotion PR: not-applicable\n```\n\n## Scope\n\n### Allowed paths\n\n- `docs/ops/reports/example.md`\n\n<!-- lgfc-issue-pr-contract:v1:rev=1 -->\npurpose: Live exercise of the Sandbox admit path.\nintent_label: intent:docs\npr_class: docs-governance\nallowed_paths:\n- docs/ops/reports/example.md\nout_of_scope_changes_present: NO\nexception_issue: not-applicable\nchange_summary: Adds a trivial self-documenting evidence file.\nverification_commands:\n- n/a\nverification_results: PASS\nfollow_up_required: NO\nfollow_up_issue: not-applicable\nrollback_summary: Revert the PR.\nhead_branch: cursor/9102-example\nbase_branch: sandbox/example\n<!-- /lgfc-issue-pr-contract:v1 -->\n",
+  "comments": []
+}

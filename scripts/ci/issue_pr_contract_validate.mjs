@@ -17,6 +17,7 @@ import fs from 'node:fs';
 import { findContractBlocks, selectIssuePrContract, validateIssuePrContract } from './issue_pr_contract.mjs';
 import { CONTRACT_ERROR_CODES, contractError } from './pr_contract.mjs';
 import { classifyDeliveryProfile } from './delivery_profile.mjs';
+import { isComponentOrSandboxRef } from './branch_ref_classification.mjs';
 
 const VERSIONED_BLOCK_PATTERN = /<!--\s*lgfc-issue-pr-contract:v(\d+):rev=(\d+)\s*-->/g;
 const SUPPORTED_MARKER_VERSION = 1;
@@ -55,8 +56,15 @@ export function findVersionedContractMarkers(body = '') {
   return markers;
 }
 
-function isComponentOrMainRef(ref = '') {
-  return ref === 'main' || /^component\/[^/].*/.test(String(ref || ''));
+// #2622 progressive non-production admission: a contract's base_branch may
+// also be an authorized `sandbox/*` branch, not only `component/**` or
+// `main`. `isComponentOrSandboxRef` is the shared classification in
+// branch_ref_classification.mjs, also reused by delivery_profile.mjs — this
+// syntactic check does not itself decide Sandbox-tier eligibility (the
+// `admit` planner's own preconditions do that); it only stops rejecting a
+// syntactically valid Sandbox base as malformed.
+function isAuthorizedContractBaseRef(ref = '') {
+  return ref === 'main' || isComponentOrSandboxRef(ref);
 }
 
 /**
@@ -76,8 +84,8 @@ export function validateBaseHeadSyntax({ headBranch = '', baseBranch = '' } = {}
       baseBranch,
     }));
   }
-  if (!isComponentOrMainRef(baseBranch)) {
-    errors.push(contractError(VALIDATE_ERROR_CODES.BASE_HEAD_INVALID, 'base_branch must be component/** or main.', {
+  if (!isAuthorizedContractBaseRef(baseBranch)) {
+    errors.push(contractError(VALIDATE_ERROR_CODES.BASE_HEAD_INVALID, 'base_branch must be component/**, sandbox/**, or main.', {
       baseBranch,
     }));
   }

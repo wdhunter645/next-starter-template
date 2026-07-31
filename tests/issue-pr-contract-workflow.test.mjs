@@ -62,6 +62,24 @@ describe('evaluateIssuePrContractRequest (#2620)', () => {
     expect(result.fields.head_branch).toBe(event.headBranch);
   });
 
+  // #2622: reproduces pilot Issue #2958's exact shape (sandbox/* base_branch)
+  // against the real evaluator, proving the complete contract now reaches
+  // the `admit` planner as `ok: true` instead of `contract_invalid` — the
+  // defect run 30594316244 hit live.
+  it('passes a complete, authorized, in-scope request targeting a sandbox/* base branch', () => {
+    const event = readEvent('valid-sandbox-request.json');
+    const result = evaluateIssuePrContractRequest({
+      issue: toIssue(event),
+      comments: event.comments,
+      authorizedActors: event.authorizedActors,
+      liveState: toLiveState(event),
+    });
+    expect(result.ok).toBe(true);
+    expect(result.errors).toEqual([]);
+    expect(result.fields.base_branch).toBe('sandbox/example');
+    expect(result.deliveryProfile.errors).toEqual([]);
+  });
+
   it('fails deterministically for an unauthorized trigger actor', () => {
     const event = readEvent('unauthorized-actor.json');
     const result = evaluateIssuePrContractRequest({
@@ -138,14 +156,48 @@ describe('validateBaseHeadSyntax (#2620)', () => {
     expect(validateBaseHeadSyntax({ headBranch: 'cursor/1-x', baseBranch: 'component/example' })).toEqual([]);
   });
 
+  it('passes a valid main base with a distinct head', () => {
+    expect(validateBaseHeadSyntax({ headBranch: 'cursor/1-x', baseBranch: 'main' })).toEqual([]);
+  });
+
   it('fails when head and base are identical', () => {
     const errors = validateBaseHeadSyntax({ headBranch: 'component/example', baseBranch: 'component/example' });
     expect(errors.some((error) => error.code === VALIDATE_ERROR_CODES.BASE_HEAD_INVALID)).toBe(true);
   });
 
-  it('fails when base is neither component/** nor main', () => {
+  it('fails when base is neither component/**, sandbox/**, nor main', () => {
     const errors = validateBaseHeadSyntax({ headBranch: 'cursor/1-x', baseBranch: 'feature/random' });
     expect(errors.some((error) => error.code === VALIDATE_ERROR_CODES.BASE_HEAD_INVALID)).toBe(true);
+  });
+
+  // #2622: the Sandbox admission tier authorizes `sandbox/*` base branches;
+  // this syntactic check must accept them rather than rejecting every real
+  // Sandbox Issue contract before the `admit` planner is ever reached
+  // (confirmed live by the #2958 pilot dispatch — run 30594316244).
+  it('passes a valid sandbox base with a distinct head', () => {
+    expect(validateBaseHeadSyntax({ headBranch: 'cursor/1-x', baseBranch: 'sandbox/issue-contract-draft-pr' })).toEqual([]);
+  });
+
+  it('fails when head and base are identical sandbox refs', () => {
+    const errors = validateBaseHeadSyntax({
+      headBranch: 'sandbox/issue-contract-draft-pr',
+      baseBranch: 'sandbox/issue-contract-draft-pr',
+    });
+    expect(errors.some((error) => error.code === VALIDATE_ERROR_CODES.BASE_HEAD_INVALID)).toBe(true);
+  });
+
+  it('fails when the sandbox ref is malformed (no branch name after the prefix)', () => {
+    const errors = validateBaseHeadSyntax({ headBranch: 'cursor/1-x', baseBranch: 'sandbox/' });
+    expect(errors.some((error) => error.code === VALIDATE_ERROR_CODES.BASE_HEAD_INVALID)).toBe(true);
+  });
+
+  it('fails when the ref merely starts with "sandbox" without the required separator', () => {
+    const errors = validateBaseHeadSyntax({ headBranch: 'cursor/1-x', baseBranch: 'sandboxfoo' });
+    expect(errors.some((error) => error.code === VALIDATE_ERROR_CODES.BASE_HEAD_INVALID)).toBe(true);
+  });
+
+  it('still accepts `main` as base regardless of head shape (unaffected by the sandbox/component regex additions)', () => {
+    expect(validateBaseHeadSyntax({ headBranch: 'sandbox/x', baseBranch: 'main' })).toEqual([]);
   });
 });
 
