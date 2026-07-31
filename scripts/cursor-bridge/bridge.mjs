@@ -10,6 +10,7 @@ import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { loadConfig, ensureDirs, bridgeHome } from './lib/paths.mjs';
 import { validateEligibility } from './lib/eligibility.mjs';
+import { parentRef } from '../orchestrator/queue-routing.mjs';
 import {
   acquireClaim,
   releaseClaim,
@@ -52,6 +53,29 @@ function ghJson(args) {
     throw new Error(`gh ${args.join(' ')} failed: ${r.stderr || r.stdout}`);
   }
   return JSON.parse(r.stdout || 'null');
+}
+
+/**
+ * Fetch the minimal live state (#2974) needed to validate a task issue's
+ * declared parent: number, state, and labels. Returns null if the parent
+ * cannot be read (deleted, wrong repo, transient API failure, etc.) so the
+ * caller fails closed via the existing missing_or_mismatched_parent path
+ * rather than crashing the bridge.
+ */
+function fetchParentIssueMeta(parentNumber) {
+  try {
+    return ghJson([
+      'issue',
+      'view',
+      String(parentNumber),
+      '--repo',
+      REPO,
+      '--json',
+      'number,state,labels',
+    ]);
+  } catch {
+    return null;
+  }
 }
 
 function fetchIssueBundle(issueNumber) {
@@ -267,9 +291,20 @@ async function processPacket(config, dirs, packetPath) {
     fs.renameSync(packetPath, processing);
 
     const { issue, comments } = fetchIssueBundle(issueNumber);
+
+    // #2974: a pmo:active/task-shaped issue is routed through
+    // classifyQueueCandidate, which requires the live parent project's
+    // state (team:pmo / pmo:active / a pmo:priority label) to accept the
+    // issue's own declared "Parent Project: #NNNN" reference. Without
+    // this, queueContext.parent is always null and every such issue fails
+    // closed with missing_or_mismatched_parent regardless of correctness.
+    const declaredParentNumber = parentRef(issue?.body);
+    const parent = declaredParentNumber ? fetchParentIssueMeta(declaredParentNumber) : null;
+
     const eligibility = validateEligibility(issue, comments, {
       requiredLabels: config.requiredLabels,
       expectedRepo: REPO,
+      queueContext: { parent },
     });
 
     if (!eligibility.ok) {
@@ -651,5 +686,6 @@ export {
   processPacket,
   listPackets,
   fetchIssueBundle,
+  fetchParentIssueMeta,
   recoverInterruptedLaunch,
 };
