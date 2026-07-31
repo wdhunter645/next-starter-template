@@ -766,6 +766,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
           GITLEAKS_CONFIG: .gitleaks.toml
+          # The pre-merge inline gate (steps.secret-scan) already uploads the
+          # action's fixed-name SARIF artifact in this same run; a second upload
+          # 409-conflicts and crashes the action after a clean scan (#2967).
+          # Scan and exit-code behavior are unaffected by disabling the upload.
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
 
       - name: Post-merge verification — quality — structure
         id: verify-quality-structure
