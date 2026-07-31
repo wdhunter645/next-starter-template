@@ -7,7 +7,10 @@ export const APPROVAL_MARKER = '<!-- lgfc-role-approval:v1 -->';
 export const GUARD_COMMENT_MARKER = '<!-- lgfc-role-approval-guard:v1 -->';
 
 const REQUIRED_REVIEWER_ROLE = 'pr approver / engineering';
-const REQUIRED_REVIEWER_ACTOR = 'chatgpt';
+// docs/governance/AGENT-TEAM.md: PR Approver / Engineering is a durable role
+// co-held by ChatGPT and Claude Code, not a single named agent. Either may
+// post the approval-evidence event.
+export const AUTHORIZED_REVIEWER_ACTORS = Object.freeze(['chatgpt', 'claude code']);
 
 // This guard does not authenticate separation of duties. Claude Code writes
 // and the connected ChatGPT GitHub app both currently write through the
@@ -99,7 +102,7 @@ function isStructurallyMatchingEvent(event, {
   if (event.sourceIssue !== sourceIssue || event.prNumber !== prNumber) return false;
   if (normalize(event.headSha) !== normalize(headSha)) return false;
   if (normalize(event.reviewerRole) !== REQUIRED_REVIEWER_ROLE) return false;
-  if (normalize(event.reviewerActor) !== REQUIRED_REVIEWER_ACTOR) return false;
+  if (!AUTHORIZED_REVIEWER_ACTORS.includes(normalize(event.reviewerActor))) return false;
   if (normalize(event.decision) !== 'approved for integration') return false;
 
   const recordedImplementer = normalize(event.implementationActor);

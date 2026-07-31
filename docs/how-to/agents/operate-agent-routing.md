@@ -1,12 +1,12 @@
 ---
 Doc Type: How-To
-Audience: Bill, ChatGPT, Cursor Local, LGFC maintainers
+Audience: Bill, ChatGPT, Claude Code, Cursor Local, LGFC maintainers
 Authority Level: Operational Authority
 Owns: Project #2294 startup, observation, operation, watcher behavior, local poller handling, health checks, troubleshooting, disable, rollback, and recovery
 Does Not Own: Project launch approval, production merge approval, product priority, repository settings, credentials, secrets, or external-service authorization
 Canonical Reference: /docs/explanation/projects/agent-issue-polling-handoff-routing-design.md
-Related Issues: #2294, #2546, #2550, #2554, #2601, #2634, #2635, #2636, #2637, #2638, #2639, #2640
-Last Reviewed: 2026-07-19
+Related Issues: #2294, #2546, #2550, #2554, #2601, #2634, #2635, #2636, #2637, #2638, #2639, #2640, #2622
+Last Reviewed: 2026-07-31
 ---
 
 # Operate Agent Issue Polling and Handoff Routing
@@ -42,7 +42,7 @@ Provide the operator procedure for the Project #2294 routing system. This runboo
 | Role | Normal responsibility |
 | --- | --- |
 | Bill | Product, cost, priority, credential, external-service, and production authority |
-| ChatGPT | Preparation, governance, review, routing decisions, protected changes, closeout, Tier 2 escalation |
+| ChatGPT or Claude Code | Preparation, governance, review, routing decisions, protected changes, closeout, Tier 2 escalation |
 | Cursor Local | Implementation, validation, remediation, branch push, routine operations |
 | CI controller | Deterministic monitoring, evaluation, bounded action, alerts, reconciliation |
 | GitHub | Durable Issues, PRs, checks, labels, comments, branches, and workflow evidence |

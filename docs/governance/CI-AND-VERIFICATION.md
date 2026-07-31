@@ -6,7 +6,7 @@ Owns: Gate profiles, check classification, deterministic evidence, validation ow
 Does Not Own: Delivery Model A/B selection, agent approval routing, branch-protection UI settings, workflow YAML implementation, product/UX behavior, or platform isolation claims
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
 Related Issues: #2689, #2686, #2622
-Last Reviewed: 2026-07-30
+Last Reviewed: 2026-07-31
 ---
 
 # CI and Verification
@@ -24,7 +24,7 @@ Delivery model selection and promotion-profile policy remain in `docs/governance
 | Role | Actor | Owns in this domain |
 | --- | --- | --- |
 | **Product Authority** | Bill | Final judgment when verification cost, credential use in CI, or Production risk is material; not a routine gate for ordinary check green/red |
-| **PMO / Engineering** | ChatGPT | Verification package completeness; Promotion Candidate qualification criteria authorship; primary review when CI/verification policy or protected gate meaning changes |
+| **PMO / Engineering** | ChatGPT or Claude Code | Verification package completeness; Promotion Candidate qualification criteria authorship; primary review when CI/verification policy or protected gate meaning changes |
 | **Implementation / Operations** | Cursor | Scoped implementation of approved CI docs and allowlisted verification work; remediation of failing checks inside the allowlist; no self-approval of protected gate or Production authority |
 | **PR Approver / Engineering** | ChatGPT (Bill alternate) | Human judgment that work meets design, acceptance, repository, and promotion requirements; approval of protected/material changes; not replaceable by a green CI panel alone |
 | **Deterministic CI** | GitHub Actions and authorized repository automation | Machine-provable checks, evidence artifacts, eligible non-main integration under Delivery policy, and bounded authorized automation |

@@ -56,7 +56,7 @@ describe('component-child-integration.yml role-approval remediation (#2615)', ()
 
   it('documents the shared-identity limitation in the routed review request text', () => {
     const block = stepBlock(source, 'Upsert exact-head PR review request');
-    expect(block).toMatch(/cannot cryptographically distinguish ChatGPT from other automation/i);
+    expect(block).toMatch(/cannot cryptographically distinguish either pr approver \/ engineering holder/i);
   });
 
   it('updates the same check-run record instead of always creating a new one for the same head SHA', () => {

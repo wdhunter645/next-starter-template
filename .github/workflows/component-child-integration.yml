@@ -237,9 +237,9 @@ jobs:
           **Head SHA:** \`${HEAD_SHA}\`
           **Status:** protected component PR held in draft
 
-          ChatGPT (PR Approver / Engineering) must inspect this exact head and either record the blocker or post the canonical \`<!-- lgfc-role-approval:v1 -->\` approval-evidence event on this Issue. Any head change invalidates the disposition.
+          ChatGPT or Claude Code (PR Approver / Engineering) must inspect this exact head and either record the blocker or post the canonical \`<!-- lgfc-role-approval:v1 -->\` approval-evidence event on this Issue. Any head change invalidates the disposition.
 
-          Note: this control provides exact-head structured approval evidence and stale-disposition prevention. It cannot cryptographically distinguish ChatGPT from other automation writing through the shared \`wdhunter645\` repository-owner account.
+          Note: this control provides exact-head structured approval evidence and stale-disposition prevention. It cannot cryptographically distinguish either PR Approver / Engineering holder from other automation writing through the shared \`wdhunter645\` repository-owner account.
           EOF
 
           COMMENT_ID="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${SOURCE_ISSUE}/comments" --paginate \
@@ -312,7 +312,7 @@ jobs:
             if (result.roleApproval.approved) {
               lines.push('Approval-evidence account: ' + (result.roleApproval.acceptedLogin || 'unknown') + ' (association: ' + (result.roleApproval.acceptedAuthorAssociation || 'unknown') + ')');
             }
-            lines.push('Note: exact-head structured approval evidence, not authenticated reviewer identity — the shared wdhunter645 account does not distinguish ChatGPT from other automation.');
+            lines.push('Note: exact-head structured approval evidence, not authenticated reviewer identity — the shared wdhunter645 account does not distinguish either PR Approver / Engineering holder (ChatGPT or Claude Code) from other automation.');
           } else {
             lines.push('Exact-head role approval evidence: not required');
           }

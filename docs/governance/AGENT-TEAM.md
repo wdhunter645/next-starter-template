@@ -5,8 +5,8 @@ Authority Level: Domain Policy
 Owns: Durable LGFC roles, current member mapping, approval authority, protected stops, operating modes, launch-control workflow boundaries, member work-precedence mapping, and delegated task-closeout role boundaries
 Does Not Own: Queue and priority semantics, shared execution detail, tool-specific runtime behavior, PMO sizing, promotion-profile policy, communication mutation taxonomy, or production mechanics
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2494, #2640, #2641, #2648, #2699, #2700
-Last Reviewed: 2026-07-21
+Related Issues: #2494, #2640, #2641, #2648, #2699, #2700, #2622
+Last Reviewed: 2026-07-31
 ---
 
 # Agent Team
@@ -41,6 +41,7 @@ No role may self-approve work when independent review is required. Implementatio
 | --- | --- |
 | Bill | Product Authority; Day-2 Operations; alternate protected approval when recorded |
 | ChatGPT | PMO / Engineering; PR Approver / Engineering; Administration & Communications; Day-2 Operations coordination and Tier 2 specialist support |
+| Claude Code | PMO / Engineering; PR Approver / Engineering; Administration & Communications; Day-2 Operations coordination and Tier 2 specialist support |
 | Cursor Local | Implementation / Operations; Day-2 Operations remediation implementation |
 | GitHub Actions and repository automation | Deterministic CI; Administration & Communications transport/evidence; authorized Day-2 monitoring and bounded remediation |
 | Repository runner and routing controller | Administration & Communications control-plane infrastructure; host/service maintained by Day-2 Operations |
@@ -55,6 +56,7 @@ Future agents and systems may be assigned compatible roles through an approved m
 - A role reassignment changes who may act; it does not alter the authority or evidence required for the action.
 - One member may hold multiple roles, but required independent review and separation-of-duty constraints still apply.
 - A member that implemented child work must not be the sole independent reviewer of that work or the sole project/master closeout auditor.
+- More than one member may durably co-hold the same role (for example, PMO / Engineering and PR Approver / Engineering held jointly by ChatGPT and Claude Code). Which co-holder is actively engaged at a given time is an operational routing decision recorded through the canonical GitHub communication workflow (`HOLD`, `RESUME`, collaboration requests), not a mapping change, and does not require an edit to this document.
 
 ## Team communication
 
@@ -93,6 +95,12 @@ Lanes define authority. The separate Operations, PMO, and Engineering work queue
 Operations Monitoring and Hold Issues receive required interval updates but do not block Active PMO work.
 
 ### ChatGPT
+
+1. Numbered Operations Issues when assigned for Tier 2 specialist support, Engineering judgment, independent review, or coordination.
+2. PMO work when assigned for design adjustment, review, promotion, Production decision preparation, verification, or closeout.
+3. Engineering Pipeline preparation selected by Engineering priority.
+
+### Claude Code
 
 1. Numbered Operations Issues when assigned for Tier 2 specialist support, Engineering judgment, independent review, or coordination.
 2. PMO work when assigned for design adjustment, review, promotion, Production decision preparation, verification, or closeout.
@@ -271,7 +279,7 @@ Before Development begins, the source authority includes:
 
 ## Startup orientation
 
-When Product Authority says `run startup`, ChatGPT performs orientation only and stops. Startup does not authorize queue audit, implementation resume, GitHub mutation, or administrative reconciliation.
+When Product Authority says `run startup`, the addressed Engineering role holder (ChatGPT or Claude Code) performs orientation only and stops. Startup does not authorize queue audit, implementation resume, GitHub mutation, or administrative reconciliation.
 
 ## Canonical references
 

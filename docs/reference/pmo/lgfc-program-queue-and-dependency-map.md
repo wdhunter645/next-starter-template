@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Launched-program queue mode, dependency-map requirements, execution-mode selection, continue/halt decision rules, and dispatcher requirements for PMO-governed programs
 Does Not Own: Workflow YAML implementation, GitHub merge authority, issue mutation authority, ChatGPT account-level scheduled automation, or uncontrolled orchestrator label automation
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #2391, #2386, #2360, #2361, #2363, #2364, #1449, #1448, #1411, #1255, #1256, #1258, #1259, #1501, #1500, #1719, #1725
-Last Reviewed: 2026-07-08
+Related Issues: #2391, #2386, #2360, #2361, #2363, #2364, #1449, #1448, #1411, #1255, #1256, #1258, #1259, #1501, #1500, #1719, #1725, #2622
+Last Reviewed: 2026-07-31
 ---
 
 # LGFC Program Queue and Dependency Map
@@ -262,7 +262,7 @@ If the halt is caused by missing dispatcher/watch behavior, stale blocked succes
 | Role | Authority |
 | --- | --- |
 | Bill | Merge, launch gates, destructive issue actions, strategy exceptions |
-| ChatGPT | Governance review, queue conformance, batch verification, rebaseline, dispatcher/remediation routing when authorized |
+| ChatGPT or Claude Code | Governance review, queue conformance, batch verification, rebaseline, dispatcher/remediation routing when authorized |
 | Cursor | Bounded implementation, validation, PR-body evidence, `READY FOR REVIEW` handoff |
 
 Cursor does not own merge, approval, closeout, relabel, production, or secret authority in either execution mode.

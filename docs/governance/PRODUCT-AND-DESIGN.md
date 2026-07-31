@@ -5,8 +5,8 @@ Authority Level: Domain Policy
 Owns: Product behavior ownership, UX and functional-requirement decision rules, design freeze and deviation policy, and product/design escalation boundaries
 Does Not Own: Agent team approval routing, delivery Model A/B selection, platform/runtime isolation, CI gate implementation, or page-level visual specifications
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2687, #2686
-Last Reviewed: 2026-07-21
+Related Issues: #2687, #2686, #2622
+Last Reviewed: 2026-07-31
 ---
 
 # Product and Design
@@ -24,7 +24,7 @@ Agent roles and protected-stop contracts remain in `docs/governance/AGENT-TEAM.m
 | Role | Actor | Owns in this domain |
 | --- | --- | --- |
 | **Product Authority** | Bill | Product go/no-go; material UX or functional-requirement decisions; final completed-product judgment for product outcomes |
-| **PMO / Engineering** | ChatGPT | Final design package authorship; launch-control packaging; design documentation completeness; primary PR review for product/design changes |
+| **PMO / Engineering** | ChatGPT or Claude Code | Final design package authorship; launch-control packaging; design documentation completeness; primary PR review for product/design changes |
 | **Implementation / Operations** | Cursor | Scoped implementation of approved product/design work; no self-approval of product or design authority |
 | **PR Approver / Engineering** | ChatGPT (Bill alternate) | Approval and merge of product/design PRs per delivery profile; not a substitute for Product Authority on material product decisions |
 | **Supporting design references** | `docs/reference/design/**` and `docs/governance/standards/design-authority_MASTER.md` | Locked behavior facts, page/route contracts, and enforcement pointers only |

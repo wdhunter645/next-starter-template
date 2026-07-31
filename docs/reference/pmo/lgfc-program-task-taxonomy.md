@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: LGFC task types, ownership boundaries, and task-to-issue mapping rules
 Does Not Own: Individual task acceptance criteria or issue state mutations
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #1335, #1351
-Last Reviewed: 2026-06-05
+Related Issues: #1335, #1351, #2622
+Last Reviewed: 2026-07-31
 ---
 
 # LGFC Program Task Taxonomy
@@ -19,12 +19,12 @@ Define common task classes so Cursor and ChatGPT use the same execution language
 
 | Type | Meaning | Typical agent | Output |
 |---|---|---|---|
-| governance | Rules, queue, authority, PMO structure | ChatGPT | docs and issue protocol |
+| governance | Rules, queue, authority, PMO structure | ChatGPT or Claude Code | docs and issue protocol |
 | ci | CI documentation, workflow inventory, evidence | Cursor | docs PR, no runtime unless authorized |
 | website | shipped-site reconciliation and product docs | Cursor | docs PR or bounded app PR |
 | docs | DIATAXIS mapping and documentation health | Cursor | docs PR |
 | ops | monitoring, runtime surface, operational evidence | Cursor | docs/report PR |
-| review | synthesis and launch-gate decision | ChatGPT | report and issue comments |
+| review | synthesis and launch-gate decision | ChatGPT or Claude Code | report and issue comments |
 
 ## Task Shape
 
