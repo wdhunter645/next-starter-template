@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import fs from 'node:fs';
+import { isComponentOrSandboxRef, isComponentRef } from './branch_ref_classification.mjs';
 
 export const DELIVERY_MODELS = ['A', 'B-child', 'B-promotion', 'emergency-recovery'];
 export const WORK_SIZES = ['medium-provisional', 'small', 'medium', 'large'];
@@ -99,19 +100,15 @@ function normalizeOptionalComponentValue(value) {
   return normalized === 'not-applicable' ? '' : normalized;
 }
 
-function isComponentRef(ref) {
-  return /^component\/[^/].*/.test(String(ref || ''));
-}
-
 // #2622 progressive non-production admission: Model B child PRs may also
 // target an authorized `sandbox/*` branch, not only `component/**` — the
 // Sandbox environment tier reuses the same delivery model, just a
 // different (earlier, less-gated) target. Scoped to this one base-ref
 // check only; component-branch identity, B-promotion's headRef check, and
-// every other Model B rule are unchanged.
-function isComponentOrSandboxBaseRef(ref) {
-  return isComponentRef(ref) || /^sandbox\/[^/].*/.test(String(ref || ''));
-}
+// every other Model B rule are unchanged. `isComponentRef`/
+// `isComponentOrSandboxRef` are the shared classification in
+// branch_ref_classification.mjs, also reused by issue_pr_contract_validate.mjs.
+const isComponentOrSandboxBaseRef = isComponentOrSandboxRef;
 
 function isValidComponentMasterIssue(ref) {
   return /^#\d+$/.test(String(ref || '').trim());
