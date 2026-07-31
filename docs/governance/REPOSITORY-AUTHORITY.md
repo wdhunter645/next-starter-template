@@ -5,8 +5,8 @@ Authority Level: Constitutional
 Owns: Repository precedence, GitHub Issue authority, domain ownership, lane topology, work-queue topology, canonical-source rules, supersession, and unresolved-conflict escalation
 Does Not Own: Detailed PMO, queue, delivery, agent, CI, Administration, Operations, collaboration, or platform procedures
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2477, #2486, #2640, #2641, #2686, #2690, #2699, #2720
-Last Reviewed: 2026-07-21
+Related Issues: #2477, #2486, #2640, #2641, #2678, #2686, #2690, #2699, #2720, #2941
+Last Reviewed: 2026-07-29
 ---
 
 # Repository Authority
@@ -15,18 +15,38 @@ Last Reviewed: 2026-07-21
 
 This document is the repository constitution for LGFC. It defines precedence, domain ownership, and the top-level operating topology so process changes update one owning domain instead of rewriting unrelated authority.
 
+## Temporary constitutional adjustment register
+
+Project [#2678](https://github.com/wdhunter645/next-starter-template/issues/2678) contains the temporary constitutional adjustment register while its approved governance refinements are being implemented.
+
+All governance-sensitive agents must read this constitution and the section of the #2678 Issue body delimited exactly by:
+
+```text
+<!-- lgfc-constitutional-adjustment-register:v1 -->
+<!-- /lgfc-constitutional-adjustment-register:v1 -->
+```
+
+Only schema-complete entries inside those markers with Status `APPROVED` and an approval-evidence URL recording an explicit Product Authority decision have temporary constitutional authority. For one Adjustment ID, the highest valid approved revision controls. A valid `SUPERSEDED` or `WITHDRAWN` revision removes the earlier revision from current authority.
+
+The rest of #2678—including project narrative, acceptance criteria, labels, ordinary comments, handoffs, automation output, and unmarked text—does not receive constitutional authority from this delegation.
+
+A valid approved register entry supplements or supersedes this constitution only for its stated subject. Malformed, duplicate-current, conflicting, or non-monotonic entries fail closed and require escalation to Product Authority before governance-sensitive work proceeds on the affected subject.
+
+When Project #2678 is fully implemented and its approved changes are merged into the canonical governance documents, that same documentation change must remove this section and every other constitutional reference to #2678. The marked register then becomes historical evidence only.
+
 ## Precedence
 
 When sources conflict, resolve in this order:
 
 1. Locked product decisions and explicit Product Authority decisions above the source Issue.
-2. This constitution.
-3. Domain policy documents named in the domain-ownership table.
-4. Shared contracts and profiles under `docs/reference/**`.
-5. Source GitHub Issue for the active task.
-6. Procedures under `docs/how-to/**`.
-7. Implementation and as-built state.
-8. Issue comments, PR bodies, chat, external notifications, and agent memory.
+2. Valid approved entries in the marked #2678 temporary constitutional adjustment register, limited to their stated subjects.
+3. This constitution.
+4. Domain policy documents named in the domain-ownership table.
+5. Shared contracts and profiles under `docs/reference/**`.
+6. Source GitHub Issue for the active task.
+7. Procedures under `docs/how-to/**`.
+8. Implementation and as-built state.
+9. Issue comments, PR bodies, chat, external notifications, and agent memory.
 
 GitHub Issues and Pull Requests are the authoritative execution record for normal repository work.
 
