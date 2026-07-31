@@ -3,9 +3,9 @@ Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
 Owns: Cumulative lane evidence event schema v1, lane requirement matrix, supersession/idempotency rules, protected-stop binding, and fixture contract for Sandbox/Development/Promotion Candidate/Production
-Does Not Own: Event writer/adapters, derived summary materializer, controller integration, legacy migration, or Production merge authority
+Does Not Own: Production merge authority; controller mutation; deletion of legacy history (see migration companion)
 Canonical Reference: /docs/reference/operations/operating-lanes-and-promotion-profiles.md
-Related Issues: #2678, #2882
+Related Issues: #2678, #2882, #2883, #2884
 Last Reviewed: 2026-07-31
 ---
 
@@ -15,7 +15,7 @@ Last Reviewed: 2026-07-31
 
 Define the versioned, append-only evidence event that accumulates across Sandbox, Development, Promotion Candidate, and Production. Administrative evidence may accumulate while safe work continues inside a lane. Required evidence fails closed only at lane exit.
 
-This document and `schemas/cumulative-lane-evidence/v1/event.schema.json` are the Work Unit 001 deliverable for project #2678. Writers, adapters, summary materialization, and controller integration are later work units (#2883–#2885).
+This document and `schemas/cumulative-lane-evidence/v1/event.schema.json` are the Work Unit 001 deliverable for project #2678. Writers/summary/lane-exit arrived in #2883. Controller transaction mapping, legacy compatibility, and administrative-residue rules arrived in #2884 (`docs/reference/operations/cumulative-lane-evidence-migration.md`). Pilot/Promotion Candidate qualification remains #2885.
 
 ## Marker and payload
 
