@@ -38,8 +38,8 @@ This workflow is **delivery only**. It does not:
 
 | Trigger | Condition | Effect |
 | --- | --- | --- |
-| `pull_request` | `opened`, `reopened`, or `ready_for_review`, and the PR is not a draft | Alert comment on the PR |
-| `issue_comment` | Created on an open **issue** (not a PR) with a body starting with `CLAUDE CODE RESUME` | Alert comment on the issue |
+| `pull_request` | `opened`, `reopened`, or `ready_for_review`; the PR is not a draft; and the head repo is this repo (not a fork) | Alert comment on the PR |
+| `issue_comment` | Created on an open **issue** (not a PR) by `wdhunter645`, with a body starting with `CLAUDE CODE RESUME` | Alert comment on the issue |
 | `workflow_dispatch` | Manual, restricted to `github.actor == 'wdhunter645'` | Alert comment on the given issue/PR number |
 
 Every PR eventually needs PR Approver / Engineering review, so the `pull_request`
@@ -47,6 +47,13 @@ trigger covers that class without requiring a label. Issue-side routing
 uses a resume marker (parallel to Cursor's `LOCAL CURSOR RESUME`) rather
 than a dedicated label, keeping this bounded to the two use cases that
 currently exist.
+
+The fork and comment-author restrictions exist because this is a write
+path: a fork PR's `pull_request` event only gets a read-only token
+regardless of the `permissions:` block (so an unrestricted fork trigger
+would just fail red on external contributors' PRs), and an unrestricted
+`issue_comment` trigger would let anyone force a write by posting the
+resume marker on any open issue.
 
 ## Comment markers
 
