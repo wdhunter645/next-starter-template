@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Cursor Local Bridge — sole component allowed to start Cursor Local work.
- * Consumes wake packets, revalidates full eligibility, claims lane, launches CLI or falls back.
+ * Consumes wake packets, revalidates mechanical eligibility, claims lane, launches CLI or falls back.
+ * Semantic task-readiness evaluation is delivered to Cursor (#2997 delivery-first).
  * Also writes a local heartbeat and runs a bounded missed-handoff reconciliation sweep.
  */
 import fs from 'node:fs';
@@ -9,7 +10,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { loadConfig, ensureDirs, bridgeHome } from './lib/paths.mjs';
-import { validateEligibility } from './lib/eligibility.mjs';
+import { validateEligibility, resolveDeliveryKey } from './lib/eligibility.mjs';
 import { parentRef } from '../orchestrator/queue-routing.mjs';
 import {
   acquireClaim,
@@ -307,6 +308,8 @@ async function processPacket(config, dirs, packetPath) {
       queueContext: { parent },
     });
 
+    // Mechanical gates only. Semantic findings (missing/ambiguous resume,
+    // action count, queue routing) are passed to Cursor — never discarded here.
     if (!eligibility.ok) {
       fallbackUnclaimed(config, issueNumber, `validation_failed:${eligibility.errors.join(',')}`);
       writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
@@ -314,9 +317,16 @@ async function processPacket(config, dirs, packetPath) {
       return { ok: false, reason: 'validation_failed' };
     }
 
-    const resumeId = String(eligibility.resume.id);
+    if (eligibility.semanticFindings?.length) {
+      appendBridgeLog(
+        config,
+        `semantic findings issue=#${issueNumber}: ${eligibility.semanticFindings.join(',')}`,
+      );
+    }
+
+    const resumeId = resolveDeliveryKey({ packet, eligibility, issueNumber });
     if (isConsumed(config, resumeId)) {
-      appendBridgeLog(config, `skip already consumed resume=${resumeId}`);
+      appendBridgeLog(config, `skip already consumed deliveryKey=${resumeId}`);
       moveProcessingToConsumed(dirs, packetPath, processing, 'dup');
       return { ok: true, reason: 'already_consumed' };
     }
@@ -371,12 +381,16 @@ async function processPacket(config, dirs, packetPath) {
       return { ok: false, reason: claim.reason };
     }
 
-    const action = eligibility.parsed.actions[0];
+    const action =
+      eligibility.parsed?.actions?.length === 1 ? eligibility.parsed.actions[0] : null;
     const launched = launchLocalAgent(config, {
       issueNumber,
+      issue,
+      comments,
       resume: eligibility.resume,
       response: eligibility.response,
       action,
+      semanticFindings: eligibility.semanticFindings || [],
     });
 
     if (launched.error) {
@@ -431,7 +445,7 @@ async function processPacket(config, dirs, packetPath) {
         try {
           postIssueComment(
             issueNumber,
-            `${config.startedCommentPrefix || 'CURSOR BRIDGE STARTED'}\nIssue: #${issueNumber}\nResume comment id: ${resumeId}\nSession id: ${sessionId}\nAction: ${action}\n`,
+            `${config.startedCommentPrefix || 'CURSOR BRIDGE STARTED'}\nIssue: #${issueNumber}\nDelivery key: ${resumeId}\nSession id: ${sessionId}\nAction: ${action || '(Cursor evaluates — Bridge delivery-first)'}\nSemantic findings: ${(eligibility.semanticFindings || []).join(', ') || '(none)'}\n`,
           );
           writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
         } catch (err) {
