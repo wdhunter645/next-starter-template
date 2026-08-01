@@ -15,6 +15,7 @@ import {
   stagePackageFromCommit,
   snapshotPackage,
   captureEvidenceSnapshot,
+  formatRestartFailureReason,
 } from '../scripts/cursor-bridge/bridge-build.mjs';
 import {
   REPO_PACKAGE_PATHS,
@@ -317,6 +318,29 @@ describe('Cursor Bridge Watch / Build (#2814)', () => {
     expect(rolled.classification).toBe('rolled_back');
     expect(rolled.rollback?.ok).toBe(true);
     expect(fs.readFileSync(queueFile, 'utf8')).toBe('{"ok":true}\n');
+  });
+
+  it('formatRestartFailureReason (#2983) surfaces the actual systemctl error detail, not just the bare reason', () => {
+    const reason = formatRestartFailureReason({
+      bridge: { detail: 'Failed to connect to bus: No medium found' },
+      timer: { detail: '' },
+    });
+    expect(reason).toContain('restart_failed');
+    expect(reason).toContain('Failed to connect to bus');
+  });
+
+  it('formatRestartFailureReason (#2983) caps the combined detail length', () => {
+    const longDetail = 'x'.repeat(1000);
+    const reason = formatRestartFailureReason({
+      bridge: { detail: longDetail },
+      timer: { detail: longDetail },
+    });
+    expect(reason.length).toBeLessThanOrEqual(800);
+  });
+
+  it('formatRestartFailureReason (#2983) tolerates missing bridge/timer detail', () => {
+    expect(formatRestartFailureReason({})).toBe('restart_failed:|');
+    expect(formatRestartFailureReason(undefined)).toBe('restart_failed:|');
   });
 
   it('refuses build while protected active work exists and does not restart', () => {

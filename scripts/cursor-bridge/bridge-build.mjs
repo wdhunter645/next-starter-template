@@ -272,6 +272,12 @@ function restartBridgeUnits({ skipSystemd = false } = {}) {
   };
 }
 
+export function formatRestartFailureReason(restarted) {
+  return `restart_failed:${restarted?.bridge?.detail || ''}|${restarted?.timer?.detail || ''}`
+    .trim()
+    .slice(0, 800);
+}
+
 function runRepoValidation(repoRoot) {
   const checks = [];
   const selfCheck = run('node', [path.join(repoRoot, 'scripts/cursor-bridge/self-check.mjs')], {
@@ -564,7 +570,7 @@ export function runBridgeBuild(config, opts = {}) {
       timestamp: new Date().toISOString(),
       quiet: false,
       reasons: [
-        !restarted.ok ? 'restart_failed' : null,
+        !restarted.ok ? formatRestartFailureReason(restarted) : null,
         !evidenceCheck.ok ? evidenceCheck.reason : null,
         !verify.ok ? 'post_install_verification_failed' : null,
       ].filter(Boolean),
