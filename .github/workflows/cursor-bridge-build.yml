@@ -64,6 +64,11 @@ jobs:
             echo "bridge-build produced empty result (exit=$BUILD_RC)" >&2
             exit 1
           fi
+          # Result content has already passed the secret scan above, so it is
+          # safe to surface for diagnosis (#2978) -- classification alone does
+          # not explain a failed/manual_review_required/rebuild_deferred result.
+          echo "bridge-build result:"
+          cat "$RESULT_FILE"
           export BUILD_RC
           export RESULT_FILE
           # Inline node (not a Python heredoc): JS is indentation-insensitive,
