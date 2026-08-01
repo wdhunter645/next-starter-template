@@ -122,9 +122,10 @@ Action: Do the one bounded thing
 }
 
 {
-  // Delivery keys used on the filesystem must reject traversal.
+  // Delivery keys used on the filesystem must reject traversal via full digest.
   assert.equal(sanitizeDeliveryKey('5036049606'), '5036049606');
-  assert.ok(sanitizeDeliveryKey('../x').startsWith('enc-'));
+  const unsafe = sanitizeDeliveryKey('../x');
+  assert.ok(/^enc-[0-9a-f]{64}$/.test(unsafe));
   assert.equal(
     resolveDeliveryKey({
       packet: { deliveryId: '../../etc/passwd' },
@@ -133,6 +134,13 @@ Action: Do the one bounded thing
     }).startsWith('enc-'),
     true,
   );
+  const base =
+    'https://github.com/wdhunter645/next-starter-template/issues/2997#issuecomment-';
+  const keyA = sanitizeDeliveryKey(`${base}${'1'.repeat(80)}`);
+  const keyB = sanitizeDeliveryKey(`${base}${'2'.repeat(80)}`);
+  assert.notEqual(keyA, keyB, 'shared-prefix URLs must remain distinct');
+  assert.ok(/^enc-[0-9a-f]{64}$/.test(keyA));
+  assert.ok(/^enc-[0-9a-f]{64}$/.test(keyB));
 }
 
 {

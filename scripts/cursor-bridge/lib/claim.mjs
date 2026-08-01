@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { sanitizeDeliveryKey } from './eligibility.mjs';
 import { bridgeHome } from './paths.mjs';
 
 export function claimPath(config) {
@@ -55,21 +56,11 @@ export function releaseClaim(config) {
   if (fs.existsSync(p)) fs.unlinkSync(p);
 }
 
-/** Filesystem-safe consumed marker name (defense in depth for delivery keys). */
-function safeConsumedToken(resumeCommentId) {
-  const input = String(resumeCommentId ?? '').trim();
-  if (/^[A-Za-z0-9][A-Za-z0-9._-]{0,179}$/.test(input) && !input.includes('..')) {
-    return input;
-  }
-  const hex = Buffer.from(input, 'utf8').toString('hex');
-  return `enc-${hex.slice(0, 64)}`;
-}
-
 export function consumedPath(config, resumeCommentId) {
   return path.join(
     bridgeHome(),
     config.consumedDir || 'consumed',
-    `${safeConsumedToken(resumeCommentId)}.json`,
+    `${sanitizeDeliveryKey(resumeCommentId)}.json`,
   );
 }
 

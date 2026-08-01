@@ -42,8 +42,12 @@ function normalizeLabels(labels) {
   return labels.map((l) => (typeof l === 'string' ? l : l?.name)).filter(Boolean);
 }
 
+/**
+ * Marker match aligned with workflow `startsWith(comment.body, …)` —
+ * no leading-whitespace tolerance (byte-for-byte with cursor-local-wake.yml).
+ */
 function commentStartsWith(body, prefix) {
-  const text = String(body || '').replace(/^\uFEFF/, '').trimStart();
+  const text = String(body || '').replace(/^\uFEFF/, '');
   return text.startsWith(prefix);
 }
 

@@ -156,7 +156,7 @@ node ~/lgfc-cursor-bridge/scripts/bridge.mjs once
 
 Expected for mechanical ineligibility (closed Issue, missing `agent:cursor`, wrong repository): explicit eligibility fallback; no claim, consumed marker, in-flight transaction, or Cursor process.
 
-ChatGPT/Atlas-directed, Claude/Claude Code-directed, other-agent, and unrelated GitHub traffic must never write a Chromebook Bridge wake packet (`scripts/cursor-bridge/lib/wake-ingress.mjs`). Those lanes use their own notification paths.
+ChatGPT/Atlas-directed, Claude/Claude Code-directed, other-agent, and unrelated GitHub traffic must never write a Chromebook Bridge wake packet. `.github/workflows/cursor-local-wake.yml` invokes `shouldDeliverCursorWake` from `scripts/cursor-bridge/lib/wake-ingress.mjs` before queue write. Those other lanes use their own notification paths.
 
 A trusted open Issue with `agent:cursor` + `handoff:ready` must still launch even when RESPONSE/RESUME parsing is incomplete; Cursor owns the semantic disposition.
 

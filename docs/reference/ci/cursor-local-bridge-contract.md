@@ -87,7 +87,7 @@ Routing is by intended agent identity, not semantic task readiness:
 | Other `agent:*` labels without Cursor routing | Must not enter |
 | Generic unrelated GitHub Issue/PR/workflow/review/bot activity | Must not enter |
 
-Canonical ingress predicate: `scripts/cursor-bridge/lib/wake-ingress.mjs` (`shouldDeliverCursorWake`). Wake workflow `.github/workflows/cursor-local-wake.yml` must stay aligned. Claude Code wake (`.github/workflows/claude-code-wake.yml`) is a separate notification path and must never write Chromebook Bridge packets.
+Canonical ingress predicate: `scripts/cursor-bridge/lib/wake-ingress.mjs` (`shouldDeliverCursorWake`). Wake workflow `.github/workflows/cursor-local-wake.yml` must invoke that predicate before writing a Chromebook queue packet (job-level `if:` is only a coarse filter). Only `handoff:ready` label events and `LOCAL CURSOR RESUME` comments on Cursor-routed open Issues (plus authorized manual dispatch) may queue. Claude Code wake (`.github/workflows/claude-code-wake.yml`) is a separate notification path and must never write Chromebook Bridge packets.
 
 ### Mechanical gates (Bridge may reject before launch)
 
@@ -96,7 +96,7 @@ Canonical ingress predicate: `scripts/cursor-bridge/lib/wake-ingress.mjs` (`shou
 3. Positive Cursor routing signal is present (`agent:cursor`).  
 4. Repository matches the configured expected repository (`wdhunter645/next-starter-template`).  
 5. Serial lane has no active conflicting claim.  
-6. Delivery key is not already consumed (resume comment id when present; otherwise packet `deliveryId` / issue fallback). Delivery keys are filesystem-sanitized before use in `consumed/`, recovery filenames, and claims.  
+6. Delivery key is not already consumed (resume comment id when present; otherwise packet `deliveryId` / issue fallback). Unsafe delivery identities are encoded as a stable SHA-256 digest of the complete original value (`enc-<hex>`) before use in `consumed/`, recovery filenames, and claims — never a truncated reversible encoding.  
 7. Bridge, workspace, GitHub, and Cursor authentication/preflight readiness succeed.  
 8. Wake packet Issue identity is valid and the wake source is trusted.
 

@@ -276,8 +276,8 @@ Action: Implement the bounded bridge correction
 
   it('sanitizeDeliveryKey and consumedPath block path traversal', () => {
     expect(sanitizeDeliveryKey('99')).toBe('99');
-    expect(sanitizeDeliveryKey('../x')).toMatch(/^enc-/);
-    expect(sanitizeDeliveryKey('a/b')).toMatch(/^enc-/);
+    expect(sanitizeDeliveryKey('../x')).toMatch(/^enc-[0-9a-f]{64}$/);
+    expect(sanitizeDeliveryKey('a/b')).toMatch(/^enc-[0-9a-f]{64}$/);
     expect(sanitizeDeliveryKey('')).toBe('issue-unknown');
 
     const home = '/tmp/lgfc-bridge-home';
@@ -286,7 +286,34 @@ Action: Implement the bounded bridge correction
       const p = consumedPath({ consumedDir: 'consumed' }, '../x');
       expect(p.startsWith(path.join(home, 'consumed'))).toBe(true);
       expect(p.includes(`${path.sep}..${path.sep}`)).toBe(false);
-      expect(path.basename(p)).toMatch(/^enc-[0-9a-f]+\.json$/);
+      expect(path.basename(p)).toMatch(/^enc-[0-9a-f]{64}\.json$/);
+    } finally {
+      delete process.env.LGFC_CURSOR_BRIDGE_HOME;
+    }
+  });
+
+  it('sanitizeDeliveryKey keeps long shared-prefix GitHub URLs distinct', () => {
+    const base =
+      'https://github.com/wdhunter645/next-starter-template/issues/2997#issuecomment-';
+    const a = `${base}${'1'.repeat(80)}`;
+    const b = `${base}${'2'.repeat(80)}`;
+    const keyA = sanitizeDeliveryKey(a);
+    const keyB = sanitizeDeliveryKey(b);
+    expect(keyA).toMatch(/^enc-[0-9a-f]{64}$/);
+    expect(keyB).toMatch(/^enc-[0-9a-f]{64}$/);
+    expect(keyA).not.toBe(keyB);
+    // Deterministic digests of the complete original identity.
+    expect(sanitizeDeliveryKey(a)).toBe(keyA);
+    expect(sanitizeDeliveryKey(b)).toBe(keyB);
+
+    const home = '/tmp/lgfc-bridge-home-digest';
+    process.env.LGFC_CURSOR_BRIDGE_HOME = home;
+    try {
+      const pathA = consumedPath({ consumedDir: 'consumed' }, a);
+      const pathB = consumedPath({ consumedDir: 'consumed' }, b);
+      expect(pathA).not.toBe(pathB);
+      expect(path.basename(pathA)).toBe(`${keyA}.json`);
+      expect(path.basename(pathB)).toBe(`${keyB}.json`);
     } finally {
       delete process.env.LGFC_CURSOR_BRIDGE_HOME;
     }
@@ -317,6 +344,17 @@ describe('cursor-only wake ingress / packet boundary (#2997)', () => {
         commentBody: 'LOCAL CURSOR RESUME\nIssue: #2997\n',
       }).deliver,
     ).toBe(true);
+
+    // Byte-for-byte with workflow startsWith — leading whitespace must not queue.
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'issue_comment',
+        issueState: 'open',
+        issueLabels: cursorLabels,
+        commentBody: '  LOCAL CURSOR RESUME\nIssue: #2997\n',
+      }).reason,
+    ).toBe('not_cursor_resume_marker');
   });
 
   it('rejects ChatGPT/Atlas-directed traffic at wake ingress', () => {

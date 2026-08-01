@@ -6,6 +6,7 @@
  * reported to Cursor and must not discard a trusted notification.
  */
 
+import crypto from 'node:crypto';
 import { classifyQueueCandidate } from '../../orchestrator/queue-routing.mjs';
 import { hasCursorRoutingSignal } from './wake-ingress.mjs';
 
@@ -96,7 +97,8 @@ function isMechanicalError(error) {
 /**
  * Encode arbitrary delivery identity into a filesystem-safe key.
  * Safe tokens (numeric ids, wake-* ids without traversal) pass through.
- * Unsafe values (path separators, `..`, control chars) are hex-encoded.
+ * Unsafe values become a stable SHA-256 digest of the complete original
+ * identity (collision-resistant; no prefix truncation of reversible encodings).
  */
 export function sanitizeDeliveryKey(raw) {
   const input = String(raw ?? '').trim();
@@ -104,8 +106,8 @@ export function sanitizeDeliveryKey(raw) {
   if (/^[A-Za-z0-9][A-Za-z0-9._-]{0,179}$/.test(input) && !input.includes('..')) {
     return input;
   }
-  const hex = Buffer.from(input, 'utf8').toString('hex');
-  return `enc-${hex.slice(0, 64)}`;
+  const digest = crypto.createHash('sha256').update(input, 'utf8').digest('hex');
+  return `enc-${digest}`;
 }
 
 /**
