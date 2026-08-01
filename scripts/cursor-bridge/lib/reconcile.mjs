@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { isConsumed, isClaimActive, claimPath } from './claim.mjs';
-import { validateEligibility } from './eligibility.mjs';
+import { validateEligibility, resolveDeliveryKey } from './eligibility.mjs';
 import { appendBridgeLog } from './notify.mjs';
 import { atomicWriteJson } from './atomic-write.mjs';
 
@@ -65,17 +65,22 @@ export function hasPendingOrProcessingPacket(queueDir, resumeId) {
  * Build a recovery wake packet using the normal packet schema.
  * Does not launch Cursor — only queues for the Bridge drain path.
  */
-export function buildRecoveryPacket({ issueNumber, resumeCommentId, now = new Date() }) {
-  const resumeId = String(resumeCommentId);
+export function buildRecoveryPacket({
+  issueNumber,
+  resumeCommentId,
+  deliveryKey,
+  now = new Date(),
+}) {
+  const key = String(deliveryKey || resumeCommentId);
   const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
   return {
     schemaVersion: 1,
     issueNumber: Number(issueNumber),
-    deliveryId: `reconcile-${resumeId}-${stamp}`,
+    deliveryId: `reconcile-${key}-${stamp}`,
     eventName: 'reconcile-recovery',
     actor: 'cursor-bridge-reconcile',
-    resumeHint: resumeId,
-    resumeCommentId: resumeId,
+    resumeHint: key,
+    resumeCommentId: resumeCommentId != null ? String(resumeCommentId) : key,
     recovery: true,
     deliveredAt: now.toISOString(),
   };
@@ -91,17 +96,22 @@ export function writeRecoveryPacket(queueDir, packet) {
 }
 
 /**
- * Pure decision helper for unit tests: should we queue recovery for this resume?
+ * Pure decision helper for unit tests: should we queue recovery?
+ * eligibilityOk is mechanical-only (#2997). deliveryKey may be a resume
+ * comment id or an issue/packet fallback so delivery-first recovery works
+ * when semantic resume parsing is incomplete.
  */
 export function shouldQueueRecovery({
   eligibilityOk,
   resumeId,
+  deliveryKey,
   consumed,
   hasPendingPacket,
   claimBlocks,
 }) {
   if (!eligibilityOk) return { queue: false, reason: 'ineligible' };
-  if (!resumeId) return { queue: false, reason: 'missing_resume_id' };
+  const key = deliveryKey || resumeId;
+  if (!key) return { queue: false, reason: 'missing_delivery_key' };
   if (consumed) return { queue: false, reason: 'already_consumed' };
   if (hasPendingPacket) return { queue: false, reason: 'packet_pending' };
   if (claimBlocks) return { queue: false, reason: 'serial_lane_busy' };
@@ -188,12 +198,18 @@ export async function runReconcileSweep(config, dirs, opts = {}) {
         expectedRepo: repo,
       });
       const resumeId = eligibility.resume ? String(eligibility.resume.id) : null;
-      const consumed = resumeId ? isConsumed(config, resumeId) : false;
-      const pending = resumeId ? hasPendingOrProcessingPacket(dirs.queue, resumeId) : false;
+      const deliveryKey = resolveDeliveryKey({
+        packet: null,
+        eligibility,
+        issueNumber,
+      });
+      const consumed = isConsumed(config, deliveryKey);
+      const pending = hasPendingOrProcessingPacket(dirs.queue, deliveryKey);
 
       const decision = shouldQueueRecovery({
         eligibilityOk: eligibility.ok,
         resumeId,
+        deliveryKey,
         consumed,
         hasPendingPacket: pending,
         claimBlocks,
@@ -202,8 +218,10 @@ export async function runReconcileSweep(config, dirs, opts = {}) {
       inspected.push({
         issueNumber,
         resumeId,
+        deliveryKey,
         eligibilityOk: eligibility.ok,
         errors: eligibility.errors,
+        semanticFindings: eligibility.semanticFindings,
         decision: decision.reason,
       });
 
@@ -212,13 +230,20 @@ export async function runReconcileSweep(config, dirs, opts = {}) {
       const packet = buildRecoveryPacket({
         issueNumber,
         resumeCommentId: resumeId,
+        deliveryKey,
       });
       const write = writeRecoveryPacket(dirs.queue, packet);
       if (write.wrote) {
-        recovered.push({ issueNumber, resumeId, deliveryId: packet.deliveryId, file: write.file });
+        recovered.push({
+          issueNumber,
+          resumeId,
+          deliveryKey,
+          deliveryId: packet.deliveryId,
+          file: write.file,
+        });
         appendBridgeLog(
           config,
-          `reconcile queued recovery issue=#${issueNumber} resume=${resumeId} delivery=${packet.deliveryId}`,
+          `reconcile queued recovery issue=#${issueNumber} deliveryKey=${deliveryKey} delivery=${packet.deliveryId}`,
         );
       }
     } catch (err) {

@@ -13,7 +13,7 @@ Last Reviewed: 2026-07-24
 
 ## Purpose
 
-Define the mandatory **Cursor Local Bridge** that turns GitHub eligibility into an authenticated local `cursor agent` launch — or an explicit unclaimed fallback.
+Define the mandatory **Cursor Local Bridge** that turns trusted GitHub wake delivery into an authenticated local `cursor agent` launch after mechanical safety gates — or an explicit unclaimed fallback when those mechanical gates fail. Semantic task readiness is evaluated by Cursor (#2997).
 
 The Chromebook GitHub Actions runner is **event delivery only**. Without this Bridge, labels and wake jobs do not start Cursor.
 
@@ -35,8 +35,8 @@ Every component has a role. No infrastructure may be introduced without purpose,
 | Local watchdog (`watchdog.mjs` + systemd timer) | Detect hung/stale Bridge and restart or alert | Heartbeat age, service, queue, workspace, `gh`/CLI auth, claim TTL, disk | Local restart/alert; optional debounced GitHub ops fault | systemd user timer |
 | Bridge Watch (`bridge-watch.mjs` + `cursor-bridge-watch.yml`) | Classify health and repository-to-host package drift | Installed package hashes, claim/in-flight, heartbeat, units | `healthy` / `rebuild_required` / `rebuild_deferred` / `manual_review_required` / `failed` | Host Bridge home + `main` checkout |
 | Bridge Build (`bridge-build.mjs` + `cursor-bridge-build.yml`) | Stage, validate, atomically promote, or roll back Bridge package | Immutable `main` commit SHA | Promoted package identity or automatic restore | Idle serial lane; same-filesystem rename |
-| Missed-handoff reconciliation | Recover eligible handoffs when wake packet was missed | `reconcileIntervalSeconds` cadence + live Issue eligibility | Recovery packet into normal queue | `gh`, full eligibility contract |
-| Eligibility validator | Fail-closed gate | Issue + comments | ok / errors | Full eligibility checklist below |
+| Missed-handoff reconciliation | Recover mechanically routable handoffs when wake packet was missed | `reconcileIntervalSeconds` cadence + live Issue mechanical eligibility | Recovery packet into normal queue | `gh`, mechanical eligibility contract |
+| Eligibility validator | Mechanical fail-closed + semantic findings for Cursor | Issue + comments | mechanical ok/errors + semanticFindings | Delivery-first checklist below |
 | Serial claim store | One Implementation stream | Claim requests | Exclusive lease | Local `claim.json` |
 | Local Cursor CLI | Execute one bounded action | Bridge prompt + workspace | NDJSON lifecycle events, result, exit | Cursor login or `CURSOR_API_KEY` |
 | Notify fallback | Operator-visible failure | Failure class | Desktop/log + Issue comment | `notify-send` optional |
@@ -71,19 +71,31 @@ Rules:
 - Bridge Build refuses promotion while a claim, `cli_spawned`, accepted, or running transaction exists.
 - Runtime evidence (`queue/`, `consumed/`, `claim.json`, `in-flight.json`, `heartbeat.json`, `runtime-meta.json`, alerts/logs/preflight/watchdog state) is never deleted by rebuild.
 
-## Eligibility (auto-start only when all true)
+## Eligibility (delivery-first — #2997)
+
+The Bridge is the secure transport, host-readiness, deduplication, and serial-concurrency controller. It is **not** the final semantic task-authority decision-maker. Trusted Cursor-routed notifications must reach Cursor for evaluation unless a mechanical safety gate prevents launch.
+
+### Mechanical gates (Bridge may reject before launch)
 
 1. Source Issue is open.  
-2. `agent:cursor` is present.  
-3. `handoff:ready` is present.  
-4. Latest canonical `CHATGPT RESPONSE` (or `CHATGPT CLOSEOUT`) exists.  
-5. Separate `LOCAL CURSOR RESUME` references that response.  
-6. Resume contains exactly one bounded action.  
-7. Serial lane has no active conflicting claim.  
-8. Resume comment id is not already consumed.  
-9. Repository matches `wdhunter645/next-starter-template`.  
+2. Required routing labels from Bridge config are present (default: `agent:cursor` and `handoff:ready`).  
+3. Repository matches the configured expected repository (`wdhunter645/next-starter-template`).  
+4. Serial lane has no active conflicting claim.  
+5. Delivery key is not already consumed (resume comment id when present; otherwise packet `deliveryId` / issue fallback).  
+6. Bridge, workspace, GitHub, and Cursor authentication/preflight readiness succeed.  
+7. Wake packet Issue identity is valid and the wake source is trusted.
 
-Reconciliation applies this same contract before writing a recovery packet. Deduplication keys are resume comment id and delivery identity.
+### Semantic assessment (Bridge delivers to Cursor; does not reject)
+
+Cursor evaluates live Issue/comment context and returns act, hold, correction-needed, or no-action. Bridge records these as informational findings in the launch prompt and STARTED comment:
+
+- latest canonical `CHATGPT RESPONSE` / `CHATGPT CLOSEOUT` presence;
+- separate `LOCAL CURSOR RESUME` presence and response reference shape (including `Response:` URL form);
+- resume action count (zero, one, or many — including `Action:` single-line form);
+- resume/issue chronology and issue-number match;
+- queue-routing / parent-project classification outcomes.
+
+Reconciliation applies the same mechanical contract before writing a recovery packet. Deduplication keys are the delivery key (resume comment id when present, else packet/issue identity).
 
 ## Transactional launch acceptance
 
@@ -185,7 +197,8 @@ Bridge Build accepts only an immutable commit SHA that is an ancestor of `main`,
 
 ## Fallback taxonomy
 
-- Eligibility or claim failure: no launch; explicit unclaimed fallback.
+- Mechanical eligibility or claim failure: no launch; explicit unclaimed fallback.
+- Semantic RESPONSE/RESUME/action-count/queue findings: launch proceeds; Cursor dispositions act/hold/correction/no-action.
 - Pre-accept launch failure: claim released, resume unconsumed, one packet retained for bounded retry.
 - Post-accept failure: resume remains consumed; automatic retry suppressed; manual verification required.
 - Usage/plan failure after acceptance: same post-accept duplicate-safety rule.

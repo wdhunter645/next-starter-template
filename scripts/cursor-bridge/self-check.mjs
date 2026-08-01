@@ -53,9 +53,11 @@ Next local action:
   const r = validateEligibility(baseIssue, [response, resume]);
   assert.equal(r.ok, true, r.errors.join(','));
   assert.equal(r.parsed.actions.length, 1);
+  assert.equal(r.semanticFindings.length, 0);
 }
 
 {
+  // #2997: multiple actions are semantic findings — Bridge still delivers.
   const bad = {
     ...resume,
     body: `LOCAL CURSOR RESUME
@@ -67,8 +69,32 @@ Next local action:
 `,
   };
   const r = validateEligibility(baseIssue, [response, bad]);
-  assert.equal(r.ok, false);
-  assert.ok(r.errors.some((e) => e.startsWith('resume_action_count')));
+  assert.equal(r.ok, true, r.errors.join(','));
+  assert.ok(r.semanticFindings.some((e) => e.startsWith('resume_action_count')));
+}
+
+{
+  // Zero parser actions + Response: URL form still delivers (#2997 / Claude resume style).
+  const zeroAction = {
+    ...resume,
+    body: `LOCAL CURSOR RESUME
+Issue: #2667
+Response: ${response.url}
+
+Action: Do the one bounded thing
+`,
+  };
+  const r = validateEligibility(baseIssue, [response, zeroAction]);
+  assert.equal(r.ok, true, r.errors.join(','));
+  assert.equal(r.parsed.actions.length, 1);
+  assert.equal(r.semanticFindings.length, 0);
+}
+
+{
+  const r = validateEligibility(baseIssue, []);
+  assert.equal(r.ok, true, 'mechanical gates pass without semantic markers');
+  assert.ok(r.semanticFindings.includes('missing_chatgpt_response'));
+  assert.ok(r.semanticFindings.includes('missing_local_cursor_resume'));
 }
 
 {

@@ -113,12 +113,12 @@ describe('cursor bridge parent-context resolution (#2974)', () => {
 
     const result = await bridge.processPacket(config, dirs, packetPath);
 
-    expect(result.reason).toBe('validation_failed');
-    expect(notify.fallbackUnclaimed).toHaveBeenCalledTimes(1);
-    const reason = notify.fallbackUnclaimed.mock.calls.at(-1)[2];
-    expect(reason).not.toContain('missing_or_mismatched_parent');
-    // The markers are genuinely absent in this fixture, so that failure is expected.
-    expect(reason).toContain('missing_chatgpt_response');
+    // #2997: missing RESPONSE/RESUME is semantic — Bridge must not reject pre-launch.
+    expect(result.reason).not.toBe('validation_failed');
+    const validationFallbacks = notify.fallbackUnclaimed.mock.calls.filter((call) =>
+      String(call[2] || '').includes('missing_chatgpt_response'),
+    );
+    expect(validationFallbacks).toHaveLength(0);
 
     // Prove the fix actually fetched the parent, not just that the label check passed by accident.
     const parentFetchCalls = spawnSyncMock.mock.calls.filter(
@@ -144,20 +144,18 @@ describe('cursor bridge parent-context resolution (#2974)', () => {
     const packetPath = join(dirs.queue, `wake-${TASK_ISSUE}.json`);
     writeFileSync(packetPath, JSON.stringify({ issueNumber: TASK_ISSUE }));
 
-    await bridge.processPacket(config, dirs, packetPath);
+    const result = await bridge.processPacket(config, dirs, packetPath);
 
-    // A found-but-invalid parent is a distinct failure from a missing/mismatched
-    // one (queue-routing.mjs classifies it as parent_not_valid_active_pmo); this
-    // proves the fetch actually happened rather than the check being skipped.
-    const reason = notify.fallbackUnclaimed.mock.calls.at(-1)[2];
-    expect(reason).not.toContain('missing_or_mismatched_parent');
+    // #2997: queue-routing parent validity is semantic (passed to Cursor), not a
+    // Bridge pre-launch rejection. Parent fetch must still occur.
+    expect(result.reason).not.toBe('validation_failed');
     const parentFetchCalls = spawnSyncMock.mock.calls.filter(
       ([cmd, args]) => cmd === 'gh' && args[0] === 'issue' && args[1] === 'view' && args[2] === String(PARENT_ISSUE),
     );
     expect(parentFetchCalls).toHaveLength(1);
   });
 
-  it('fails closed with missing_or_mismatched_parent (does not throw) when the declared parent cannot be fetched at all', async () => {
+  it('does not throw when the declared parent cannot be fetched; parent absence is a semantic finding (#2997)', async () => {
     configureSpawnSync({
       taskIssue: {
         number: TASK_ISSUE,
@@ -174,12 +172,13 @@ describe('cursor bridge parent-context resolution (#2974)', () => {
     const packetPath = join(dirs.queue, `wake-${TASK_ISSUE}.json`);
     writeFileSync(packetPath, JSON.stringify({ issueNumber: TASK_ISSUE }));
 
-    await expect(bridge.processPacket(config, dirs, packetPath)).resolves.toMatchObject({
-      ok: false,
+    await expect(bridge.processPacket(config, dirs, packetPath)).resolves.not.toMatchObject({
       reason: 'validation_failed',
     });
-    const reason = notify.fallbackUnclaimed.mock.calls.at(-1)[2];
-    expect(reason).toContain('missing_or_mismatched_parent');
+    const validationFallbacks = notify.fallbackUnclaimed.mock.calls.filter((call) =>
+      String(call[2] || '').includes('missing_or_mismatched_parent'),
+    );
+    expect(validationFallbacks).toHaveLength(0);
   });
 
   it('fetchParentIssueMeta returns null instead of throwing on a failed gh invocation', async () => {

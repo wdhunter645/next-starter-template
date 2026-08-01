@@ -141,22 +141,26 @@ Healthy Watch results stay quiet. Active claim / `cli_spawned` / accepted / runn
 
 Operator-visible fallback comment prefixes are distinct by class:
 
-- eligibility/claim failures: `CURSOR BRIDGE FALLBACK: unclaimed`
+- mechanical eligibility/claim failures: `CURSOR BRIDGE FALLBACK: unclaimed`
 - pre-accept launch retries: `CURSOR BRIDGE FALLBACK: launch-retry`
 - post-accept duplicate-risk failures: `CURSOR BRIDGE FALLBACK: accepted-run-failure`
+
+Semantic resume/response/action-count problems are **not** Bridge unclaimed fallbacks after #2997 — they are delivered to Cursor as findings for act/hold/correction/no-action disposition.
 
 ## Verify wake delivery without launch
 
 ```bash
-bash scripts/cursor-bridge/write-wake-packet.sh <ineligible-issue-number> manual-test-1 manual wdhunter645
+bash scripts/cursor-bridge/write-wake-packet.sh <mechanically-ineligible-issue-number> manual-test-1 manual wdhunter645
 node ~/lgfc-cursor-bridge/scripts/bridge.mjs once
 ```
 
-Expected: explicit eligibility fallback; no claim, consumed marker, in-flight transaction, or Cursor process.
+Expected for mechanical ineligibility (closed Issue, missing `agent:cursor`, wrong repository): explicit eligibility fallback; no claim, consumed marker, in-flight transaction, or Cursor process.
+
+A trusted open Issue with `agent:cursor` + `handoff:ready` must still launch even when RESPONSE/RESUME parsing is incomplete; Cursor owns the semantic disposition.
 
 ## Verify successful transactional launch
 
-Use a temporary bounded test Issue with valid `CHATGPT RESPONSE`, one-action `LOCAL CURSOR RESUME`, `agent:cursor`, and `handoff:ready`.
+Use a temporary bounded test Issue with `agent:cursor` and `handoff:ready`. Prefer a valid `CHATGPT RESPONSE` plus one-action `LOCAL CURSOR RESUME`, but incomplete semantic markers must still reach Cursor.
 
 Observe in order:
 
@@ -165,10 +169,10 @@ Observe in order:
 3. There is **no** `CURSOR BRIDGE STARTED` yet.
 4. Cursor emits `system/init`.
 5. Status shows `launchTransaction.state: running`, `acceptedAt`, and `sessionId`.
-6. GitHub posts `CURSOR BRIDGE STARTED`.
-7. The agent performs exactly the bounded action.
+6. GitHub posts `CURSOR BRIDGE STARTED` (includes delivery key and any semantic findings).
+7. The agent evaluates live Issue/comment context and either performs one bounded action or posts hold/correction/no-action.
 8. GitHub posts `CURSOR BRIDGE COMPLETED`.
-9. Claim and in-flight state clear; the resume is consumed exactly once.
+9. Claim and in-flight state clear; the delivery key is consumed exactly once.
 
 Useful commands:
 

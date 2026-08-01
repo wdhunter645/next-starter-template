@@ -43,17 +43,82 @@ export function cliAuthPreflight(config) {
   return { ok: true, resolved, detail: out.slice(0, 200) };
 }
 
-function buildPrompt({ issueNumber, resumeUrl, responseUrl, action, workspace }) {
+function truncate(text, max) {
+  const s = String(text || '');
+  if (s.length <= max) return s;
+  return `${s.slice(0, max)}\n…[truncated]`;
+}
+
+function formatComments(comments = [], limit = 12) {
+  const sorted = [...comments].sort(
+    (a, b) => new Date(a.createdAt || a.created_at) - new Date(b.createdAt || b.created_at),
+  );
+  const recent = sorted.slice(-limit);
+  return recent
+    .map((c) => {
+      const id = c.id || c.databaseId || '?';
+      const at = c.createdAt || c.created_at || '';
+      const author = c.author || c.user?.login || 'unknown';
+      const body = truncate(c.body || c.bodyText || '', 1200);
+      return `--- comment ${id} by ${author} at ${at} ---\n${body}`;
+    })
+    .join('\n\n');
+}
+
+/**
+ * Delivery-first prompt (#2997): Cursor receives live Issue/comment context and
+ * semantic findings, then decides act / hold / correction-needed / no-action.
+ * Bridge does not pre-reject for semantic resume/response shape.
+ */
+export function buildPrompt({
+  issueNumber,
+  issue,
+  comments = [],
+  resumeUrl,
+  responseUrl,
+  action,
+  semanticFindings = [],
+  workspace,
+}) {
+  const labels = (issue?.labels || [])
+    .map((l) => (typeof l === 'string' ? l : l.name))
+    .filter(Boolean)
+    .join(', ');
+  const findingsBlock =
+    semanticFindings.length > 0
+      ? semanticFindings.map((f) => `- ${f}`).join('\n')
+      : '- (none — Bridge mechanical gates passed; semantic markers look complete)';
+
+  const actionBlock =
+    action && String(action).trim()
+      ? `Parser-recognized single action (verify against live comments before executing):\n- ${action}`
+      : 'Parser did not reduce the latest resume to exactly one action. You must evaluate the live Issue and comments and choose act, hold, correction-needed, or no-action. Do not invent authority.';
+
   return [
-    'MODE: IMPLEMENTATION',
+    'MODE: IMPLEMENTATION (delivery-first Bridge launch)',
     'Runtime: local',
     `Source Issue: #${issueNumber}`,
+    `Issue title: ${issue?.title || '(unknown)'}`,
+    `Issue state: ${issue?.state || '(unknown)'}`,
+    `Issue labels: ${labels || '(none)'}`,
+    `Issue URL: ${issue?.url || `(https://github.com/wdhunter645/next-starter-template/issues/${issueNumber})`}`,
     'Read Agent.md and the mandatory documentation chain before any repo work.',
-    `Canonical CHATGPT RESPONSE: ${responseUrl || '(see issue)'}`,
-    `LOCAL CURSOR RESUME: ${resumeUrl || '(see issue)'}`,
-    'Next local action (exactly one):',
-    `- ${action}`,
-    'Do not broaden scope. Post CHATGPT HANDOFF when blocked, PR-ready, or complete.',
+    'Bridge role: secure transport + mechanical safety only. You own semantic task-readiness evaluation.',
+    `Canonical CHATGPT RESPONSE URL: ${responseUrl || '(not resolved by Bridge — inspect live Issue comments)'}`,
+    `LOCAL CURSOR RESUME URL: ${resumeUrl || '(not resolved by Bridge — inspect live Issue comments)'}`,
+    'Bridge semantic findings (informational — do not treat as Bridge rejection):',
+    findingsBlock,
+    actionBlock,
+    'Required disposition after evaluating live Issue + comments + governance:',
+    '- act: execute one bounded authorized action, then CHATGPT HANDOFF / IMPLEMENTATION HANDOFF as required;',
+    '- hold: post a Cursor-authored hold explaining the semantic blocker;',
+    '- correction-needed: request a corrected RESPONSE/RESUME;',
+    '- no-action: report that no executable work is authorized and stop.',
+    'Do not broaden scope. Do not self-approve or merge protected work.',
+    'Issue body (truncated):',
+    truncate(issue?.body || '', 4000),
+    'Recent Issue comments (truncated):',
+    formatComments(comments),
     `Workspace: ${workspace}`,
   ].join('\n');
 }
@@ -75,16 +140,22 @@ export function resolveWorkspace(config) {
  * Launch local Cursor Agent in non-interactive print mode with structured lifecycle output.
  * A successful spawn is not agent acceptance; bridge.mjs waits for system/init.
  */
-export function launchLocalAgent(config, { issueNumber, resume, response, action }) {
+export function launchLocalAgent(
+  config,
+  { issueNumber, issue, comments, resume, response, action, semanticFindings },
+) {
   const pre = cliAuthPreflight(config);
   if (!pre.ok) return { error: pre.reason, detail: pre.detail };
 
   const workspace = resolveWorkspace(config);
   const prompt = buildPrompt({
     issueNumber,
+    issue,
+    comments,
     resumeUrl: resume?.url,
     responseUrl: response?.url,
     action,
+    semanticFindings,
     workspace,
   });
 
