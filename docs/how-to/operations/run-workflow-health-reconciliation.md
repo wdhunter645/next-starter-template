@@ -21,7 +21,9 @@ Last Reviewed: 2026-08-01
   later authorized collector; this procedure does not invent execution
   authority.
 
-## Run a local reconcile pass
+## Procedure
+
+### Run a local reconcile pass
 
 ```bash
 # Optional prior store: { "events": [...], "dailyAggregates": [...] }
@@ -37,7 +39,10 @@ Outputs:
 - `site/workflow-health/reconcile-store.json` — retained events + daily aggregates
 - `site/workflow-health/index.html` — static renderer (copied when present)
 
-## Run the seeded pilot
+A reconcile pass exits non-zero when any incoming envelope is rejected as
+malformed; a partial view is never reported as a successful pass.
+
+### Run the seeded pilot
 
 ```bash
 node scripts/workflow-health/pilot.mjs
@@ -47,7 +52,7 @@ npx vitest run tests/workflow-health/reconcile-retention-pilot.test.mjs
 Exit code non-zero means a pilot case failed. Do not treat a failed pilot as
 authority to change Production or to delete Issues/PRs.
 
-## Disable generation
+### Disable generation
 
 ```bash
 export WORKFLOW_HEALTH_DISABLED=1
@@ -55,16 +60,24 @@ node scripts/workflow-health/reconcile.mjs path/to/events.json
 ```
 
 Expected: JSON report with `"disabled": true`, no view rewrite, source events
-preserved. Unset the variable to recover.
+preserved. Unset the variable to recover. In CI, set the repository variable
+`WORKFLOW_HEALTH_DISABLED` (`1`, `true`, or `yes`); the scheduled workflow
+reads the runtime disable decision from the reconcile step and skips store
+persistence and artifact upload while disabled.
 
 ## Scheduled / CI generation
 
 Workflow: `.github/workflows/workflow-health-reconcile.yml`
 
 - On pull-request / push path changes: runs the deterministic pilot + vitest suite.
-- On `schedule` / `workflow_dispatch`: runs the pilot and uploads the generated
-  `site/workflow-health` artifact (retention 7 days). Artifact publication is
-  reporting only; it does not merge to `main` or promote Production.
+- On `schedule` / `workflow_dispatch`: the generate job requires the pilot job
+  to pass first, restores the prior `reconcile-store.json` from the Actions
+  cache, reconciles the retained store (incoming envelopes remain empty until
+  an authorized live collector exists), persists the updated store back to the
+  cache, and uploads the generated `site/workflow-health` artifact (retention
+  7 days). Cache loss degrades to a gap-visible empty state, never invented
+  health. Artifact publication is reporting only; it does not merge to `main`
+  or promote Production.
 
 ## Rollback
 

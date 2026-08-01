@@ -70,6 +70,17 @@ describe('workflow-health retention (#2889)', () => {
     expect(pruned.aggregates.map((r) => r.date)).toEqual(['2026-07-01']);
   });
 
+  it('prunes malformed aggregate dates instead of retaining them forever', () => {
+    const aggregates = [
+      { date: 'not-a-date', transitions: 1 },
+      { date: 'zzzz-99-99', transitions: 1 },
+      { date: '2026-07-01', transitions: 2 },
+    ];
+    const pruned = pruneDailyAggregates(aggregates, NOW, AGGREGATE_RETENTION_MONTHS);
+    expect(pruned.prunedCount).toBe(2);
+    expect(pruned.aggregates.map((r) => r.date)).toEqual(['2026-07-01']);
+  });
+
   it('upserts daily aggregates by UTC date and records idle snapshot', () => {
     const merged = upsertDailyAggregates(
       [{ date: '2026-08-01', transitions: 1, completedTransactions: 0 }],
@@ -100,6 +111,17 @@ describe('workflow-health reconcile (#2889)', () => {
     expect(result.repairs.duplicatesSuppressed).toBe(1);
     expect(result.repairs.gapsEmitted).toBeGreaterThan(0);
     expect(result.views.exceptions.evidenceMissing.length).toBeGreaterThan(0);
+  });
+
+  it('fails the pass when incoming envelopes are rejected on first ingest', () => {
+    const result = reconcileDerivedState({
+      existingEvents: [],
+      incomingEvents: [{ not: 'an-envelope' }],
+      now: NOW,
+      config: { emitGaps: false },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.repairs.rejectedCount).toBeGreaterThan(0);
   });
 
   it('disable path skips generation and preserves events', () => {

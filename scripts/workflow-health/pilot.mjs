@@ -25,6 +25,16 @@ export const PILOT_SCHEMA_VERSION = 'lgfc-workflow-health-pilot:v1';
 
 const NOW = '2026-08-01T18:00:00.000Z';
 
+const MINUTE_MS = 60 * 1000;
+const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
+
+/** ISO timestamp `ms` before `now`, so seeds track any injected clock. */
+function isoBefore(now, ms) {
+  const nowMs = typeof now === 'string' ? Date.parse(now) : now.getTime();
+  return new Date(nowMs - ms).toISOString();
+}
+
 function mustEnvelope(partial) {
   const built = buildEnvelope(partial);
   if (!built.ok) {
@@ -48,7 +58,7 @@ export function buildPilotSeedEvents({ now = NOW } = {}) {
     workUnitId: 'pilot-idle',
     run: {
       id: 501,
-      created_at: '2026-08-01T17:50:00.000Z',
+      created_at: isoBefore(now, 10 * MINUTE_MS),
       actor: { login: 'actions' },
     },
   }).events;
@@ -59,13 +69,13 @@ export function buildPilotSeedEvents({ now = NOW } = {}) {
     comments: [
       {
         id: 11,
-        created_at: '2026-08-01T17:50:30.000Z',
+        created_at: isoBefore(now, 9.5 * MINUTE_MS),
         user: { login: 'github-actions' },
         body: `${BRIDGE_MARKERS.ACK}\nDelivery id: wake-501-9101-nolabel\n`,
       },
       {
         id: 12,
-        created_at: '2026-08-01T17:51:00.000Z',
+        created_at: isoBefore(now, 9 * MINUTE_MS),
         user: { login: 'bridge' },
         body: `${BRIDGE_MARKERS.STARTED}\n`,
       },
@@ -82,7 +92,7 @@ export function buildPilotSeedEvents({ now = NOW } = {}) {
     comments: [
       {
         id: 21,
-        created_at: '2026-08-01T17:40:00.000Z',
+        created_at: isoBefore(now, 20 * MINUTE_MS),
         user: { login: 'bridge' },
         body: `${BRIDGE_MARKERS.FALLBACK} unclaimed — validation_failed:seeded_pilot\n`,
       },
@@ -99,7 +109,8 @@ export function buildPilotSeedEvents({ now = NOW } = {}) {
       lane: 'development',
       stage: 'execution',
       phase: 'start',
-      occurredAt: '2026-07-20T12:00:00.000Z',
+      // Older than the pilot staleAfterMs (24h) but inside detail retention.
+      occurredAt: isoBefore(now, 2 * DAY_MS),
       actor: 'cursor',
       actorComponent: 'cursor',
       result: 'pass',
@@ -123,7 +134,7 @@ export function buildPilotSeedEvents({ now = NOW } = {}) {
       lane: 'development',
       stage: 'remediation',
       phase: 'unknown',
-      occurredAt: '2026-08-01T17:00:00.000Z',
+      occurredAt: isoBefore(now, HOUR_MS),
       actor: 'workflow-health-adapter',
       actorComponent: 'controller',
       result: 'unknown',
@@ -151,7 +162,8 @@ export function buildPilotSeedEvents({ now = NOW } = {}) {
       lane: 'development',
       stage: 'delivery',
       phase: 'end',
-      occurredAt: '2026-06-01T12:00:00.000Z',
+      // Beyond the 30-day detail retention window; must prune.
+      occurredAt: isoBefore(now, 45 * DAY_MS),
       actor: 'actions',
       actorComponent: 'wake_workflow',
       result: 'pass',
@@ -286,11 +298,13 @@ export function evaluateDisableAndRollback({ now = NOW } = {}) {
     config: { enabled: false },
   });
 
+  // Exactly one seeded detail event (45-day fodder) and one aggregate row
+  // (400-day) sit beyond their retention windows; the rest must be kept.
   const detailPrune = pruneDetailedEvents(seed.events, now, 30);
   const aggregatePrune = pruneDailyAggregates(
     [
-      { date: '2024-01-01', transitions: 1 },
-      { date: '2026-07-01', transitions: 2 },
+      { date: isoBefore(now, 400 * DAY_MS).slice(0, 10), transitions: 1 },
+      { date: isoBefore(now, 31 * DAY_MS).slice(0, 10), transitions: 2 },
     ],
     now,
     13,
@@ -316,11 +330,15 @@ export function evaluateDisableAndRollback({ now = NOW } = {}) {
     {
       id: 'rollback_prune_is_derived_only',
       ok:
+        detailPrune.prunedCount === 1 &&
+        aggregatePrune.prunedCount === 1 &&
         detailPrune.deletesAuthoritativeEvidence === false &&
         aggregatePrune.deletesAuthoritativeEvidence === false,
       detail: {
         prunedEvents: detailPrune.prunedCount,
         prunedAggregates: aggregatePrune.prunedCount,
+        expectedPrunedEvents: 1,
+        expectedPrunedAggregates: 1,
       },
     },
   ];
@@ -342,7 +360,7 @@ export function runPilot({ now = NOW } = {}) {
   const reconciled = reconcileDerivedState({
     existingEvents: [],
     incomingEvents: seed.events,
-    dailyAggregates: [{ date: '2024-01-01', transitions: 9 }],
+    dailyAggregates: [{ date: isoBefore(now, 400 * DAY_MS).slice(0, 10), transitions: 9 }],
     now,
     config: { emitGaps: true, staleAfterMs: 24 * 60 * 60 * 1000 },
   });

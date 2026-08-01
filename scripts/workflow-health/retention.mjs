@@ -26,6 +26,20 @@ function daysToMs(days) {
 }
 
 /**
+ * Return the canonical UTC day (YYYY-MM-DD) for an aggregate row date, or
+ * null when the value is malformed. Malformed dates must not survive
+ * retention by sorting after the cutoff string.
+ */
+function canonicalUtcDay(value) {
+  if (typeof value !== 'string') return null;
+  const day = value.slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+  const parsed = new Date(`${day}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== day) return null;
+  return day;
+}
+
+/**
  * Keep detailed events whose occurredAt is within the retention window.
  * Events without a parseable timestamp are dropped from the derived store
  * (they are already invalid for materialization) but never imply GitHub
@@ -80,7 +94,7 @@ export function pruneDailyAggregates(
   const kept = [];
   let prunedCount = 0;
   for (const row of aggregates) {
-    const day = typeof row?.date === 'string' ? row.date.slice(0, 10) : null;
+    const day = canonicalUtcDay(row?.date);
     if (!day || day < cutoffDay) {
       prunedCount += 1;
       continue;
@@ -132,5 +146,7 @@ export function upsertDailyAggregates(existing = [], dailyPerformance = {}) {
     byDate.set(dailyPerformance.snapshotDate, snap);
   }
 
-  return [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
+  return [...byDate.values()].sort((a, b) =>
+    a.date < b.date ? -1 : a.date > b.date ? 1 : 0,
+  );
 }

@@ -215,7 +215,9 @@ export function reconcileDerivedState({
 
   return {
     schemaVersion: RECONCILE_SCHEMA_VERSION,
-    ok: retained.rejected.length === 0,
+    // Malformed incoming envelopes must fail the pass, not silently drop:
+    // first-pass ingest rejections count against ok alongside re-ingest.
+    ok: retained.rejected.length === 0 && ingested.rejected.length === 0,
     disabled: false,
     events: retained.events,
     active: retained.active,

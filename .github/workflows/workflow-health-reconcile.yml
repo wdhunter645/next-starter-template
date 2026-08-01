@@ -58,8 +58,13 @@ jobs:
 
   generate:
     name: Generate reconciled views artifact
+    # Qualification gate: an unqualified reconciliation view must not publish.
+    needs: pilot
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    env:
+      WORKFLOW_HEALTH_DISABLED: ${{ vars.WORKFLOW_HEALTH_DISABLED || '' }}
+      WORKFLOW_HEALTH_STORE_FILE: .workflow-health-store/reconcile-store.json
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -72,13 +77,46 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Reconcile from empty incoming (store bootstrap / gap-visible empty state)
-        env:
-          WORKFLOW_HEALTH_DISABLED: ${{ vars.WORKFLOW_HEALTH_DISABLED || '' }}
-        run: node scripts/workflow-health/reconcile.mjs
+      # Derived state persists between scheduled runs via the Actions cache so
+      # retention and historical reconciliation operate on retained evidence.
+      # Cache loss degrades to a gap-visible empty state, never invented health.
+      - name: Restore prior reconcile store
+        uses: actions/cache/restore@v4
+        with:
+          path: .workflow-health-store
+          key: workflow-health-store-${{ github.run_id }}
+          restore-keys: |
+            workflow-health-store-
 
+      # Incoming envelopes remain empty until an authorized live collector
+      # exists (see how-to preconditions); reconciliation still repairs and
+      # re-ages the retained store restored above.
+      - name: Reconcile retained store plus incoming envelopes
+        id: reconcile
+        run: |
+          set -euo pipefail
+          OUT_FILE="$(mktemp)"
+          node scripts/workflow-health/reconcile.mjs | tee "$OUT_FILE"
+          echo "disabled=$(jq -r 'if .disabled then "1" else "0" end' "$OUT_FILE")" >> "$GITHUB_OUTPUT"
+
+      - name: Persist reconcile store for the next scheduled run
+        if: ${{ steps.reconcile.outputs.disabled != '1' }}
+        run: |
+          mkdir -p .workflow-health-store
+          cp "$WORKFLOW_HEALTH_OUT_DIR/reconcile-store.json" .workflow-health-store/reconcile-store.json
+
+      - name: Save reconcile store cache
+        if: ${{ steps.reconcile.outputs.disabled != '1' }}
+        uses: actions/cache/save@v4
+        with:
+          path: .workflow-health-store
+          key: workflow-health-store-${{ github.run_id }}
+
+      # Gating reads the runtime disable decision from the reconcile step
+      # output so the disable semantics ('1'|'true'|'yes', resolved by
+      # config.mjs) have a single source of truth.
       - name: Upload workflow-health artifact
-        if: ${{ env.WORKFLOW_HEALTH_DISABLED != '1' && env.WORKFLOW_HEALTH_DISABLED != 'true' }}
+        if: ${{ steps.reconcile.outputs.disabled != '1' }}
         uses: actions/upload-artifact@v4
         with:
           name: workflow-health
