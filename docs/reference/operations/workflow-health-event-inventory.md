@@ -141,6 +141,14 @@ Every adapter normalizes source evidence into this envelope. Required fields
 - A stage boundary with only `evidence_missing` or `local_only` sources must
   produce a `phase: unknown`, `evidenceQuality: unknown_evidence_missing`
   event rather than being skipped.
+- Every `marker` names exactly one emission (e.g. one controller `kind`, one
+  advisory comment); a source is never a pipe-joined alternative of two
+  possible values. Where a stage boundary has more than one matching emission,
+  the inventory lists them as separate source entries.
+- A `deterministic` source may still be `authoritative: false` (e.g. a legacy
+  compatibility surface that is reliably observable but not the source of
+  truth). Adapters must call `getAuthoritativeSources()` on a stage's evidence
+  array, never assume `evidenceClass: 'deterministic'` alone means canonical.
 
 ## Rollback
 

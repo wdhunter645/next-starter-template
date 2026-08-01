@@ -323,7 +323,15 @@ export const STAGES = Object.freeze([
         surface: 'controller-evidence-complete',
         channel: 'workflow_artifact',
         location: SOURCE_LOCATIONS.CONTROLLER_COMPONENT,
-        marker: 'observability.kind=evidence_complete|disposition',
+        marker: 'observability.kind=evidence_complete',
+        identityFields: ['schemaVersion', 'kind', 'outcome', 'at', 'runId'],
+        evidenceClass: 'deterministic',
+      },
+      {
+        surface: 'controller-disposition',
+        channel: 'workflow_artifact',
+        location: SOURCE_LOCATIONS.CONTROLLER_COMPONENT,
+        marker: 'observability.kind=disposition',
         identityFields: ['schemaVersion', 'kind', 'outcome', 'at', 'runId'],
         evidenceClass: 'deterministic',
       },
@@ -338,10 +346,18 @@ export const STAGES = Object.freeze([
         evidenceClass: 'deterministic',
       },
       {
-        surface: 'advisory-comments',
+        surface: 'diff-scope-advisory-comment',
         channel: 'pr_comment',
         location: SOURCE_LOCATIONS.MAIN,
-        marker: '<!-- diff-scope-advisory --> | <!-- pr-hygiene-advisory -->',
+        marker: '<!-- diff-scope-advisory -->',
+        identityFields: ['prNumber', 'commentId'],
+        evidenceClass: 'deterministic',
+      },
+      {
+        surface: 'pr-hygiene-advisory-comment',
+        channel: 'pr_comment',
+        location: SOURCE_LOCATIONS.MAIN,
+        marker: '<!-- pr-hygiene-advisory -->',
         identityFields: ['prNumber', 'commentId'],
         evidenceClass: 'deterministic',
       },
@@ -416,7 +432,15 @@ export const STAGES = Object.freeze([
         surface: 'controller-blocker',
         channel: 'workflow_artifact',
         location: SOURCE_LOCATIONS.CONTROLLER_COMPONENT,
-        marker: 'observability.kind=blocker|escalation',
+        marker: 'observability.kind=blocker',
+        identityFields: ['schemaVersion', 'kind', 'outcome', 'at', 'runId'],
+        evidenceClass: 'deterministic',
+      },
+      {
+        surface: 'controller-escalation',
+        channel: 'workflow_artifact',
+        location: SOURCE_LOCATIONS.CONTROLLER_COMPONENT,
+        marker: 'observability.kind=escalation',
         identityFields: ['schemaVersion', 'kind', 'outcome', 'at', 'runId'],
         evidenceClass: 'deterministic',
       },
@@ -501,7 +525,12 @@ export const STAGES = Object.freeze([
         marker: '## POST-MERGE CLOSEOUT CHECKLIST',
         identityFields: ['prNumber', 'mergeSha'],
         evidenceClass: 'deterministic',
-        notes: 'Legacy compatibility surface; non-authoritative under #2678 migration.',
+        authoritative: false,
+        notes:
+          'Legacy compatibility surface; non-authoritative under #2678 migration. ' +
+          'This entry is machine-parseable and stably identifiable (deterministic) ' +
+          'but adapters must never treat it as canonical closeout-start evidence — ' +
+          'only the cumulative-evidence-event above is authoritative for this stage.',
       },
     ],
     endEvidence: [
@@ -650,6 +679,16 @@ export function validateEventInventory(stages = STAGES) {
         if (source.channel === 'label' || /label-only/.test(source.surface)) {
           errors.push(`label_only_source_not_permitted:${label}`);
         }
+        // A deterministic-but-non-authoritative source (e.g. a legacy
+        // compatibility surface) must explain why it is excluded from
+        // canonical stage state, or adapters have no way to know it is
+        // not the source of truth.
+        if (source.authoritative === false && !source.notes) {
+          errors.push(`non_authoritative_without_notes:${label}`);
+        }
+        if (/\|/.test(String(source.marker || ''))) {
+          errors.push(`marker_encodes_multiple_alternatives:${label}`);
+        }
       }
     }
   }
@@ -696,4 +735,18 @@ export function summarizeInventoryGaps(stages = STAGES) {
     }
   }
   return { schemaVersion: INVENTORY_SCHEMA_VERSION, gapCount: gaps.length, gaps };
+}
+
+/**
+ * Canonical evidence for one stage boundary. `evidenceClass: 'deterministic'`
+ * alone does not mean a source is authoritative for deriving stage state —
+ * a source may be reliably machine-parseable yet explicitly non-authoritative
+ * (e.g. a legacy compatibility surface). Adapters (#2887) must use this
+ * helper, not a raw `evidenceClass` check, to pick the source(s) of truth.
+ *
+ * @param {Array} sources
+ * @returns {Array}
+ */
+export function getAuthoritativeSources(sources = []) {
+  return (sources || []).filter((source) => source.authoritative !== false);
 }

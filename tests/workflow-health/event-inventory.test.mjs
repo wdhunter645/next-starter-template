@@ -11,6 +11,7 @@ import {
   REQUIRED_STAGE_IDS,
   STAGE_IDS,
   STAGES,
+  getAuthoritativeSources,
   summarizeInventoryGaps,
   validateEventInventory,
 } from '../../scripts/workflow-health/event-inventory.mjs';
@@ -60,7 +61,7 @@ describe('workflow event inventory (#2886)', () => {
 
   it('classifies every non-deterministic boundary as an explicit visible gap', () => {
     const summary = summarizeInventoryGaps();
-    expect(summary.gapCount).toBeGreaterThan(0);
+    expect(summary.gapCount).toBe(6);
     for (const gap of summary.gaps) {
       expect(EVIDENCE_CLASSES).toContain(gap.evidenceClass);
       expect(gap.evidenceClass).not.toBe('deterministic');
@@ -202,5 +203,48 @@ describe('workflow-health adapter contract (#2886)', () => {
 
   it('pins the #2678 cumulative evidence marker consumed at closeout', () => {
     expect(CUMULATIVE_EVIDENCE_MARKER).toBe('<!-- lgfc-cumulative-evidence:v1 -->');
+  });
+
+  it('never encodes multiple alternative kinds/markers as one pipe-joined literal', () => {
+    for (const stage of STAGES) {
+      for (const source of [...stage.startEvidence, ...stage.endEvidence]) {
+        expect(String(source.marker || ''), `${stage.id}/${source.surface}`).not.toContain('|');
+      }
+    }
+    const result = validateEventInventory();
+    expect(result.errors).toEqual([]);
+  });
+
+  it('marks the legacy closeout checklist non-authoritative so adapters cannot treat it as canonical', () => {
+    const closeout = STAGES.find((s) => s.id === 'closeout');
+    const legacy = closeout.startEvidence.find((s) => s.surface === 'legacy-closeout-checklist');
+    const canonical = closeout.startEvidence.find((s) => s.surface === 'cumulative-evidence-event');
+    expect(legacy.authoritative).toBe(false);
+    expect(legacy.notes).toBeTruthy();
+    expect(canonical.authoritative).not.toBe(false);
+
+    const authoritative = getAuthoritativeSources(closeout.startEvidence);
+    expect(authoritative).toHaveLength(1);
+    expect(authoritative[0].surface).toBe('cumulative-evidence-event');
+  });
+
+  it('flags a non-authoritative source with no explanation', () => {
+    const stages = JSON.parse(JSON.stringify(STAGES));
+    const closeout = stages.find((s) => s.id === 'closeout');
+    const legacy = closeout.startEvidence.find((s) => s.surface === 'legacy-closeout-checklist');
+    delete legacy.notes;
+    const result = validateEventInventory(stages);
+    expect(result.ok).toBe(false);
+    expect(result.errors).toContain('non_authoritative_without_notes:closeout/startEvidence/legacy-closeout-checklist');
+  });
+
+  it('flags a marker that encodes multiple alternatives as one literal string', () => {
+    const stages = JSON.parse(JSON.stringify(STAGES));
+    stages[0].startEvidence[0].marker = 'kind_a|kind_b';
+    const result = validateEventInventory(stages);
+    expect(result.ok).toBe(false);
+    expect(result.errors.some((e) => e.startsWith('marker_encodes_multiple_alternatives:'))).toBe(
+      true,
+    );
   });
 });
