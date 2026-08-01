@@ -56,7 +56,7 @@ jobs:
           BUILD_RC=$?
           set -e
           # Always run secret scan + result validation; never print unscanned content.
-          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' "$RESULT_FILE" 2>/dev/null; then
+          if grep -qE 'CURSOR_API_KEY=|gh[a-z]_[A-Za-z0-9]+|github_pat_|GH_TOKEN=|GITHUB_TOKEN=' "$RESULT_FILE" 2>/dev/null; then
             echo "secret-bearing output refused" >&2
             exit 1
           fi
@@ -66,9 +66,13 @@ jobs:
           fi
           # Result content has already passed the secret scan above, so it is
           # safe to surface for diagnosis (#2978) -- classification alone does
-          # not explain a failed/manual_review_required/rebuild_deferred result.
-          echo "bridge-build result:"
-          cat "$RESULT_FILE"
+          # not explain a failed/manual_review_required result. Only print on
+          # a non-zero build exit so successful runs don't routinely expose
+          # extra log content (review feedback on #2979).
+          if [ "$BUILD_RC" -ne 0 ]; then
+            echo "bridge-build result (build exited non-zero):"
+            cat "$RESULT_FILE"
+          fi
           export BUILD_RC
           export RESULT_FILE
           # Inline node (not a Python heredoc): JS is indentation-insensitive,
