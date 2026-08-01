@@ -82,7 +82,6 @@ every doc that names the marker) and is left as follow-up work.
 
 ## Verification
 
-```bash
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/claude-code-wake.yml'))"
-bash scripts/ci/docs_check_headers.sh
-```
+Changes to the workflow are validated for YAML correctness and against the
+CI header check before merge; validation evidence for a given change is
+recorded on the PR, not in this reference document.
