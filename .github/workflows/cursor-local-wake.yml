@@ -2,6 +2,10 @@ name: Cursor Local Wake Delivery
 
 # Delivery only: write a wake packet on the Chromebook host for Cursor Local Bridge.
 # Does not launch Cursor, hold API keys, claim the lane, or treat labels as authority.
+#
+# Locked #2997 routing: Cursor-routed traffic only. ChatGPT/Atlas, Claude/Claude Code,
+# other-agent, and unrelated GitHub traffic must not enter the Chromebook Bridge queue.
+# Canonical predicate: scripts/cursor-bridge/lib/wake-ingress.mjs (shouldDeliverCursorWake).
 
 on:
   issues:
@@ -76,6 +80,37 @@ jobs:
           echo "issue=$ISSUE" >> "$GITHUB_OUTPUT"
           DELIVERY="wake-${RUN_ID}-${ISSUE}-${COMMENT_ID:-nolabel}"
           echo "delivery_id=$DELIVERY" >> "$GITHUB_OUTPUT"
+
+      - name: Enforce Cursor-only routing before queue write
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ISSUE: ${{ steps.meta.outputs.issue }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          ISSUE_LABELS: ${{ join(github.event.issue.labels.*.name, ',') }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Align with scripts/cursor-bridge/lib/wake-ingress.mjs — fail closed.
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            LABELS=$(gh issue view "$ISSUE" --repo wdhunter645/next-starter-template --json labels --jq '[.labels[].name] | join(",")')
+          else
+            LABELS="$ISSUE_LABELS"
+          fi
+          case ",$LABELS," in
+            *,agent:cursor,*) ;;
+            *)
+              echo "absent_cursor_routing: refusing Chromebook Bridge packet for #$ISSUE"
+              exit 1
+              ;;
+          esac
+          BODY="${COMMENT_BODY:-}"
+          case "$BODY" in
+            "CLAUDE CODE RESUME"*|"CLAUDE CODE WAKE"*|"CLAUDE CODE HANDOFF"*|"CHATGPT HANDOFF"*)
+              echo "non_cursor_directed_traffic: refusing Chromebook Bridge packet"
+              exit 1
+              ;;
+          esac
+          echo "cursor_routing_ok=true"
 
       - name: Write wake packet on host
         env:
