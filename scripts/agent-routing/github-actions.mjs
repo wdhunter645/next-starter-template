@@ -1,7 +1,13 @@
 import { buildStatusMarker } from '../ci/issue_pr_contract.mjs';
 import { renderPrBody } from '../ci/pr_body_renderer.mjs';
 import { validateRenderedPrBody } from '../ci/pr_contract.mjs';
-import { environmentTitleLabel } from './environment-profiles.mjs';
+import {
+  environmentAdmissionApproval,
+  environmentTitleLabel,
+  requiredGatesForTier,
+  resolveEnvironmentTier,
+  sameRequiredGates,
+} from './environment-profiles.mjs';
 
 const ALLOWED_MUTATIONS = new Set([
   'set_labels',
@@ -35,6 +41,14 @@ export function validateMutation(mutation, liveState) {
     if (mutation.baseBranch === 'main') return { ok: false, reason: 'automatic_main_merge_prohibited' };
     if (!VALID_ENVIRONMENT_TIERS.has(mutation.environmentTier)) {
       return { ok: false, reason: 'environment_not_eligible_for_auto_admission' };
+    }
+    const resolvedTier = resolveEnvironmentTier(mutation.baseBranch);
+    if (!resolvedTier || resolvedTier !== mutation.environmentTier) {
+      return { ok: false, reason: 'target_profile_mismatch' };
+    }
+    const expectedGates = requiredGatesForTier(resolvedTier);
+    if (!expectedGates || (mutation.requiredGates != null && !sameRequiredGates(mutation.requiredGates, expectedGates))) {
+      return { ok: false, reason: 'target_profile_mismatch' };
     }
     const missing = ADMIT_PR_REQUIRED_FIELDS.filter((field) => !mutation[field]);
     if (missing.length > 0) return { ok: false, reason: 'incomplete_admit_pr_mutation' };
@@ -156,6 +170,19 @@ export function buildAdmitPrPlan(mutation, freshState = {}) {
   if (!VALID_ENVIRONMENT_TIERS.has(mutation.environmentTier)) {
     return { ok: false, reason: 'environment_not_eligible_for_auto_admission' };
   }
+  // Re-derive tier and required gates from the live base branch. Never trust a
+  // caller-supplied profile that disagrees with the authorized target (#2622).
+  const resolvedTier = resolveEnvironmentTier(mutation.baseBranch);
+  if (!resolvedTier || resolvedTier !== mutation.environmentTier) {
+    return { ok: false, reason: 'target_profile_mismatch' };
+  }
+  const requiredGates = requiredGatesForTier(resolvedTier);
+  if (!requiredGates) {
+    return { ok: false, reason: 'environment_not_eligible_for_auto_admission' };
+  }
+  if (mutation.requiredGates != null && !sameRequiredGates(mutation.requiredGates, requiredGates)) {
+    return { ok: false, reason: 'target_profile_mismatch' };
+  }
   if (freshState.issueOpen === false) return { ok: false, reason: 'issue_not_open' };
   if (freshState.actorAuthorized === false) return { ok: false, reason: 'contract_actor_unauthorized' };
   if (freshState.headSha !== mutation.expectedHeadSha) return { ok: false, reason: 'stale_head_sha' };
@@ -180,19 +207,18 @@ export function buildAdmitPrPlan(mutation, freshState = {}) {
   const rendered = renderAndValidateBody(mutation, freshState);
   if (!rendered.ok) return rendered;
 
-  const requiredGates = Array.isArray(mutation.requiredGates) ? mutation.requiredGates : [];
-
   return {
     ok: true,
     reason: 'authorized',
-    environmentTier: mutation.environmentTier,
+    environmentTier: resolvedTier,
     requiredGates,
+    admissionApproval: environmentAdmissionApproval(resolvedTier),
     request: {
       head: mutation.headBranch,
       base: mutation.baseBranch,
       draft: false,
       issue: mutation.issue,
-      title: `${environmentTitleLabel(mutation.environmentTier)}: source Issue #${mutation.issue}`,
+      title: `${environmentTitleLabel(resolvedTier)}: source Issue #${mutation.issue}`,
       body: rendered.body,
     },
     commentUpdateTemplate: {

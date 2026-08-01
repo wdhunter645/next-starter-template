@@ -43,3 +43,21 @@ const TIER_TITLE_LABEL = Object.freeze({
 export function environmentTitleLabel(tier) {
   return TIER_TITLE_LABEL[tier] || tier;
 }
+
+/**
+ * Deterministic environment-approval marker recorded on the source Issue when
+ * every required inline gate for the tier has passed (#2622). Null for any
+ * tier that is not an implemented auto-admission target.
+ */
+export function environmentAdmissionApproval(tier) {
+  const label = TIER_TITLE_LABEL[tier];
+  if (!label) return null;
+  return `APPROVED FOR ${label.toUpperCase()} ADMISSION`;
+}
+
+/** Stable equality for ordered required-gate lists. */
+export function sameRequiredGates(actual = [], expected = []) {
+  if (!Array.isArray(actual) || !Array.isArray(expected)) return false;
+  if (actual.length !== expected.length) return false;
+  return actual.every((gate, index) => gate === expected[index]);
+}

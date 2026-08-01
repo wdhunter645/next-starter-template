@@ -31,7 +31,7 @@ Sandbox is an optional, isolated PMO / Engineering proof-of-concept profile, and
 - remote isolated `sandbox/*` branch, created from the current Development base on first use;
 - required gate: the repository's secret scan (`gitleaks`) only — no universal build, typecheck, lint, test, reviewer, documentation, design-authority, PR-hygiene, or diff-scope gate is required for Sandbox admission;
 - the required gate executes synchronously inside the same authorized controller run that creates the PR, not as a separate `pull_request`-triggered workflow (`docs/governance/CI-AND-VERIFICATION.md` owns why);
-- eligible work automatically merges into the Sandbox target once the required check passes; a failing check blocks merge and leaves durable evidence on the source Issue;
+- eligible work records `APPROVED FOR SANDBOX ADMISSION` and automatically merges into the Sandbox target once the required inline check passes; a failing or unavailable required check blocks merge and leaves durable evidence on the source Issue;
 - no production credentials, writes, or bindings;
 - no direct path to Promotion Candidate or Production;
 - output may be discarded, retained as evidence, or adopted into Development.
@@ -43,7 +43,7 @@ Development is the primary Model B implementation profile, and the second non-pr
 - work targets a non-production component branch (including a dedicated `component/<release-unit>` branch);
 - required gates: the Sandbox secret scan plus the repository's existing `quality` implementation (its current class-aware build/typecheck/lint/test behavior), both executing synchronously inside the same authorized controller run;
 - current PR hygiene, diff scope, reviewer-response, design-authority, and documentation findings remain advisory in Development unless a source Issue explicitly promotes one for a bounded change;
-- eligible non-protected work automatically merges into the component branch once the required gates pass;
+- eligible non-protected work records `APPROVED FOR DEVELOPMENT ADMISSION` and automatically merges into the component branch once the required inline gates pass; a failing or unavailable required gate blocks merge;
 - protected or material design concerns route to PR Approver / Engineering;
 - independent work may continue while prior work is review- or administration-pending.
 

@@ -3,6 +3,8 @@ import {
   resolveEnvironmentTier,
   requiredGatesForTier,
   environmentTitleLabel,
+  environmentAdmissionApproval,
+  sameRequiredGates,
   REQUIRED_INLINE_GATES,
 } from '../../scripts/agent-routing/environment-profiles.mjs';
 
@@ -63,5 +65,26 @@ describe('environmentTitleLabel', () => {
 
   it('falls back to the raw tier string for unknown tiers', () => {
     expect(environmentTitleLabel('transition')).toBe('transition');
+  });
+});
+
+describe('environmentAdmissionApproval', () => {
+  it('records the #2622 deterministic environment-approval markers', () => {
+    expect(environmentAdmissionApproval('sandbox')).toBe('APPROVED FOR SANDBOX ADMISSION');
+    expect(environmentAdmissionApproval('development')).toBe('APPROVED FOR DEVELOPMENT ADMISSION');
+  });
+
+  it('returns null for unimplemented tiers (no auto-admission approval path)', () => {
+    expect(environmentAdmissionApproval('transition')).toBeNull();
+    expect(environmentAdmissionApproval('production')).toBeNull();
+    expect(environmentAdmissionApproval(undefined)).toBeNull();
+  });
+});
+
+describe('sameRequiredGates', () => {
+  it('requires exact ordered equality', () => {
+    expect(sameRequiredGates(['secret_scan'], ['secret_scan'])).toBe(true);
+    expect(sameRequiredGates(['secret_scan', 'quality'], ['secret_scan'])).toBe(false);
+    expect(sameRequiredGates(['quality', 'secret_scan'], ['secret_scan', 'quality'])).toBe(false);
   });
 });
