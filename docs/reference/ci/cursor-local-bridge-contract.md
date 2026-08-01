@@ -5,8 +5,8 @@ Authority Level: Project Contract
 Owns: Cursor Local Bridge component inventory, eligibility auto-start gates, transactional launch acceptance, wake-packet authority boundary, health/watchdog/reconciliation contract, and fallback taxonomy
 Does Not Own: Product decisions, PR approval, Background Agents, or unrestricted workflow migration onto the Chromebook runner
 Canonical Reference: /docs/explanation/operations/cursor-local-auto-start-architecture.md
-Related Issues: #2294, #2667, #2669, #2681, #2694, #2739, #2814
-Last Reviewed: 2026-07-24
+Related Issues: #2294, #2667, #2669, #2681, #2694, #2739, #2814, #2997
+Last Reviewed: 2026-08-01
 ---
 
 # Cursor Local Bridge Contract
@@ -75,15 +75,30 @@ Rules:
 
 The Bridge is the secure transport, host-readiness, deduplication, and serial-concurrency controller. It is **not** the final semantic task-authority decision-maker. Trusted Cursor-routed notifications must reach Cursor for evaluation unless a mechanical safety gate prevents launch.
 
+### Locked routing rule (Cursor-only Chromebook Bridge queue)
+
+Routing is by intended agent identity, not semantic task readiness:
+
+| Traffic | Chromebook Bridge queue / Cursor launch |
+| --- | --- |
+| `agent:cursor` and/or `LOCAL CURSOR RESUME` (with required handoff labels) | Must cross when mechanical safety allows |
+| ChatGPT/Atlas-directed notifications (`agent:ChatGPT`, `CHATGPT HANDOFF`, …) | Must not enter |
+| Claude/Claude Code-directed notifications (`CLAUDE CODE RESUME` / `WAKE`, …) | Must not enter |
+| Other `agent:*` labels without Cursor routing | Must not enter |
+| Generic unrelated GitHub Issue/PR/workflow/review/bot activity | Must not enter |
+
+Canonical ingress predicate: `scripts/cursor-bridge/lib/wake-ingress.mjs` (`shouldDeliverCursorWake`). Wake workflow `.github/workflows/cursor-local-wake.yml` must invoke that predicate before writing a Chromebook queue packet (job-level `if:` is only a coarse filter). Only `handoff:ready` label events and `LOCAL CURSOR RESUME` comments on Cursor-routed open Issues (plus authorized manual dispatch) may queue. Claude Code wake (`.github/workflows/claude-code-wake.yml`) is a separate notification path and must never write Chromebook Bridge packets.
+
 ### Mechanical gates (Bridge may reject before launch)
 
-1. Source Issue is open.  
+1. Source Issue is present and open (`open` / `OPEN`; null Issue fails closed).  
 2. Required routing labels from Bridge config are present (default: `agent:cursor` and `handoff:ready`).  
-3. Repository matches the configured expected repository (`wdhunter645/next-starter-template`).  
-4. Serial lane has no active conflicting claim.  
-5. Delivery key is not already consumed (resume comment id when present; otherwise packet `deliveryId` / issue fallback).  
-6. Bridge, workspace, GitHub, and Cursor authentication/preflight readiness succeed.  
-7. Wake packet Issue identity is valid and the wake source is trusted.
+3. Positive Cursor routing signal is present (`agent:cursor`).  
+4. Repository matches the configured expected repository (`wdhunter645/next-starter-template`).  
+5. Serial lane has no active conflicting claim.  
+6. Delivery key is not already consumed (resume comment id when present; otherwise packet `deliveryId` / issue fallback). Unsafe delivery identities are encoded as a stable SHA-256 digest of the complete original value (`enc-<hex>`) before use in `consumed/`, recovery filenames, and claims — never a truncated reversible encoding.  
+7. Bridge, workspace, GitHub, and Cursor authentication/preflight readiness succeed.  
+8. Wake packet Issue identity is valid and the wake source is trusted.
 
 ### Semantic assessment (Bridge delivers to Cursor; does not reject)
 
@@ -95,7 +110,7 @@ Cursor evaluates live Issue/comment context and returns act, hold, correction-ne
 - resume/issue chronology and issue-number match;
 - queue-routing / parent-project classification outcomes.
 
-Reconciliation applies the same mechanical contract before writing a recovery packet. Deduplication keys are the delivery key (resume comment id when present, else packet/issue identity).
+Reconciliation applies the same mechanical Cursor-routing contract before writing a recovery packet (issues listed with required Cursor labels only). Deduplication keys are sanitized delivery keys (resume comment id when present, else packet/issue identity).
 
 ## Transactional launch acceptance
 

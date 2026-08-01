@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { sanitizeDeliveryKey } from './eligibility.mjs';
 import { bridgeHome } from './paths.mjs';
 
 export function claimPath(config) {
@@ -56,7 +57,11 @@ export function releaseClaim(config) {
 }
 
 export function consumedPath(config, resumeCommentId) {
-  return path.join(bridgeHome(), config.consumedDir || 'consumed', `${resumeCommentId}.json`);
+  return path.join(
+    bridgeHome(),
+    config.consumedDir || 'consumed',
+    `${sanitizeDeliveryKey(resumeCommentId)}.json`,
+  );
 }
 
 export function isConsumed(config, resumeCommentId) {

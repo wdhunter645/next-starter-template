@@ -6,7 +6,9 @@
  * reported to Cursor and must not discard a trusted notification.
  */
 
+import crypto from 'node:crypto';
 import { classifyQueueCandidate } from '../../orchestrator/queue-routing.mjs';
+import { hasCursorRoutingSignal } from './wake-ingress.mjs';
 
 const RESPONSE_MARKERS = ['CHATGPT RESPONSE', 'CHATGPT CLOSEOUT'];
 const RESUME_MARKER = 'LOCAL CURSOR RESUME';
@@ -14,12 +16,24 @@ const RESUME_MARKER = 'LOCAL CURSOR RESUME';
 /** Errors that remain Bridge-side hard stops before launch. */
 const MECHANICAL_ERROR_PREFIXES = [
   'source_issue_not_open',
+  'missing_issue',
   'missing_label:',
   'repository_mismatch',
+  'absent_cursor_routing',
 ];
 
 function commentBody(c) {
   return c.body || c.bodyText || '';
+}
+
+function issueLabels(issue) {
+  if (!issue || !Array.isArray(issue.labels)) return [];
+  return issue.labels.map((l) => (typeof l === 'string' ? l : l?.name)).filter(Boolean);
+}
+
+function isIssueOpen(issue) {
+  if (!issue) return false;
+  return String(issue.state || '').toLowerCase() === 'open';
 }
 
 function findLatestMarkerComment(comments, markers) {
@@ -81,11 +95,28 @@ function isMechanicalError(error) {
 }
 
 /**
+ * Encode arbitrary delivery identity into a filesystem-safe key.
+ * Safe tokens (numeric ids, wake-* ids without traversal) pass through.
+ * Unsafe values become a stable SHA-256 digest of the complete original
+ * identity (collision-resistant; no prefix truncation of reversible encodings).
+ */
+export function sanitizeDeliveryKey(raw) {
+  const input = String(raw ?? '').trim();
+  if (!input) return 'issue-unknown';
+  if (/^[A-Za-z0-9][A-Za-z0-9._-]{0,179}$/.test(input) && !input.includes('..')) {
+    return input;
+  }
+  const digest = crypto.createHash('sha256').update(input, 'utf8').digest('hex');
+  return `enc-${digest}`;
+}
+
+/**
  * Assess semantic readiness for Cursor. Findings never block Bridge launch.
  */
 export function assessSemanticReadiness(issue, comments, opts = {}) {
   const findings = [];
-  const sorted = [...comments].sort(
+  const commentList = Array.isArray(comments) ? comments : [];
+  const sorted = [...commentList].sort(
     (a, b) => new Date(a.createdAt || a.created_at) - new Date(b.createdAt || b.created_at),
   );
 
@@ -101,7 +132,7 @@ export function assessSemanticReadiness(issue, comments, opts = {}) {
     if (parsed.actions.length !== 1) {
       findings.push(`resume_action_count:${parsed.actions.length}`);
     }
-    if (parsed.issueNumber && Number(issue.number) !== parsed.issueNumber) {
+    if (issue && parsed.issueNumber && Number(issue.number) !== parsed.issueNumber) {
       findings.push('resume_issue_mismatch');
     }
     if (response) {
@@ -131,7 +162,7 @@ export function assessSemanticReadiness(issue, comments, opts = {}) {
     }
   }
 
-  const labels = (issue.labels || []).map((l) => (typeof l === 'string' ? l : l.name));
+  const labels = issueLabels(issue);
   const queueRelevant = labels.some(
     (label) =>
       label.startsWith('team:') ||
@@ -144,11 +175,11 @@ export function assessSemanticReadiness(issue, comments, opts = {}) {
       label === 'pmo:pipeline',
   );
   let queueClassification = null;
-  if (queueRelevant && opts.skipQueueRoutingCheck !== true) {
+  if (issue && queueRelevant && opts.skipQueueRoutingCheck !== true) {
     queueClassification = classifyQueueCandidate(
       {
         number: issue.number,
-        state: issue.state === 'OPEN' || issue.state === 'open' ? 'open' : issue.state,
+        state: isIssueOpen(issue) ? 'open' : String(issue.state || ''),
         labels,
         body: issue.body || '',
       },
@@ -180,28 +211,39 @@ export function assessSemanticReadiness(issue, comments, opts = {}) {
  * @param {object} issue - gh issue view JSON
  * @param {object[]} comments - issue comments newest-last preferred
  * @param {object} opts
- * @returns {{
- *   ok: boolean,
- *   errors: string[],
- *   semanticFindings: string[],
- *   response: object|null,
- *   resume: object|null,
- *   parsed: object|null,
- *   labels: string[],
- *   queueClassification: object|null,
- * }}
  */
 export function validateEligibility(issue, comments, opts = {}) {
   const errors = [];
   const requiredLabels = opts.requiredLabels || ['agent:cursor', 'handoff:ready'];
+  const commentList = Array.isArray(comments) ? comments : [];
 
-  if (!issue || issue.state !== 'OPEN') {
+  if (!issue) {
+    return {
+      ok: false,
+      errors: ['missing_issue'],
+      semanticFindings: [],
+      response: null,
+      resume: null,
+      parsed: null,
+      labels: [],
+      queueClassification: null,
+    };
+  }
+
+  if (!isIssueOpen(issue)) {
     errors.push('source_issue_not_open');
   }
 
-  const labels = (issue.labels || []).map((l) => (typeof l === 'string' ? l : l.name));
+  const labels = issueLabels(issue);
   for (const need of requiredLabels) {
     if (!labels.includes(need)) errors.push(`missing_label:${need}`);
+  }
+
+  // Locked #2997 routing: absent Cursor routing is a mechanical hard stop.
+  if (!hasCursorRoutingSignal({ labels })) {
+    if (!errors.some((e) => e === 'missing_label:agent:cursor')) {
+      errors.push('absent_cursor_routing');
+    }
   }
 
   if (opts.expectedRepo && issue.repository && issue.repository.nameWithOwner) {
@@ -210,7 +252,7 @@ export function validateEligibility(issue, comments, opts = {}) {
     }
   }
 
-  const semantic = assessSemanticReadiness(issue, comments, opts);
+  const semantic = assessSemanticReadiness(issue, commentList, opts);
 
   // Branch hint remains a soft finding only (never mechanical).
   if (opts.branchHint && semantic.resume) {
@@ -246,14 +288,16 @@ export function validateEligibility(issue, comments, opts = {}) {
 /**
  * Stable dedupe/claim key for a wake. Prefers resume comment id; falls back
  * to packet identity so delivery-first launches remain idempotent without a
- * parseable resume.
+ * parseable resume. Always filesystem-safe (#2997 remediation).
  */
 export function resolveDeliveryKey({ packet, eligibility, issueNumber }) {
-  if (eligibility?.resume?.id != null) return String(eligibility.resume.id);
-  if (packet?.resumeCommentId != null) return String(packet.resumeCommentId);
-  if (packet?.resumeHint != null) return String(packet.resumeHint);
-  if (packet?.deliveryId) return String(packet.deliveryId);
-  return `issue-${issueNumber}`;
+  let raw;
+  if (eligibility?.resume?.id != null) raw = String(eligibility.resume.id);
+  else if (packet?.resumeCommentId != null) raw = String(packet.resumeCommentId);
+  else if (packet?.resumeHint != null) raw = String(packet.resumeHint);
+  else if (packet?.deliveryId) raw = String(packet.deliveryId);
+  else raw = `issue-${issueNumber}`;
+  return sanitizeDeliveryKey(raw);
 }
 
 export {
@@ -262,4 +306,5 @@ export {
   RESUME_MARKER,
   MECHANICAL_ERROR_PREFIXES,
   isMechanicalError,
+  isIssueOpen,
 };

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { isConsumed, isClaimActive, claimPath } from './claim.mjs';
-import { validateEligibility, resolveDeliveryKey } from './eligibility.mjs';
+import { validateEligibility, resolveDeliveryKey, sanitizeDeliveryKey } from './eligibility.mjs';
 import { appendBridgeLog } from './notify.mjs';
 import { atomicWriteJson } from './atomic-write.mjs';
 
@@ -71,7 +71,7 @@ export function buildRecoveryPacket({
   deliveryKey,
   now = new Date(),
 }) {
-  const key = String(deliveryKey || resumeCommentId);
+  const key = sanitizeDeliveryKey(deliveryKey || resumeCommentId);
   const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
   return {
     schemaVersion: 1,
@@ -80,14 +80,18 @@ export function buildRecoveryPacket({
     eventName: 'reconcile-recovery',
     actor: 'cursor-bridge-reconcile',
     resumeHint: key,
-    resumeCommentId: resumeCommentId != null ? String(resumeCommentId) : key,
+    resumeCommentId: resumeCommentId != null ? sanitizeDeliveryKey(resumeCommentId) : key,
     recovery: true,
     deliveredAt: now.toISOString(),
   };
 }
 
 export function writeRecoveryPacket(queueDir, packet) {
-  const file = path.join(queueDir, `${packet.deliveryId}.json`);
+  const safeId = sanitizeDeliveryKey(packet.deliveryId);
+  const file = path.join(queueDir, `${safeId}.json`);
+  if (safeId !== String(packet.deliveryId)) {
+    packet = { ...packet, deliveryId: safeId };
+  }
   if (fs.existsSync(file)) {
     return { wrote: false, reason: 'delivery_id_exists', file };
   }

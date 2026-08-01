@@ -4,9 +4,17 @@ import {
   assessSemanticReadiness,
   parseResume,
   resolveDeliveryKey,
+  sanitizeDeliveryKey,
 } from '../scripts/cursor-bridge/lib/eligibility.mjs';
+import {
+  shouldDeliverCursorWake,
+  isNonCursorDirectedTraffic,
+  hasCursorRoutingSignal,
+} from '../scripts/cursor-bridge/lib/wake-ingress.mjs';
 import { buildPrompt } from '../scripts/cursor-bridge/lib/launch.mjs';
 import { shouldQueueRecovery, buildRecoveryPacket } from '../scripts/cursor-bridge/lib/reconcile.mjs';
+import { consumedPath } from '../scripts/cursor-bridge/lib/claim.mjs';
+import path from 'node:path';
 
 const baseIssue = {
   number: 2997,
@@ -78,6 +86,18 @@ Next local action:
     const r = validateEligibility(baseIssue, [response, resume]);
     expect(r.ok).toBe(true);
     expect(r.semanticFindings).toContain('resume_missing_response_reference');
+  });
+
+  it('accepts lowercase open state and fails closed on null issue without throwing', () => {
+    const lowercase = validateEligibility({ ...baseIssue, state: 'open' }, [response]);
+    expect(lowercase.ok).toBe(true);
+
+    expect(() => validateEligibility(null, [response])).not.toThrow();
+    const missing = validateEligibility(null, [response]);
+    expect(missing.ok).toBe(false);
+    expect(missing.errors).toContain('missing_issue');
+
+    expect(() => assessSemanticReadiness(null, [response])).not.toThrow();
   });
 
   it('still blocks untrusted repository identity and closed issues before launch', () => {
@@ -165,7 +185,49 @@ Action: Implement the bounded bridge correction
     expect(packet.deliveryId).toContain('reconcile-issue-2997-');
   });
 
-  it('resolveDeliveryKey prefers resume id and falls back without inventing duplicates', () => {
+  it('does not queue reconciliation recovery for ChatGPT/Claude-only issues', () => {
+    const chatgptOnly = validateEligibility(
+      {
+        ...baseIssue,
+        labels: [{ name: 'agent:ChatGPT' }, { name: 'handoff:ready' }],
+      },
+      [response],
+    );
+    expect(chatgptOnly.ok).toBe(false);
+    expect(
+      shouldQueueRecovery({
+        eligibilityOk: chatgptOnly.ok,
+        deliveryKey: 'issue-2997',
+        consumed: false,
+        hasPendingPacket: false,
+        claimBlocks: false,
+      }).queue,
+    ).toBe(false);
+
+    const claudeOnly = validateEligibility(
+      {
+        ...baseIssue,
+        labels: [{ name: 'agent:claude' }],
+      },
+      [],
+    );
+    expect(claudeOnly.ok).toBe(false);
+    expect(
+      shouldQueueRecovery({
+        eligibilityOk: claudeOnly.ok,
+        deliveryKey: resolveDeliveryKey({
+          packet: null,
+          eligibility: claudeOnly,
+          issueNumber: 2997,
+        }),
+        consumed: false,
+        hasPendingPacket: false,
+        claimBlocks: false,
+      }).reason,
+    ).toBe('ineligible');
+  });
+
+  it('resolveDeliveryKey prefers resume id and sanitizes unsafe packet identities', () => {
     expect(
       resolveDeliveryKey({
         packet: { deliveryId: 'wake-1' },
@@ -187,5 +249,225 @@ Action: Implement the bounded bridge correction
         issueNumber: 2997,
       }),
     ).toBe('issue-2997');
+
+    const traversal = resolveDeliveryKey({
+      packet: { deliveryId: '../x' },
+      eligibility: { resume: null },
+      issueNumber: 2997,
+    });
+    expect(traversal).toMatch(/^enc-[0-9a-f]+$/);
+    expect(traversal.includes('..')).toBe(false);
+    expect(traversal.includes('/')).toBe(false);
+
+    const urlKey = resolveDeliveryKey({
+      packet: { resumeHint: 'https://example.com/a/b' },
+      eligibility: { resume: null },
+      issueNumber: 2997,
+    });
+    expect(urlKey).toMatch(/^enc-[0-9a-f]+$/);
+
+    const recovery = buildRecoveryPacket({
+      issueNumber: 2997,
+      deliveryKey: '../../etc/passwd',
+    });
+    expect(recovery.deliveryId.startsWith('reconcile-enc-')).toBe(true);
+    expect(recovery.deliveryId.includes('..')).toBe(false);
+  });
+
+  it('sanitizeDeliveryKey and consumedPath block path traversal', () => {
+    expect(sanitizeDeliveryKey('99')).toBe('99');
+    expect(sanitizeDeliveryKey('../x')).toMatch(/^enc-[0-9a-f]{64}$/);
+    expect(sanitizeDeliveryKey('a/b')).toMatch(/^enc-[0-9a-f]{64}$/);
+    expect(sanitizeDeliveryKey('')).toBe('issue-unknown');
+
+    const home = '/tmp/lgfc-bridge-home';
+    process.env.LGFC_CURSOR_BRIDGE_HOME = home;
+    try {
+      const p = consumedPath({ consumedDir: 'consumed' }, '../x');
+      expect(p.startsWith(path.join(home, 'consumed'))).toBe(true);
+      expect(p.includes(`${path.sep}..${path.sep}`)).toBe(false);
+      expect(path.basename(p)).toMatch(/^enc-[0-9a-f]{64}\.json$/);
+    } finally {
+      delete process.env.LGFC_CURSOR_BRIDGE_HOME;
+    }
+  });
+
+  it('sanitizeDeliveryKey keeps long shared-prefix GitHub URLs distinct', () => {
+    const base =
+      'https://github.com/wdhunter645/next-starter-template/issues/2997#issuecomment-';
+    const a = `${base}${'1'.repeat(80)}`;
+    const b = `${base}${'2'.repeat(80)}`;
+    const keyA = sanitizeDeliveryKey(a);
+    const keyB = sanitizeDeliveryKey(b);
+    expect(keyA).toMatch(/^enc-[0-9a-f]{64}$/);
+    expect(keyB).toMatch(/^enc-[0-9a-f]{64}$/);
+    expect(keyA).not.toBe(keyB);
+    // Deterministic digests of the complete original identity.
+    expect(sanitizeDeliveryKey(a)).toBe(keyA);
+    expect(sanitizeDeliveryKey(b)).toBe(keyB);
+
+    const home = '/tmp/lgfc-bridge-home-digest';
+    process.env.LGFC_CURSOR_BRIDGE_HOME = home;
+    try {
+      const pathA = consumedPath({ consumedDir: 'consumed' }, a);
+      const pathB = consumedPath({ consumedDir: 'consumed' }, b);
+      expect(pathA).not.toBe(pathB);
+      expect(path.basename(pathA)).toBe(`${keyA}.json`);
+      expect(path.basename(pathB)).toBe(`${keyB}.json`);
+    } finally {
+      delete process.env.LGFC_CURSOR_BRIDGE_HOME;
+    }
+  });
+});
+
+describe('cursor-only wake ingress / packet boundary (#2997)', () => {
+  const repo = 'wdhunter645/next-starter-template';
+  const cursorLabels = ['agent:cursor', 'handoff:ready'];
+
+  it('delivers trusted Cursor labeled and LOCAL CURSOR RESUME events', () => {
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'issues',
+        action: 'labeled',
+        labelName: 'handoff:ready',
+        issueLabels: cursorLabels,
+      }),
+    ).toEqual({ deliver: true, reason: 'handoff_ready_on_cursor_issue' });
+
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'issue_comment',
+        issueState: 'open',
+        issueLabels: cursorLabels,
+        commentBody: 'LOCAL CURSOR RESUME\nIssue: #2997\n',
+      }).deliver,
+    ).toBe(true);
+
+    // Byte-for-byte with workflow startsWith — leading whitespace must not queue.
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'issue_comment',
+        issueState: 'open',
+        issueLabels: cursorLabels,
+        commentBody: '  LOCAL CURSOR RESUME\nIssue: #2997\n',
+      }).reason,
+    ).toBe('not_cursor_resume_marker');
+  });
+
+  it('rejects ChatGPT/Atlas-directed traffic at wake ingress', () => {
+    expect(
+      isNonCursorDirectedTraffic({
+        labels: ['agent:ChatGPT', 'handoff:ready'],
+        commentBody: '',
+      }),
+    ).toBe(true);
+
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'issue_comment',
+        issueState: 'open',
+        issueLabels: ['agent:ChatGPT', 'handoff:ready'],
+        commentBody: 'CHATGPT HANDOFF\nSubject: #1\n',
+      }),
+    ).toEqual({ deliver: false, reason: 'non_cursor_directed_traffic' });
+
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'issues',
+        action: 'labeled',
+        labelName: 'handoff:ready',
+        issueLabels: ['agent:ChatGPT', 'handoff:ready'],
+      }).deliver,
+    ).toBe(false);
+  });
+
+  it('rejects Claude/Claude Code-directed traffic at wake ingress', () => {
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'issue_comment',
+        issueState: 'open',
+        issueLabels: cursorLabels,
+        commentBody: 'CLAUDE CODE RESUME\nIssue: #2997\n',
+      }),
+    ).toEqual({ deliver: false, reason: 'non_cursor_directed_traffic' });
+
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'issue_comment',
+        issueState: 'open',
+        issueLabels: ['agent:claude'],
+        commentBody: 'CLAUDE CODE WAKE: delivered\n',
+      }).deliver,
+    ).toBe(false);
+  });
+
+  it('rejects other-agent and unrelated GitHub traffic', () => {
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'issues',
+        action: 'labeled',
+        labelName: 'bug',
+        issueLabels: ['bug'],
+      }).reason,
+    ).toBe('unrelated_issue_label_event');
+
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'issue_comment',
+        issueState: 'open',
+        issueLabels: cursorLabels,
+        commentBody: 'Thanks for the update',
+      }).reason,
+    ).toBe('not_cursor_resume_marker');
+
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'pull_request',
+        issueLabels: cursorLabels,
+      }).reason,
+    ).toBe('unrelated_github_traffic');
+
+    expect(
+      shouldDeliverCursorWake({
+        repository: 'evil/other',
+        eventName: 'issues',
+        action: 'labeled',
+        labelName: 'handoff:ready',
+        issueLabels: cursorLabels,
+      }).reason,
+    ).toBe('untrusted_repository');
+
+    expect(hasCursorRoutingSignal({ labels: ['agent:codex'] })).toBe(false);
+    expect(hasCursorRoutingSignal({ labels: ['agent:cursor'] })).toBe(true);
+  });
+
+  it('manual dispatch requires Cursor routing before queue write', () => {
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'workflow_dispatch',
+        actor: 'wdhunter645',
+        issueLabels: ['agent:cursor'],
+      }).deliver,
+    ).toBe(true);
+
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'workflow_dispatch',
+        actor: 'wdhunter645',
+        issueLabels: ['agent:ChatGPT'],
+      }).deliver,
+    ).toBe(false);
   });
 });

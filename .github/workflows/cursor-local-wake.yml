@@ -2,6 +2,10 @@ name: Cursor Local Wake Delivery
 
 # Delivery only: write a wake packet on the Chromebook host for Cursor Local Bridge.
 # Does not launch Cursor, hold API keys, claim the lane, or treat labels as authority.
+#
+# Locked #2997 routing: Cursor-routed traffic only. ChatGPT/Atlas, Claude/Claude Code,
+# other-agent, and unrelated GitHub traffic must not enter the Chromebook Bridge queue.
+# Canonical predicate: scripts/cursor-bridge/lib/wake-ingress.mjs (shouldDeliverCursorWake).
 
 on:
   issues:
@@ -76,6 +80,62 @@ jobs:
           echo "issue=$ISSUE" >> "$GITHUB_OUTPUT"
           DELIVERY="wake-${RUN_ID}-${ISSUE}-${COMMENT_ID:-nolabel}"
           echo "delivery_id=$DELIVERY" >> "$GITHUB_OUTPUT"
+
+      # Checkout so the queue gate can invoke the canonical Node predicate
+      # (shouldDeliverCursorWake) instead of a divergent shell reimplementation.
+      - name: Checkout canonical wake-ingress predicate
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts/cursor-bridge/lib/wake-ingress.mjs
+          sparse-checkout-cone-mode: false
+
+      - name: Enforce Cursor-only routing before queue write
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ISSUE: ${{ steps.meta.outputs.issue }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          ISSUE_LABELS: ${{ join(github.event.issue.labels.*.name, ',') }}
+          ISSUE_STATE: ${{ github.event.issue.state }}
+          LABEL_NAME: ${{ github.event.label.name }}
+          ACTION: ${{ github.event.action }}
+          ACTOR: ${{ github.actor }}
+          REPOSITORY: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Canonical gate: scripts/cursor-bridge/lib/wake-ingress.mjs (shouldDeliverCursorWake).
+          # Job-level if: is a coarse filter; this step is the single authority before queue write.
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            ISSUE_LABELS=$(gh issue view "$ISSUE" --repo "$REPOSITORY" --json labels --jq '[.labels[].name] | join(",")')
+            ISSUE_STATE=$(gh issue view "$ISSUE" --repo "$REPOSITORY" --json state --jq '.state')
+            export ISSUE_LABELS ISSUE_STATE
+          fi
+          node --input-type=module <<'EOF'
+          import { shouldDeliverCursorWake } from './scripts/cursor-bridge/lib/wake-ingress.mjs';
+
+          const labels = String(process.env.ISSUE_LABELS || '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+          const decision = shouldDeliverCursorWake({
+            repository: process.env.REPOSITORY,
+            eventName: process.env.EVENT_NAME,
+            action: process.env.ACTION || '',
+            labelName: process.env.LABEL_NAME || '',
+            issueLabels: labels,
+            issueState: process.env.ISSUE_STATE || '',
+            commentBody: process.env.COMMENT_BODY || '',
+            actor: process.env.ACTOR || '',
+          });
+          if (!decision.deliver) {
+            console.error(
+              `cursor_wake_ingress_reject: ${decision.reason} (issue #${process.env.ISSUE})`,
+            );
+            process.exit(1);
+          }
+          console.log(`cursor_routing_ok=true reason=${decision.reason}`);
+          EOF
 
       - name: Write wake packet on host
         env:

@@ -38,6 +38,7 @@ export const REPO_PACKAGE_PATHS = Object.freeze([
   'scripts/cursor-bridge/lib/preflight.mjs',
   'scripts/cursor-bridge/lib/reconcile.mjs',
   'scripts/cursor-bridge/lib/status.mjs',
+  'scripts/cursor-bridge/lib/wake-ingress.mjs',
   // Immutable packaged runtime dependency for installed eligibility.mjs
   // (resolves to <bridge-home>/orchestrator/queue-routing.mjs). Do not edit
   // the repository source from Bridge maintenance work; package only.

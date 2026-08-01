@@ -4,7 +4,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { validateEligibility, parseResume } from './lib/eligibility.mjs';
+import {
+  validateEligibility,
+  parseResume,
+  resolveDeliveryKey,
+  sanitizeDeliveryKey,
+} from './lib/eligibility.mjs';
+import { shouldDeliverCursorWake } from './lib/wake-ingress.mjs';
 import {
   shouldQueueRecovery,
   buildRecoveryPacket,
@@ -104,6 +110,71 @@ Action: Do the one bounded thing
   );
   assert.equal(r.ok, false);
   assert.ok(r.errors.includes('missing_label:handoff:ready'));
+}
+
+{
+  // #2997 remediation: lowercase open + null issue must not throw.
+  const lower = validateEligibility({ ...baseIssue, state: 'open' }, [response, resume]);
+  assert.equal(lower.ok, true, lower.errors.join(','));
+  const missing = validateEligibility(null, [response, resume]);
+  assert.equal(missing.ok, false);
+  assert.ok(missing.errors.includes('missing_issue'));
+}
+
+{
+  // Delivery keys used on the filesystem must reject traversal via full digest.
+  assert.equal(sanitizeDeliveryKey('5036049606'), '5036049606');
+  const unsafe = sanitizeDeliveryKey('../x');
+  assert.ok(/^enc-[0-9a-f]{64}$/.test(unsafe));
+  assert.equal(
+    resolveDeliveryKey({
+      packet: { deliveryId: '../../etc/passwd' },
+      eligibility: { resume: null },
+      issueNumber: 1,
+    }).startsWith('enc-'),
+    true,
+  );
+  const base =
+    'https://github.com/wdhunter645/next-starter-template/issues/2997#issuecomment-';
+  const keyA = sanitizeDeliveryKey(`${base}${'1'.repeat(80)}`);
+  const keyB = sanitizeDeliveryKey(`${base}${'2'.repeat(80)}`);
+  assert.notEqual(keyA, keyB, 'shared-prefix URLs must remain distinct');
+  assert.ok(/^enc-[0-9a-f]{64}$/.test(keyA));
+  assert.ok(/^enc-[0-9a-f]{64}$/.test(keyB));
+}
+
+{
+  // Cursor-only wake ingress: Claude / ChatGPT traffic stays off the Chromebook queue.
+  assert.equal(
+    shouldDeliverCursorWake({
+      repository: 'wdhunter645/next-starter-template',
+      eventName: 'issue_comment',
+      issueState: 'open',
+      issueLabels: ['agent:cursor', 'handoff:ready'],
+      commentBody: 'CLAUDE CODE RESUME\nIssue: #1\n',
+    }).deliver,
+    false,
+  );
+  assert.equal(
+    shouldDeliverCursorWake({
+      repository: 'wdhunter645/next-starter-template',
+      eventName: 'issue_comment',
+      issueState: 'open',
+      issueLabels: ['agent:ChatGPT', 'handoff:ready'],
+      commentBody: 'CHATGPT HANDOFF\n',
+    }).deliver,
+    false,
+  );
+  assert.equal(
+    shouldDeliverCursorWake({
+      repository: 'wdhunter645/next-starter-template',
+      eventName: 'issue_comment',
+      issueState: 'open',
+      issueLabels: ['agent:cursor', 'handoff:ready'],
+      commentBody: 'LOCAL CURSOR RESUME\nIssue: #1\n',
+    }).deliver,
+    true,
+  );
 }
 
 {
