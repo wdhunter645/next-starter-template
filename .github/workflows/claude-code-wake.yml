@@ -20,7 +20,6 @@ on:
 permissions:
   contents: read
   issues: write
-  pull-requests: write
 
 concurrency:
   group: claude-code-wake-${{ github.event.pull_request.number || github.event.issue.number || inputs.issue_number || github.run_id }}
@@ -75,7 +74,7 @@ jobs:
         run: |
           set -euo pipefail
           EXISTING=$(gh api "repos/wdhunter645/next-starter-template/issues/${NUMBER}/comments" \
-            --paginate --jq '[.[] | select(.body | startswith("CLAUDE CODE WAKE: delivered"))] | length')
+            --paginate --jq '[.[] | select(.body | contains("CLAUDE CODE WAKE: delivered"))] | length')
           echo "already_alerted=$EXISTING" >> "$GITHUB_OUTPUT"
 
       - name: Post wake alert comment

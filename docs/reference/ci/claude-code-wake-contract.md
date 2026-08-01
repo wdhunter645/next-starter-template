@@ -5,7 +5,7 @@ Authority Level: Project Contract
 Owns: Claude Code wake-delivery trigger conditions, comment markers, and notification-only scope boundary
 Does Not Own: Cursor Local Bridge, PR approval authority, Production promotion, or any guarantee that a Claude Code session launches
 Canonical Reference: /.github/workflows/claude-code-wake.yml
-Related Issues: #2622
+Related Issues: #2994
 Last Reviewed: 2026-08-01
 ---
 
@@ -62,9 +62,11 @@ currently exist.
 ## Deduplication
 
 Before posting, the workflow lists existing comments on the target and
-skips delivery if one already starts with `CLAUDE CODE WAKE: delivered`.
-This keeps `reopened` and repeated manual dispatch from spamming the
-thread.
+skips delivery if one already contains the line `CLAUDE CODE WAKE:
+delivered` (the alert body leads with `@claude` so the marker is not the
+first line — the check matches it anywhere in the comment, not only at the
+start). This keeps `reopened` and repeated manual dispatch from spamming
+the thread.
 
 ## Known gap this contract does not fix
 
