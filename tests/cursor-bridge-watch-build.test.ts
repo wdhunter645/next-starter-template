@@ -319,6 +319,35 @@ describe('Cursor Bridge Watch / Build (#2814)', () => {
     expect(fs.readFileSync(queueFile, 'utf8')).toBe('{"ok":true}\n');
   });
 
+  it('surfaces the actual systemctl error detail on restart_failed (#2983), not just the bare reason', () => {
+    const home = withHome();
+    seedInstalledFromRepo(home);
+    const config = baseConfig();
+    const repoRoot = defaultRepoRoot();
+    const sourceCommit = spawnSync('git', ['-C', repoRoot, 'rev-parse', 'HEAD'], {
+      encoding: 'utf8',
+    }).stdout.trim();
+
+    const rolled = runBridgeBuild(config, {
+      repoRoot,
+      sourceCommit,
+      stageRoot: path.join(home, 'stage-restart-fail'),
+      snapshotRoot: path.join(home, 'snap-restart-fail'),
+      skipRepoValidation: true,
+      skipIsolatedValidation: true,
+      skipSystemd: false,
+      claim: null,
+      inFlight: null,
+    }) as Record<string, any>;
+
+    // No real systemd --user session exists in the test sandbox, so this
+    // reproduces the same restart_failed path seen on the CI runner (#2983).
+    expect(rolled.classification).toBe('rolled_back');
+    const restartReason = (rolled.reasons as string[]).find((r) => r.startsWith('restart_failed'));
+    expect(restartReason).toBeTruthy();
+    expect(restartReason).not.toBe('restart_failed');
+  });
+
   it('refuses build while protected active work exists and does not restart', () => {
     const home = withHome();
     seedInstalledFromRepo(home);
