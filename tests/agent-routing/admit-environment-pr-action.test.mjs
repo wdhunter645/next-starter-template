@@ -107,6 +107,23 @@ describe('planAction ADMIT_ENVIRONMENT_PR (#2622 progressive admission)', () => 
     expect(result.mutations[0].requiredGates).toEqual(['secret_scan', 'quality']);
   });
 
+  it('does not wait on action_required or failed PR-event checks when planning sandbox admission', () => {
+    // Advisory pull_request-event runs (including GitHub's action_required
+    // block for GITHUB_TOKEN-opened PRs) must not substitute for or block the
+    // controller's required inline gates (#2622 engineering decision).
+    const snapshot = snapshotWithContract(sandboxValidationResult, null, {
+      checks: [
+        { name: 'gitleaks', required: true, status: 'queued', conclusion: 'action_required' },
+        { name: 'quality', required: true, status: 'queued', conclusion: 'action_required' },
+        { name: 'pr-hygiene', required: true, status: 'completed', conclusion: 'failure' },
+      ],
+    });
+    const result = planAction(snapshot, { mode: 'admit' });
+    expect(result.class).toBe('admit_environment_pr');
+    expect(result.mutations[0].requiredGates).toEqual(['secret_scan']);
+    expect(result.mutations[0].requiredGates).not.toContain('quality');
+  });
+
   it('is unreachable outside admit mode, even with clean contract evidence', () => {
     const snapshot = snapshotWithContract(sandboxValidationResult);
     expect(planAction(snapshot, { mode: 'observe' }).class).toBe('observe');
@@ -178,6 +195,15 @@ describe('validateMutation for admit_environment_pr (#2622)', () => {
     expect(validateMutation({ ...mutation, environmentTier: undefined }, { revision: 'rev-x' }).reason).toBe('environment_not_eligible_for_auto_admission');
   });
 
+  it('rejects a target/profile mismatch (tier disagrees with base branch)', () => {
+    expect(validateMutation({
+      ...mutation,
+      baseBranch: 'sandbox/issue-contract-draft-pr',
+      environmentTier: 'development',
+      requiredGates: ['secret_scan', 'quality'],
+    }, { revision: 'rev-x' }).reason).toBe('target_profile_mismatch');
+  });
+
   it('rejects an incomplete admit mutation', () => {
     const { contractRev, ...incomplete } = mutation;
     expect(validateMutation(incomplete, { revision: 'rev-x' }).reason).toBe('incomplete_admit_pr_mutation');
@@ -213,6 +239,7 @@ describe('buildAdmitPrPlan pre-mutation re-validation (#2622)', () => {
     expect(result.ok).toBe(true);
     expect(result.environmentTier).toBe('sandbox');
     expect(result.requiredGates).toEqual(['secret_scan']);
+    expect(result.admissionApproval).toBe('APPROVED FOR SANDBOX ADMISSION');
     expect(result.request.head).toBe('cursor/9201-example');
     expect(result.request.base).toBe('sandbox/issue-contract-draft-pr');
     expect(result.request.draft).toBe(false);
@@ -234,6 +261,7 @@ describe('buildAdmitPrPlan pre-mutation re-validation (#2622)', () => {
     expect(result.ok).toBe(true);
     expect(result.environmentTier).toBe('development');
     expect(result.requiredGates).toEqual(['secret_scan', 'quality']);
+    expect(result.admissionApproval).toBe('APPROVED FOR DEVELOPMENT ADMISSION');
     expect(result.request.title).toBe('Development: source Issue #9201');
   });
 
@@ -250,6 +278,29 @@ describe('buildAdmitPrPlan pre-mutation re-validation (#2622)', () => {
   it('never builds an admission request for an unimplemented/invalid environment tier', () => {
     const result = buildAdmitPrPlan({ ...mutation, environmentTier: 'transition' }, freshState);
     expect(result).toEqual({ ok: false, reason: 'environment_not_eligible_for_auto_admission' });
+  });
+
+  it('fails closed on target/profile mismatch and every route that would admit with the wrong gate list', () => {
+    expect(buildAdmitPrPlan({
+      ...mutation,
+      baseBranch: 'sandbox/issue-contract-draft-pr',
+      environmentTier: 'development',
+      requiredGates: ['secret_scan', 'quality'],
+    }, freshState)).toEqual({ ok: false, reason: 'target_profile_mismatch' });
+
+    expect(buildAdmitPrPlan({
+      ...mutation,
+      requiredGates: ['secret_scan', 'quality'],
+    }, freshState)).toEqual({ ok: false, reason: 'target_profile_mismatch' });
+
+    expect(buildAdmitPrPlan({
+      ...mutation,
+      baseBranch: 'component/issue-contract-draft-pr',
+      environmentTier: 'development',
+      requiredGates: ['secret_scan'],
+      contractFields: { ...contractFields, base_branch: 'component/issue-contract-draft-pr' },
+      deliveryProfile: { ...sandboxDeliveryProfile, componentBranch: 'component/issue-contract-draft-pr' },
+    }, freshState)).toEqual({ ok: false, reason: 'target_profile_mismatch' });
   });
 
   it('fails closed when the Issue closed since planning', () => {

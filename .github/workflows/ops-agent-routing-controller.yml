@@ -717,11 +717,22 @@ jobs:
         id: gate_outcome
         if: steps.create.outputs.ok == 'true'
         run: |
+          # Inline required gates only. Never consult pull_request-event check
+          # runs (including action_required) — those are advisory for admit
+          # (#2622). Fail closed when a required gate cannot start, errors,
+          # times out, is cancelled, or fails.
           failed=false
-          [ "${{ steps.secret-scan.outcome }}" = "failure" ] && failed=true
+          [ "${{ steps.secret-scan.outcome }}" != "success" ] && failed=true
           if [ "${{ contains(steps.create.outputs.requiredGates, 'quality') }}" = "true" ]; then
-            for outcome in "${{ steps.quality-structure.outcome }}" "${{ steps.quality-backend-guard.outcome }}" "${{ steps.quality-no-zips.outcome }}" "${{ steps.quality-zip-history.outcome }}" "${{ steps.quality_delivery_profile.outcome }}" "${{ steps.quality_plan.outcome }}" "${{ steps.quality-typecheck.outcome }}" "${{ steps.quality-lint.outcome }}" "${{ steps.quality-test.outcome }}" "${{ steps.quality-build.outcome }}"; do
-              [ "$outcome" = "failure" ] && failed=true
+            for outcome in "${{ steps.quality-structure.outcome }}" "${{ steps.quality-backend-guard.outcome }}" "${{ steps.quality-no-zips.outcome }}" "${{ steps.quality-zip-history.outcome }}" "${{ steps.quality_delivery_profile.outcome }}" "${{ steps.quality_plan.outcome }}"; do
+              [ "$outcome" != "success" ] && failed=true
+            done
+            # Class-aware subchecks may be intentionally skipped when the plan
+            # disables them; only failure/cancelled block merge.
+            for outcome in "${{ steps.quality-typecheck.outcome }}" "${{ steps.quality-lint.outcome }}" "${{ steps.quality-test.outcome }}" "${{ steps.quality-build.outcome }}"; do
+              if [ "$outcome" = "failure" ] || [ "$outcome" = "cancelled" ]; then
+                failed=true
+              fi
             done
           fi
           if [ "$failed" = "true" ]; then
@@ -829,8 +840,13 @@ jobs:
         run: |
           quality_failed=false
           if [ "${{ contains(steps.create.outputs.requiredGates, 'quality') }}" = "true" ]; then
-            for outcome in "${{ steps.verify-quality-structure.outcome }}" "${{ steps.verify-quality-backend-guard.outcome }}" "${{ steps.verify-quality-no-zips.outcome }}" "${{ steps.verify-quality-zip-history.outcome }}" "${{ steps.verify-quality-typecheck.outcome }}" "${{ steps.verify-quality-lint.outcome }}" "${{ steps.verify-quality-test.outcome }}" "${{ steps.verify-quality-build.outcome }}"; do
-              [ "$outcome" = "failure" ] && quality_failed=true
+            for outcome in "${{ steps.verify-quality-structure.outcome }}" "${{ steps.verify-quality-backend-guard.outcome }}" "${{ steps.verify-quality-no-zips.outcome }}" "${{ steps.verify-quality-zip-history.outcome }}"; do
+              [ "$outcome" != "success" ] && quality_failed=true
+            done
+            for outcome in "${{ steps.verify-quality-typecheck.outcome }}" "${{ steps.verify-quality-lint.outcome }}" "${{ steps.verify-quality-test.outcome }}" "${{ steps.verify-quality-build.outcome }}"; do
+              if [ "$outcome" = "failure" ] || [ "$outcome" = "cancelled" ]; then
+                quality_failed=true
+              fi
             done
           fi
           if [ "$quality_failed" = "true" ]; then
@@ -838,7 +854,7 @@ jobs:
           else
             echo "quality_passed=true" >> "$GITHUB_OUTPUT"
           fi
-          if [ "$quality_failed" = "true" ] || [ "${{ steps.verify-secret-scan.outcome }}" = "failure" ]; then
+          if [ "$quality_failed" = "true" ] || [ "${{ steps.verify-secret-scan.outcome }}" != "success" ]; then
             echo "all_passed=false" >> "$GITHUB_OUTPUT"
           else
             echo "all_passed=true" >> "$GITHUB_OUTPUT"
@@ -875,10 +891,18 @@ jobs:
                 `Environment tier: ${output.environmentTier}`,
                 `Required gates: ${(output.requiredGates || []).join(', ')}`,
                 `Required gates passed: ${gatesPassed ? 'YES' : 'NO'}`,
+              ];
+              // Deterministic environment approval is recorded only after every
+              // required inline gate succeeds (#2622). It is never inferred from
+              // advisory pull_request-event check runs.
+              if (gatesPassed && output.admissionApproval) {
+                lines.push(output.admissionApproval);
+              }
+              lines.push(
                 merged
                   ? `Automatically merged: YES (merge SHA ${mergeSha})`
-                  : 'Automatically merged: NO — a required gate failed; the PR remains open for disposition.',
-              ];
+                  : 'Automatically merged: NO — a required gate failed or was unavailable; the PR remains open for disposition.',
+              );
               if (merged) {
                 lines.push(`Post-merge verification: ${'${{ steps.verify-secret-scan.outcome }}' === 'success' ? 'secret scan passed' : 'secret scan FAILED'}`);
                 if ((output.requiredGates || []).includes('quality')) {

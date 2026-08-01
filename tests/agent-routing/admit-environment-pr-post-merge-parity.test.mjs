@@ -127,3 +127,59 @@ describe('admit-environment-pr Development quality parity (#2622)', () => {
     expect(source).not.toContain('steps.verify-quality.outcome');
   });
 });
+
+describe('admit-environment-pr inline gate fail-closed contract (#2622)', () => {
+  const jobSource = admitEnvironmentPrJobSource(readWorkflowSource());
+  const steps = parseSteps(jobSource);
+  const byId = new Map(steps.filter((s) => s.id).map((s) => [s.id, s]));
+
+  it('merges only when create succeeded and the inline gate_outcome passed — never on PR-event checks', () => {
+    const merge = byId.get('merge');
+    expect(merge).toBeTruthy();
+    expect(merge.if).toBe(
+      "steps.create.outputs.ok == 'true' && steps.gate_outcome.outputs.all_passed == 'true'",
+    );
+    // Comments may mention action_required as the avoided failure mode; no
+    // step condition or API call may wait on those PR-event runs.
+    for (const step of steps) {
+      if (step.if) {
+        expect(step.if).not.toMatch(/action_required|check-runs|check_runs|workflow_run/i);
+      }
+    }
+    expect(jobSource).not.toMatch(/listWorkflowRuns|checks\.listForRef|wait-for-check/i);
+  });
+
+  it('sandbox secret-scan gate is unconditional for create.ok; quality is gated on requiredGates', () => {
+    const secret = byId.get('secret-scan');
+    const qualityStructure = byId.get('quality-structure');
+    expect(secret.if).toBe("steps.create.outputs.ok == 'true'");
+    expect(secret.if).not.toContain('quality');
+    expect(qualityStructure.if).toContain("contains(steps.create.outputs.requiredGates, 'quality')");
+  });
+
+  it('fails closed when the required secret scan is not success (skipped/cancelled/failure block merge)', () => {
+    const runBlockMatch = jobSource.match(
+      /- name: Determine gate outcome[\s\S]*?run: \|([\s\S]*?)\n {6}- name:/,
+    );
+    expect(runBlockMatch).toBeTruthy();
+    const runBlock = runBlockMatch[1];
+    expect(runBlock).toContain('steps.secret-scan.outcome');
+    expect(runBlock).toContain('!= "success"');
+    expect(runBlock).not.toMatch(/secret-scan\.outcome }"\] = "failure"/);
+  });
+
+  it('records APPROVED FOR <ENVIRONMENT> ADMISSION only after required inline gates pass', () => {
+    expect(jobSource).toContain('output.admissionApproval');
+    expect(jobSource).toContain('gatesPassed && output.admissionApproval');
+    expect(jobSource).toContain('Automatically merged: NO — a required gate failed or was unavailable');
+  });
+
+  it('writes post-merge verification evidence onto the source Issue after merge', () => {
+    const record = steps.find((s) => s.name === 'Record admission evidence on source Issue');
+    expect(record).toBeTruthy();
+    expect(record.if).toContain("steps.refresh.outputs.hasMutation == 'true'");
+    expect(jobSource).toContain('Post-merge verification:');
+    expect(jobSource).toContain('issues.createComment');
+    expect(jobSource).toContain('issues.updateComment');
+  });
+});

@@ -103,7 +103,7 @@ Advisory in Development unless a source Issue explicitly promotes one for a boun
 - design authority;
 - documentation and DIATAXIS authority.
 
-A machine result should be recorded as automated eligibility or automated approval, not as a human Engineering judgment.
+A machine result should be recorded as automated eligibility or automated approval, not as a human Engineering judgment. For #2622 non-production admission, that deterministic marker is `APPROVED FOR SANDBOX ADMISSION` or `APPROVED FOR DEVELOPMENT ADMISSION`, recorded on the source Issue only after the tier's required inline gates pass.
 
 ### Promotion Candidate gates
 
