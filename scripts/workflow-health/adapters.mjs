@@ -814,6 +814,8 @@ export function adaptEvidenceMissingGaps({
   sourceIssue,
   project = null,
   workUnitId = null,
+  /** When set, preserves a non-canonical transaction identity on gap events. */
+  transactionId = null,
   lane = 'development',
   occurredAt = new Date().toISOString(),
   gaps = summarizeInventoryGaps().gaps,
@@ -821,6 +823,8 @@ export function adaptEvidenceMissingGaps({
 } = {}) {
   const events = [];
   const errors = [];
+  const resolvedTransactionId =
+    transactionId || transactionIdFor(sourceIssue, workUnitId);
 
   const selected = [];
   for (const gap of gaps) {
@@ -844,6 +848,7 @@ export function adaptEvidenceMissingGaps({
       sourceIssue,
       project,
       workUnitId,
+      transactionId: resolvedTransactionId,
       lane,
       stage: gap.stage,
       phase: 'unknown',
@@ -858,7 +863,7 @@ export function adaptEvidenceMissingGaps({
       },
       // Scoped to the transaction so gap events from different workflows
       // never collide in the shared event store.
-      idempotencyKey: `evidence-missing:${transactionIdFor(sourceIssue, workUnitId)}:${gap.stage}:${gap.boundary}:${gap.surface}`,
+      idempotencyKey: `evidence-missing:${resolvedTransactionId}:${gap.stage}:${gap.boundary}:${gap.surface}`,
       evidence: {
         channel: 'inventory_gap',
         ref: `${gap.stage}/${gap.boundary}/${gap.surface}`,
