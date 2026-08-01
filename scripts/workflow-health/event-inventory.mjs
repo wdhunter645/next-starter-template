@@ -580,7 +580,15 @@ export function validateEventInventory(stages = STAGES) {
   const errors = [];
   const seen = new Set();
 
+  if (!Array.isArray(stages)) {
+    return { ok: false, errors: ['inventory_not_an_array'] };
+  }
+
   for (const stage of stages) {
+    if (!stage || typeof stage !== 'object' || typeof stage.id !== 'string' || !stage.id) {
+      errors.push('malformed_stage_entry');
+      continue;
+    }
     if (seen.has(stage.id)) errors.push(`duplicate_stage:${stage.id}`);
     seen.add(stage.id);
 
@@ -593,6 +601,10 @@ export function validateEventInventory(stages = STAGES) {
         continue;
       }
       for (const source of sources) {
+        if (!source || typeof source !== 'object' || typeof source.surface !== 'string' || !source.surface) {
+          errors.push(`malformed_source_entry:${stage.id}/${group}`);
+          continue;
+        }
         const label = `${stage.id}/${group}/${source.surface}`;
         if (!EVIDENCE_CLASSES.includes(source.evidenceClass)) {
           errors.push(`invalid_evidence_class:${label}`);
@@ -616,7 +628,7 @@ export function validateEventInventory(stages = STAGES) {
     }
   }
 
-  const orders = stages.map((s) => s.order);
+  const orders = stages.map((s) => s?.order);
   const expected = Array.from({ length: stages.length }, (_, i) => i + 1);
   if (JSON.stringify(orders) !== JSON.stringify(expected)) {
     errors.push('stage_order_not_contiguous');

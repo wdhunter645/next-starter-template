@@ -92,6 +92,22 @@ describe('workflow event inventory (#2886)', () => {
     expect(result.errors).toContain('deterministic_without_marker:authority_ready/startEvidence/a');
     expect(result.errors).toContain('label_only_source_not_permitted:authority_ready/startEvidence/a');
   });
+
+  it('fails closed on untrusted or malformed input instead of throwing', () => {
+    expect(validateEventInventory(null)).toEqual({ ok: false, errors: ['inventory_not_an_array'] });
+    expect(validateEventInventory('nope').ok).toBe(false);
+
+    const withGarbage = validateEventInventory([
+      null,
+      42,
+      { id: '' },
+      { id: 'x', order: 1, startEvidence: [null, 'str'], endEvidence: [{}] },
+    ]);
+    expect(withGarbage.ok).toBe(false);
+    expect(withGarbage.errors.filter((e) => e === 'malformed_stage_entry')).toHaveLength(3);
+    expect(withGarbage.errors).toContain('malformed_source_entry:x/startEvidence');
+    expect(withGarbage.errors).toContain('malformed_source_entry:x/endEvidence');
+  });
 });
 
 describe('workflow-health adapter contract (#2886)', () => {

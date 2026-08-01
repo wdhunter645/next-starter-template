@@ -11,11 +11,42 @@ Last Reviewed: 2026-08-01
 
 # Workflow event inventory and adapter contract
 
-Work unit #2886 (2680-001). Maps every required workflow stage from the #2680
-project contract to its authoritative, deterministic evidence sources and
-finalizes the adapter contract that later work units (#2887–#2889) implement.
-The machine-readable inventory is `scripts/workflow-health/event-inventory.mjs`;
-this document explains it. Where the two disagree, the module is canonical.
+## Purpose
+
+Map every required workflow stage from the #2680 project contract to its
+authoritative, deterministic evidence sources and finalize the adapter
+contract that later work units (#2887–#2889) implement. Work unit #2886
+(2680-001).
+
+## Scope
+
+This reference covers the ten-stage event inventory, evidence classification
+rules, source locations (including cross-component dependencies), and the
+`lgfc-workflow-health-event:v1` adapter envelope. It does not implement
+adapters, derive transaction state, build views, or change any workflow,
+schedule, or Production state. The machine-readable inventory is
+`scripts/workflow-health/event-inventory.mjs`; this document explains it.
+Where the two disagree, the module is canonical.
+
+## Current known truth
+
+- The Cursor Bridge, wake workflow, post-merge validator, and PR governance
+  gates emit deterministic GitHub-visible evidence on `main` today.
+- The #2677 controller observability stream and the #2678 cumulative lane
+  evidence model are Promotion Candidates on their own component branches
+  and are not yet on `main`.
+- Six stage boundaries have no deterministic GitHub-visible emission and are
+  classified as explicit gaps (see the inventory summary below).
+- No dashboard, materializer, or SLO engine exists yet; this work unit is
+  inert reference data plus tests.
+
+## Intended final state
+
+Work units #2887–#2889 implement normalized adapters, the transaction
+materializer/SLO engine, static views, and reconciliation on top of this
+contract. The envelope and classification rules in this document are the
+freeze line for that work; changing them requires a new decision on the
+parent project #2680.
 
 ## Ground rules
 
