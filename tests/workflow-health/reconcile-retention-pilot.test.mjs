@@ -99,8 +99,18 @@ describe('workflow-health retention (#2889)', () => {
 
 describe('workflow-health reconcile (#2889)', () => {
   it('deduplicates on ingest and forces gap emission when enabled', () => {
-    const first = event({ idempotencyKey: 'same-key' });
-    const duplicate = event({ idempotencyKey: 'same-key' });
+    // Remediation is optional; gaps for its evidence-missing end boundary emit
+    // only after the stage is entered.
+    const first = event({
+      stage: 'remediation',
+      phase: 'start',
+      idempotencyKey: 'same-key',
+    });
+    const duplicate = event({
+      stage: 'remediation',
+      phase: 'start',
+      idempotencyKey: 'same-key',
+    });
     const result = reconcileDerivedState({
       existingEvents: [first],
       incomingEvents: [duplicate],
@@ -160,9 +170,35 @@ describe('workflow-health reconcile (#2889)', () => {
     });
     expect(result.ok).toBe(true);
     expect(result.events.every((e) => e.transactionId === customId)).toBe(true);
+    // Remediation is optional — must not force unknown on every transaction.
+    expect(result.events.some((e) => e.stage === 'remediation')).toBe(false);
     const live = result.views.liveFlow.transactions.find((r) => r.transactionId === customId);
     expect(live).toBeTruthy();
     expect(live.ageMs).toBeGreaterThan(24 * 60 * 60 * 1000);
+    expect(
+      result.views.exceptions.staleTransactions.some((r) => r.transactionId === customId),
+    ).toBe(true);
+  });
+
+  it('keeps stale visibility after detail retention prunes old real evidence', () => {
+    const customId = 'stale-beyond-retention';
+    const seed = event({
+      transactionId: customId,
+      sourceIssue: 77,
+      stage: 'execution',
+      phase: 'start',
+      occurredAt: '2026-06-01T12:00:00.000Z',
+      idempotencyKey: 'ancient-start',
+    });
+    const result = reconcileDerivedState({
+      existingEvents: [seed],
+      incomingEvents: [],
+      now: NOW,
+      config: { emitGaps: true, staleAfterMs: 24 * 60 * 60 * 1000 },
+    });
+    expect(result.ok).toBe(true);
+    expect(result.events.some((e) => e.idempotencyKey === 'ancient-start')).toBe(false);
+    expect(result.transactionSummaries.some((s) => s.transactionId === customId)).toBe(true);
     expect(
       result.views.exceptions.staleTransactions.some((r) => r.transactionId === customId),
     ).toBe(true);
@@ -217,25 +253,32 @@ describe('workflow-health reconcile (#2889)', () => {
   });
 
   it('scopes gap emission per known transaction', () => {
-    const scopes = transactionScopesFromEvents([
-      event({ sourceIssue: 1, transactionId: transactionIdFor(1, 'a'), idempotencyKey: 'a' }),
-      event({ sourceIssue: 2, transactionId: 'custom-b', idempotencyKey: 'b' }),
-    ]);
+    const seeds = [
+      event({
+        sourceIssue: 1,
+        transactionId: transactionIdFor(1, 'a'),
+        stage: 'remediation',
+        phase: 'start',
+        idempotencyKey: 'a',
+      }),
+      event({
+        sourceIssue: 2,
+        transactionId: 'custom-b',
+        stage: 'remediation',
+        phase: 'start',
+        idempotencyKey: 'b',
+      }),
+    ];
+    const scopes = transactionScopesFromEvents(seeds);
     expect(scopes).toHaveLength(2);
-    expect(scopes.map((s) => s.transactionId).sort()).toEqual(['custom-b', transactionIdFor(1, 'a')].sort());
-    const gaps = emitReconciliationGaps({
-      events: scopes.map((s) =>
-        event({
-          sourceIssue: s.sourceIssue,
-          transactionId: s.transactionId,
-          idempotencyKey: `seed-${s.sourceIssue}`,
-        }),
-      ),
-      now: NOW,
-    });
+    expect(scopes.map((s) => s.transactionId).sort()).toEqual(
+      ['custom-b', transactionIdFor(1, 'a')].sort(),
+    );
+    const gaps = emitReconciliationGaps({ events: seeds, now: NOW });
     expect(gaps.events.length).toBeGreaterThan(0);
     expect(gaps.events.every((e) => e.evidenceQuality === 'unknown_evidence_missing')).toBe(true);
     expect(gaps.events.every((e) => e.result === 'unknown')).toBe(true);
+    expect(gaps.events.every((e) => e.stage === 'remediation')).toBe(true);
     expect(new Set(gaps.events.map((e) => e.transactionId))).toEqual(
       new Set(scopes.map((s) => s.transactionId)),
     );

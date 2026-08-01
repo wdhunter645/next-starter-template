@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { adaptEvidenceMissingGaps } from './adapters.mjs';
 import { resolveReconcileConfig } from './config.mjs';
 import { validateEnvelope } from './envelope.mjs';
+import { REQUIRED_STAGE_IDS } from './event-inventory.mjs';
 import { ingestEvents } from './ingest.mjs';
 import {
   pruneDailyAggregates,
@@ -41,12 +42,24 @@ function loadJson(path, fallback) {
 }
 
 /**
- * Collect unique transaction scopes from envelopes. Preserves the original
- * `transactionId` (including non-canonical forms) and the latest non-gap
- * evidence timestamp so synthetic gaps cannot reset stale age to zero.
+ * Collect unique transaction scopes from envelopes (and optional durable
+ * summaries). Preserves the original `transactionId` and the latest non-gap
+ * evidence timestamp used for stale-age overlay after gap emission.
  */
-export function transactionScopesFromEvents(events = []) {
+export function transactionScopesFromEvents(events = [], summaries = []) {
   const scopes = new Map();
+  for (const summary of summaries || []) {
+    if (!summary?.transactionId || summary?.sourceIssue == null) continue;
+    scopes.set(summary.transactionId, {
+      transactionId: summary.transactionId,
+      sourceIssue: summary.sourceIssue,
+      project: summary.project ?? null,
+      lane: summary.lane || 'development',
+      lastRealAt: summary.lastRealAt || null,
+      enteredStages: new Set(summary.enteredStages || []),
+      complete: summary.complete === true,
+    });
+  }
   for (const event of events) {
     if (event?.sourceIssue == null || !event?.transactionId) continue;
     if (!scopes.has(event.transactionId)) {
@@ -56,10 +69,20 @@ export function transactionScopesFromEvents(events = []) {
         project: event.project ?? null,
         lane: event.lane || 'development',
         lastRealAt: null,
+        enteredStages: new Set(),
+        complete: false,
       });
     }
     const scope = scopes.get(event.transactionId);
     if (event.evidence?.channel === 'inventory_gap') continue;
+    scope.enteredStages.add(event.stage);
+    if (
+      event.stage === 'continuation' &&
+      event.phase === 'end' &&
+      (event.result === 'pass' || event.result === 'deferred')
+    ) {
+      scope.complete = true;
+    }
     const at = Date.parse(event.occurredAt);
     if (!Number.isFinite(at)) continue;
     const prior = scope.lastRealAt ? Date.parse(scope.lastRealAt) : -1;
@@ -69,25 +92,127 @@ export function transactionScopesFromEvents(events = []) {
 }
 
 /**
- * Emit inventory-gap unknown events for every known transaction scope.
- * Never emits a healthy pass for an uninstrumented boundary. Gap timestamps
- * follow the latest real evidence for the transaction so stale age is kept.
+ * Stages for which inventory gaps may be emitted for a transaction.
+ * Remediation is optional ("if required") — only gap it after entry.
+ * Other gaps are limited to entered stages plus the immediate successor of
+ * the latest entered stage so completed happy paths are not forced unknown.
  */
-export function emitReconciliationGaps({ events = [], now = new Date().toISOString() } = {}) {
+export function gapEligibleStagesForScope(scope) {
+  const entered = scope.enteredStages instanceof Set
+    ? scope.enteredStages
+    : new Set(scope.enteredStages || []);
+  if (scope.complete) return new Set();
+  const eligible = new Set(entered);
+  let latestIdx = -1;
+  for (const stage of entered) {
+    latestIdx = Math.max(latestIdx, REQUIRED_STAGE_IDS.indexOf(stage));
+  }
+  if (latestIdx >= 0) {
+    const next = REQUIRED_STAGE_IDS[latestIdx + 1];
+    if (next && next !== 'remediation') eligible.add(next);
+    // Remediation is eligible only when already entered.
+  }
+  return eligible;
+}
+
+/**
+ * Emit inventory-gap unknown events for known transaction scopes.
+ * Gap envelopes are stamped at `now` so they survive detail retention;
+ * stale age is overlaid afterward from `lastRealAt`.
+ */
+export function emitReconciliationGaps({
+  events = [],
+  summaries = [],
+  now = new Date().toISOString(),
+} = {}) {
   const gapEvents = [];
   const errors = [];
-  for (const scope of transactionScopesFromEvents(events)) {
+  for (const scope of transactionScopesFromEvents(events, summaries)) {
+    if (scope.complete) continue;
+    const eligible = gapEligibleStagesForScope(scope);
+    if (eligible.size === 0) continue;
     const part = adaptEvidenceMissingGaps({
       sourceIssue: scope.sourceIssue,
       project: scope.project,
       transactionId: scope.transactionId,
       lane: scope.lane,
-      occurredAt: scope.lastRealAt || now,
+      // Stamp at reconciliation time so forced visibility survives the
+      // 30-day detail prune; evidence age is restored via overlay.
+      occurredAt: now,
     });
-    gapEvents.push(...part.events);
+    for (const event of part.events) {
+      if (!eligible.has(event.stage)) continue;
+      gapEvents.push(event);
+    }
     errors.push(...part.errors);
   }
   return { events: gapEvents, errors };
+}
+
+/**
+ * Overlay evidence age from durable lastRealAt onto Live Flow / Exceptions
+ * so synthetic gaps stamped at `now` cannot hide genuine staleness.
+ */
+export function applyEvidenceAgeOverlay(views, scopes = [], {
+  nowMs = Date.now(),
+  staleAfterMs = 24 * 60 * 60 * 1000,
+} = {}) {
+  if (!views?.liveFlow) return views;
+  const byId = new Map(scopes.map((s) => [s.transactionId, s]));
+  for (const row of views.liveFlow.transactions || []) {
+    const scope = byId.get(row.transactionId);
+    if (!scope?.lastRealAt) continue;
+    const evidenceAgeMs = Math.max(0, nowMs - Date.parse(scope.lastRealAt));
+    row.ageMs = evidenceAgeMs;
+    row.evidenceAgeMs = evidenceAgeMs;
+  }
+
+  const stale = [];
+  const seen = new Set();
+  for (const row of views.exceptions?.staleTransactions || []) {
+    stale.push(row);
+    seen.add(row.transactionId);
+  }
+  for (const scope of scopes) {
+    if (!scope.lastRealAt || scope.complete || seen.has(scope.transactionId)) continue;
+    const ageMs = Math.max(0, nowMs - Date.parse(scope.lastRealAt));
+    if (ageMs <= staleAfterMs) continue;
+    const live = (views.liveFlow.transactions || []).find(
+      (r) => r.transactionId === scope.transactionId,
+    );
+    if (live?.workflowStatus === 'complete') continue;
+    stale.push({
+      transactionId: scope.transactionId,
+      sourceIssue: scope.sourceIssue,
+      pr: live?.pr ?? null,
+      currentStage: live?.currentStage ?? null,
+      owner: live?.owner ?? null,
+      ageMs,
+      staleAfterMs,
+    });
+  }
+  if (views.exceptions) {
+    views.exceptions.staleTransactions = stale;
+    views.exceptions.exceptionCount =
+      (views.exceptions.sloBreaches?.length || 0) +
+      (views.exceptions.protectedStops?.length || 0) +
+      (views.exceptions.evidenceMissing?.length || 0) +
+      stale.length;
+  }
+  return views;
+}
+
+/** Durable per-transaction summary retained across detail pruning. */
+export function buildTransactionSummaries(scopes = []) {
+  return scopes.map((scope) => ({
+    transactionId: scope.transactionId,
+    sourceIssue: scope.sourceIssue,
+    project: scope.project,
+    lane: scope.lane,
+    lastRealAt: scope.lastRealAt,
+    enteredStages: [...(scope.enteredStages || [])],
+    complete: scope.complete === true,
+  }));
 }
 
 /**
@@ -128,6 +253,7 @@ export function reconcileDerivedState({
   existingEvents = [],
   incomingEvents = [],
   dailyAggregates = [],
+  transactionSummaries = [],
   now = new Date().toISOString(),
   config = {},
   writeViews = false,
@@ -135,6 +261,7 @@ export function reconcileDerivedState({
 } = {}) {
   const resolved = resolveReconcileConfig(config);
   const nowIso = typeof now === 'string' ? now : now.toISOString();
+  const nowMs = Date.parse(nowIso);
 
   if (!resolved.enabled) {
     return {
@@ -145,6 +272,7 @@ export function reconcileDerivedState({
       events: existingEvents,
       active: [],
       dailyAggregates,
+      transactionSummaries,
       views: null,
       repairs: {
         duplicatesSuppressed: 0,
@@ -174,6 +302,7 @@ export function reconcileDerivedState({
       events: existingEvents,
       active: [],
       dailyAggregates,
+      transactionSummaries,
       views: null,
       written: null,
       repairs: {
@@ -193,11 +322,17 @@ export function reconcileDerivedState({
     };
   }
 
+  const preScopes = transactionScopesFromEvents(
+    [...storeValidation.valid, ...incomingEvents],
+    transactionSummaries,
+  );
+
   let workingIncoming = [...incomingEvents];
   let gapsEmitted = 0;
   if (resolved.emitGaps) {
     const gapPass = emitReconciliationGaps({
       events: [...storeValidation.valid, ...incomingEvents],
+      summaries: transactionSummaries,
       now: nowIso,
     });
     workingIncoming = [...workingIncoming, ...gapPass.events];
@@ -214,10 +349,18 @@ export function reconcileDerivedState({
   // Re-ingest after prune so active/supersession reflect the retained set.
   const retained = ingestEvents([], prunedEvents.events);
 
-  const views = buildHealthViews({
+  // Durable summaries survive detail pruning so forced gap/stale visibility
+  // remains even when the only real evidence falls outside the 30-day window.
+  const summaries = buildTransactionSummaries(preScopes);
+
+  let views = buildHealthViews({
     events: retained.events,
     now: nowIso,
     sloConfig: { watcherIntervalMinutes: resolved.watcherIntervalMinutes },
+    staleAfterMs: resolved.staleAfterMs,
+  });
+  views = applyEvidenceAgeOverlay(views, preScopes, {
+    nowMs,
     staleAfterMs: resolved.staleAfterMs,
   });
 
@@ -277,6 +420,7 @@ export function reconcileDerivedState({
           reconciledAt: nowIso,
           events: retained.events,
           dailyAggregates: prunedAggregates.aggregates,
+          transactionSummaries: summaries,
           deletesAuthoritativeEvidence: false,
           mutatesExecutionAuthority: false,
         },
@@ -300,6 +444,7 @@ export function reconcileDerivedState({
     events: retained.events,
     active: retained.active,
     dailyAggregates: prunedAggregates.aggregates,
+    transactionSummaries: summaries,
     views,
     written,
     repairs: {
@@ -323,7 +468,11 @@ function main(argv) {
   const storePath = process.env.WORKFLOW_HEALTH_STORE_FILE || null;
   const outDir = process.env.WORKFLOW_HEALTH_OUT_DIR || DEFAULT_OUT_DIR;
 
-  const store = loadJson(storePath, { events: [], dailyAggregates: [] });
+  const store = loadJson(storePath, {
+    events: [],
+    dailyAggregates: [],
+    transactionSummaries: [],
+  });
   const incoming = eventsPath ? loadJson(eventsPath, []) : [];
   if (!Array.isArray(incoming)) {
     throw new Error(`events_file_not_an_array:${eventsPath}`);
@@ -333,6 +482,9 @@ function main(argv) {
     existingEvents: Array.isArray(store.events) ? store.events : [],
     incomingEvents: incoming,
     dailyAggregates: Array.isArray(store.dailyAggregates) ? store.dailyAggregates : [],
+    transactionSummaries: Array.isArray(store.transactionSummaries)
+      ? store.transactionSummaries
+      : [],
     writeViews: true,
     outDir,
   });

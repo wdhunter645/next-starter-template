@@ -259,14 +259,19 @@ export function evaluatePilotResult(seed, result) {
     },
   });
 
+  const oldAggregateDay = isoBefore(seed.now, 400 * DAY_MS).slice(0, 10);
   cases.push({
     id: 'retention_prunes_old_detail_only',
     ok:
       result.repairs.prunedEventCount >= 1 &&
+      result.repairs.prunedAggregateCount >= 1 &&
       !result.events.some((e) => e.idempotencyKey === 'pilot-old-delivery') &&
+      !result.dailyAggregates.some((row) => row.date === oldAggregateDay) &&
       result.deletesAuthoritativeEvidence === false,
     detail: {
       prunedEventCount: result.repairs.prunedEventCount,
+      prunedAggregateCount: result.repairs.prunedAggregateCount,
+      oldAggregateDay,
       deletesAuthoritativeEvidence: result.deletesAuthoritativeEvidence,
     },
   });
