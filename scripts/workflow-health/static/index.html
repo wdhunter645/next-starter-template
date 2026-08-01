@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Workflow Health</title>
+<style>
+  :root {
+    --bg: #0f1419; --panel: #1a2129; --border: #2c3743; --text: #e6edf3;
+    --muted: #8b98a5; --ok: #3fb950; --warn: #d29922; --bad: #f85149; --unknown: #8b98a5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 24px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 15px; margin: 0 0 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .meta { color: var(--muted); margin-bottom: 24px; }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .panel.wide { grid-column: 1 / -1; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .status { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+  .status.healthy, .status.complete, .status.pass { background: rgba(63,185,80,.15); color: var(--ok); }
+  .status.degraded, .status.blocked, .status.fail { background: rgba(248,81,73,.15); color: var(--bad); }
+  .status.unknown, .status.no_events_unknown { background: rgba(139,152,165,.15); color: var(--unknown); }
+  .status.in_progress, .status.deferred { background: rgba(210,153,34,.15); color: var(--warn); }
+  .empty { color: var(--muted); font-style: italic; padding: 8px 0; }
+  a { color: #58a6ff; }
+  .banner { border: 1px solid var(--warn); color: var(--warn); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; display: none; }
+</style>
+</head>
+<body>
+<h1>Workflow Health</h1>
+<div class="meta" id="meta">Loading…</div>
+<div class="banner" id="banner"></div>
+<div class="grid">
+  <div class="panel wide"><h2>Live Flow</h2><div id="liveFlow"></div></div>
+  <div class="panel wide"><h2>Exceptions</h2><div id="exceptions"></div></div>
+  <div class="panel"><h2>Component Health</h2><div id="componentHealth"></div></div>
+  <div class="panel"><h2>Daily Performance</h2><div id="dailyPerformance"></div></div>
+  <div class="panel"><h2>Two-Week Trend</h2><div id="twoWeekTrend"></div></div>
+</div>
+<script>
+(function () {
+  'use strict';
+
+  // All data-derived text is inserted via textContent — never innerHTML —
+  // so issue-derived strings cannot inject markup.
+  function el(tag, text, className) {
+    var node = document.createElement(tag);
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    if (className) node.className = className;
+    return node;
+  }
+
+  function statusBadge(value) {
+    var badge = el('span', value == null ? 'unknown' : value, 'status');
+    badge.classList.add(String(value == null ? 'unknown' : value).replace(/[^a-z_]/gi, ''));
+    return badge;
+  }
+
+  function fmtMs(ms) {
+    if (ms == null) return 'unknown';
+    if (ms < 60000) return Math.round(ms / 1000) + 's';
+    if (ms < 3600000) return Math.round(ms / 60000) + 'm';
+    if (ms < 86400000) return (ms / 3600000).toFixed(1) + 'h';
+    return (ms / 86400000).toFixed(1) + 'd';
+  }
+
+  function table(headers, rows) {
+    if (!rows.length) return el('div', 'No entries.', 'empty');
+    var t = document.createElement('table');
+    var head = t.createTHead().insertRow();
+    headers.forEach(function (h) { head.appendChild(el('th', h)); });
+    var body = t.createTBody();
+    rows.forEach(function (cells) {
+      var tr = body.insertRow();
+      cells.forEach(function (cell) {
+        var td = document.createElement('td');
+        if (cell instanceof Node) td.appendChild(cell); else td.textContent = cell == null ? '—' : String(cell);
+        tr.appendChild(td);
+      });
+    });
+    return t;
+  }
+
+  function issueLink(n) {
+    if (n == null) return el('span', '—');
+    var a = document.createElement('a');
+    a.href = 'https://github.com/wdhunter645/next-starter-template/issues/' + encodeURIComponent(n);
+    a.textContent = '#' + n;
+    a.rel = 'noopener';
+    return a;
+  }
+
+  function render(data) {
+    document.getElementById('meta').textContent =
+      'Generated ' + data.generatedAt + ' · ' + data.eventCount + ' events · state: ' + data.dataState;
+
+    if (data.dataState !== 'derived' || data.rejectedEventCount > 0) {
+      var banner = document.getElementById('banner');
+      banner.style.display = 'block';
+      banner.textContent = data.dataState !== 'derived'
+        ? 'No event data available — health state is UNKNOWN, not healthy.'
+        : data.rejectedEventCount + ' event(s) were rejected at ingest; view may be incomplete.';
+    }
+
+    document.getElementById('liveFlow').appendChild(table(
+      ['Issue', 'PR', 'Stage', 'Phase', 'Owner', 'Age', 'Status', 'Evidence', 'Next action'],
+      (data.liveFlow.transactions || []).map(function (t) {
+        return [
+          issueLink(t.sourceIssue), t.pr == null ? '—' : '#' + t.pr, t.currentStage, t.currentPhase,
+          t.owner, fmtMs(t.ageMs), statusBadge(t.workflowStatus), statusBadge(t.evidenceQuality === 'deterministic' ? 'pass' : 'unknown'),
+          t.nextExpectedAction ? (t.nextExpectedAction.owner + ': ' + t.nextExpectedAction.action) : '—',
+        ];
+      })
+    ));
+
+    var ex = data.exceptions;
+    var exRows = []
+      .concat((ex.sloBreaches || []).map(function (b) { return ['SLO breach (' + b.kind + ')', issueLink(b.sourceIssue), b.stage, b.breachedAt, b.evidenceRef || '—']; }))
+      .concat((ex.protectedStops || []).map(function (p) { return ['Protected stop', issueLink(p.sourceIssue), p.stage, p.occurredAt, p.evidenceRef || '—']; }))
+      .concat((ex.evidenceMissing || []).map(function (m) { return ['Evidence missing', issueLink(m.sourceIssue), m.currentStage, '—', '—']; }))
+      .concat((ex.staleTransactions || []).map(function (s) { return ['Stale (' + fmtMs(s.ageMs) + ')', issueLink(s.sourceIssue), s.currentStage, '—', '—']; }));
+    document.getElementById('exceptions').appendChild(table(['Type', 'Issue', 'Stage', 'At', 'Evidence'], exRows));
+
+    document.getElementById('componentHealth').appendChild(table(
+      ['Component', 'Status', 'Last result', 'Last seen'],
+      Object.keys(data.componentHealth.components || {}).map(function (name) {
+        var c = data.componentHealth.components[name];
+        return [name, statusBadge(c.status), c.lastResult || '—', c.lastAt || '—'];
+      })
+    ));
+
+    document.getElementById('dailyPerformance').appendChild(table(
+      ['Date', 'Transitions', 'Completed', 'Median', 'Max'],
+      (data.dailyPerformance.days || []).map(function (d) {
+        return [d.date, d.transitions, d.completedTransactions, fmtMs(d.medianTransitionMs), fmtMs(d.maxTransitionMs)];
+      })
+    ));
+    document.getElementById('dailyPerformance').appendChild(
+      el('div', 'Current executable-but-idle: ' + fmtMs(data.dailyPerformance.currentExecutableButIdleMs), 'empty'));
+
+    var trend = data.twoWeekTrend;
+    var trendBox = document.getElementById('twoWeekTrend');
+    trendBox.appendChild(el('div', 'Window: ' + trend.windowDays + 'd · transitions: ' + trend.transitionCount));
+    trendBox.appendChild(el('div', 'p50: ' + fmtMs(trend.p50Ms) + ' · p90: ' + fmtMs(trend.p90Ms)));
+    var dir = el('div'); dir.appendChild(el('span', 'Direction: '));
+    dir.appendChild(statusBadge(trend.improvementDirection === 'improving' ? 'pass' : trend.improvementDirection === 'degrading' ? 'fail' : trend.improvementDirection));
+    dir.appendChild(el('span', ' (' + trend.improvementDirection + ')'));
+    trendBox.appendChild(dir);
+    var failures = Object.keys(trend.failureCategories || {});
+    trendBox.appendChild(table(['Failure category', 'Count'], failures.map(function (k) { return [k, trend.failureCategories[k]]; })));
+  }
+
+  fetch('health-data.json', { cache: 'no-store' })
+    .then(function (res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+    .then(render)
+    .catch(function (err) {
+      document.getElementById('meta').textContent = 'Failed to load health-data.json: ' + err.message;
+    });
+})();
+</script>
+</body>
+</html>
