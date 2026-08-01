@@ -21,6 +21,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adaptEvidenceMissingGaps } from './adapters.mjs';
 import { resolveReconcileConfig } from './config.mjs';
+import { validateEnvelope } from './envelope.mjs';
 import { ingestEvents } from './ingest.mjs';
 import {
   pruneDailyAggregates,
@@ -40,46 +41,74 @@ function loadJson(path, fallback) {
 }
 
 /**
- * Collect unique (sourceIssue, project, workUnitId, lane) keys from envelopes
- * so gap emission can be scoped per transaction without inventing issues.
+ * Collect unique transaction scopes from envelopes. Preserves the original
+ * `transactionId` (including non-canonical forms) and the latest non-gap
+ * evidence timestamp so synthetic gaps cannot reset stale age to zero.
  */
 export function transactionScopesFromEvents(events = []) {
   const scopes = new Map();
   for (const event of events) {
-    if (event?.sourceIssue == null) continue;
-    const workUnitId = (() => {
-      const match = String(event.transactionId || '').match(/::wu-(.+)$/);
-      return match ? match[1] : null;
-    })();
-    const key = `${event.sourceIssue}\u0000${workUnitId ?? ''}\u0000${event.lane || 'development'}`;
-    if (!scopes.has(key)) {
-      scopes.set(key, {
+    if (event?.sourceIssue == null || !event?.transactionId) continue;
+    if (!scopes.has(event.transactionId)) {
+      scopes.set(event.transactionId, {
+        transactionId: event.transactionId,
         sourceIssue: event.sourceIssue,
         project: event.project ?? null,
-        workUnitId,
         lane: event.lane || 'development',
+        lastRealAt: null,
       });
     }
+    const scope = scopes.get(event.transactionId);
+    if (event.evidence?.channel === 'inventory_gap') continue;
+    const at = Date.parse(event.occurredAt);
+    if (!Number.isFinite(at)) continue;
+    const prior = scope.lastRealAt ? Date.parse(scope.lastRealAt) : -1;
+    if (at >= prior) scope.lastRealAt = event.occurredAt;
   }
   return [...scopes.values()];
 }
 
 /**
  * Emit inventory-gap unknown events for every known transaction scope.
- * Never emits a healthy pass for an uninstrumented boundary.
+ * Never emits a healthy pass for an uninstrumented boundary. Gap timestamps
+ * follow the latest real evidence for the transaction so stale age is kept.
  */
 export function emitReconciliationGaps({ events = [], now = new Date().toISOString() } = {}) {
   const gapEvents = [];
   const errors = [];
   for (const scope of transactionScopesFromEvents(events)) {
     const part = adaptEvidenceMissingGaps({
-      ...scope,
-      occurredAt: now,
+      sourceIssue: scope.sourceIssue,
+      project: scope.project,
+      transactionId: scope.transactionId,
+      lane: scope.lane,
+      occurredAt: scope.lastRealAt || now,
     });
     gapEvents.push(...part.events);
     errors.push(...part.errors);
   }
   return { events: gapEvents, errors };
+}
+
+/**
+ * Validate a prior derived store. Corrupt envelopes fail the pass; they are
+ * never silently dropped and overwritten as a successful empty store.
+ */
+export function validateStoreEvents(events = []) {
+  const valid = [];
+  const rejected = [];
+  for (const event of events) {
+    const validation = validateEnvelope(event);
+    if (validation.ok) valid.push(event);
+    else {
+      rejected.push({
+        idempotencyKey: event?.idempotencyKey ?? null,
+        errors: validation.errors,
+        source: 'store',
+      });
+    }
+  }
+  return { valid, rejected };
 }
 
 /**
@@ -123,7 +152,39 @@ export function reconcileDerivedState({
         prunedEventCount: 0,
         prunedAggregateCount: 0,
         rejectedCount: 0,
+        storeRejectedCount: 0,
       },
+      idleWorkVisible: false,
+      watcherIntervalMinutes: resolved.watcherIntervalMinutes,
+      mutatesExecutionAuthority: false,
+      deletesAuthoritativeEvidence: false,
+      reconciledAt: nowIso,
+    };
+  }
+
+  const storeValidation = validateStoreEvents(existingEvents);
+  if (storeValidation.rejected.length > 0) {
+    // Fail closed: do not overwrite a corrupt store with a "successful" empty
+    // or partial replacement. Operators must repair the store intentionally.
+    return {
+      schemaVersion: RECONCILE_SCHEMA_VERSION,
+      ok: false,
+      disabled: false,
+      reason: 'corrupt_prior_store',
+      events: existingEvents,
+      active: [],
+      dailyAggregates,
+      views: null,
+      written: null,
+      repairs: {
+        duplicatesSuppressed: 0,
+        gapsEmitted: 0,
+        prunedEventCount: 0,
+        prunedAggregateCount: 0,
+        rejectedCount: storeValidation.rejected.length,
+        storeRejectedCount: storeValidation.rejected.length,
+      },
+      storeRejected: storeValidation.rejected,
       idleWorkVisible: false,
       watcherIntervalMinutes: resolved.watcherIntervalMinutes,
       mutatesExecutionAuthority: false,
@@ -136,14 +197,14 @@ export function reconcileDerivedState({
   let gapsEmitted = 0;
   if (resolved.emitGaps) {
     const gapPass = emitReconciliationGaps({
-      events: [...existingEvents, ...incomingEvents],
+      events: [...storeValidation.valid, ...incomingEvents],
       now: nowIso,
     });
     workingIncoming = [...workingIncoming, ...gapPass.events];
     gapsEmitted = gapPass.events.length;
   }
 
-  const ingested = ingestEvents(existingEvents, workingIncoming);
+  const ingested = ingestEvents(storeValidation.valid, workingIncoming);
 
   const prunedEvents = pruneDetailedEvents(
     ingested.events,
@@ -166,17 +227,34 @@ export function reconcileDerivedState({
     nowIso,
     resolved.aggregateRetentionMonths,
   );
+  // Feed the 13-month aggregate store back into the published Daily Performance
+  // view so history older than detail retention remains operator-visible.
+  views.dailyPerformance = {
+    ...views.dailyPerformance,
+    days: prunedAggregates.aggregates.map((row) => ({
+      date: row.date,
+      transitions: row.transitions ?? 0,
+      completedTransactions: row.completedTransactions ?? 0,
+      medianTransitionMs: row.medianTransitionMs ?? null,
+      maxTransitionMs: row.maxTransitionMs ?? null,
+      executableButIdleMs: row.executableButIdleMs,
+    })),
+  };
 
   // Idle work must appear in Live Flow when executable-but-idle is derived.
-  // Schedule cadence is expected to be ≤ watcherIntervalMinutes so visibility
-  // stays inside one watcher interval of the idle condition arising.
+  // Five-minute watcher visibility is provided by the local wake/check-in
+  // reconciler hook; the Actions artifact refresh stays on a coarser cadence.
   const idleRows = (views.liveFlow?.transactions || []).filter(
     (row) => (row.executableButIdleMs ?? 0) > 0,
   );
   const idleWorkVisible = idleRows.length > 0;
 
+  const passOk = retained.rejected.length === 0 && ingested.rejected.length === 0;
+
   let written = null;
-  if (writeViews) {
+  // Persist only on a successful pass so a failed/corrupt run cannot replace
+  // a prior good store or publish a partial view as healthy.
+  if (writeViews && passOk) {
     const resolvedOut = resolve(outDir);
     mkdirSync(resolvedOut, { recursive: true });
     const dataPath = join(resolvedOut, 'health-data.json');
@@ -217,7 +295,7 @@ export function reconcileDerivedState({
     schemaVersion: RECONCILE_SCHEMA_VERSION,
     // Malformed incoming envelopes must fail the pass, not silently drop:
     // first-pass ingest rejections count against ok alongside re-ingest.
-    ok: retained.rejected.length === 0 && ingested.rejected.length === 0,
+    ok: passOk,
     disabled: false,
     events: retained.events,
     active: retained.active,
@@ -230,6 +308,7 @@ export function reconcileDerivedState({
       prunedEventCount: prunedEvents.prunedCount,
       prunedAggregateCount: prunedAggregates.prunedCount,
       rejectedCount: retained.rejected.length + ingested.rejected.length,
+      storeRejectedCount: 0,
     },
     idleWorkVisible,
     watcherIntervalMinutes: resolved.watcherIntervalMinutes,

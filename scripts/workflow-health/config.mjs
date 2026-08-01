@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Runtime configuration for workflow-health reconciliation and retention.
  * Disable flips derived-state generation off without deleting authoritative

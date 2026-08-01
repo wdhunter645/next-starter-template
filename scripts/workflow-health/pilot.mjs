@@ -357,12 +357,18 @@ export function evaluateDisableAndRollback({ now = NOW } = {}) {
  */
 export function runPilot({ now = NOW } = {}) {
   const seed = buildPilotSeedEvents({ now });
+  // Classification must ignore a host-level WORKFLOW_HEALTH_DISABLED flip;
+  // disable/rollback is exercised separately in evaluateDisableAndRollback.
   const reconciled = reconcileDerivedState({
     existingEvents: [],
     incomingEvents: seed.events,
     dailyAggregates: [{ date: isoBefore(now, 400 * DAY_MS).slice(0, 10), transitions: 9 }],
     now,
-    config: { emitGaps: true, staleAfterMs: 24 * 60 * 60 * 1000 },
+    config: {
+      enabled: true,
+      emitGaps: true,
+      staleAfterMs: 24 * 60 * 60 * 1000,
+    },
   });
   const classification = evaluatePilotResult(seed, reconciled);
   const disableRollback = evaluateDisableAndRollback({ now });

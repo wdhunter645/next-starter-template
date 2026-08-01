@@ -3,9 +3,9 @@ name: Workflow health reconcile
 on:
   workflow_dispatch:
   schedule:
-    # Artifact refresh cadence (reporting only). Informational pickup/idle
-    # watcher interval remains 5 minutes via config/SLO + local wake loop;
-    # this job must not burn Actions minutes on a 5-minute cron.
+    # Artifact refresh cadence (reporting only). Five-minute watcher/SLO
+    # visibility is provided by scripts/workflow-health/local-watcher-reconcile.mjs
+    # on the Cursor wake/check-in loops — not by a 5-minute Actions cron.
     - cron: "0 */6 * * *"
   pull_request:
     paths:

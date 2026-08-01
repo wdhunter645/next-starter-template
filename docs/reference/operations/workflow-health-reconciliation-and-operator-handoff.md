@@ -26,6 +26,7 @@ the integrated `component/workflow-health-observability` candidate; it does
 | `scripts/workflow-health/config.mjs` | Enable/disable + retention / watcher defaults |
 | `scripts/workflow-health/retention.mjs` | 30-day detail and 13-month aggregate pruning |
 | `scripts/workflow-health/reconcile.mjs` | Idempotent repair, gap emission, view/store write |
+| `scripts/workflow-health/local-watcher-reconcile.mjs` | Watcher-interval local hook for wake/check-in loops |
 | `scripts/workflow-health/pilot.mjs` | Seeded-failure qualification entry point |
 | `.github/workflows/workflow-health-reconcile.yml` | Fixture pilot + optional scheduled generation |
 
@@ -45,8 +46,9 @@ Machine-readable modules are canonical where this document and code disagree.
    comments, workflow runs, and evidence are preserved.
 5. **Idle visibility.** Executable-but-idle work must appear in Live Flow after
    a reconcile pass. The informational watcher interval remains five minutes
-   (config/SLO + local wake loop). The GitHub Actions artifact refresh runs on
-   a coarser six-hour cadence so reporting does not burn Actions minutes.
+   via `scripts/workflow-health/local-watcher-reconcile.mjs` on the Cursor
+   wake/check-in loops. The GitHub Actions artifact refresh runs on a coarser
+   six-hour cadence so reporting does not burn Actions minutes.
 6. **Zero added paid service.** Generation uses repository-hosted Node scripts
    and GitHub Actions artifacts, following the PMO dashboard pattern.
 7. **Disable without destruction.** `WORKFLOW_HEALTH_DISABLED=1` (or

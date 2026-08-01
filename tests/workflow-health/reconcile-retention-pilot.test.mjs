@@ -74,10 +74,11 @@ describe('workflow-health retention (#2889)', () => {
     const aggregates = [
       { date: 'not-a-date', transitions: 1 },
       { date: 'zzzz-99-99', transitions: 1 },
+      { date: '2026-07-01garbage', transitions: 1 },
       { date: '2026-07-01', transitions: 2 },
     ];
     const pruned = pruneDailyAggregates(aggregates, NOW, AGGREGATE_RETENTION_MONTHS);
-    expect(pruned.prunedCount).toBe(2);
+    expect(pruned.prunedCount).toBe(3);
     expect(pruned.aggregates.map((r) => r.date)).toEqual(['2026-07-01']);
   });
 
@@ -124,6 +125,64 @@ describe('workflow-health reconcile (#2889)', () => {
     expect(result.repairs.rejectedCount).toBeGreaterThan(0);
   });
 
+  it('fails closed on a corrupt prior store without overwriting it', () => {
+    const prior = [{ not: 'valid-store-event' }];
+    const result = reconcileDerivedState({
+      existingEvents: prior,
+      incomingEvents: [event({ idempotencyKey: 'new-1' })],
+      now: NOW,
+      writeViews: true,
+      outDir: mkdtempSync(join(tmpdir(), 'wh-corrupt-')),
+      config: { emitGaps: false },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('corrupt_prior_store');
+    expect(result.written).toBeNull();
+    expect(result.events).toEqual(prior);
+    expect(result.repairs.storeRejectedCount).toBe(1);
+  });
+
+  it('preserves custom transactionId and stale age when emitting gaps', () => {
+    const customId = 'custom-tx-42';
+    const seed = event({
+      transactionId: customId,
+      sourceIssue: 42,
+      stage: 'execution',
+      phase: 'start',
+      occurredAt: '2026-07-20T12:00:00.000Z',
+      idempotencyKey: 'stale-start',
+    });
+    const result = reconcileDerivedState({
+      existingEvents: [seed],
+      incomingEvents: [],
+      now: NOW,
+      config: { emitGaps: true, staleAfterMs: 24 * 60 * 60 * 1000 },
+    });
+    expect(result.ok).toBe(true);
+    expect(result.events.every((e) => e.transactionId === customId)).toBe(true);
+    const live = result.views.liveFlow.transactions.find((r) => r.transactionId === customId);
+    expect(live).toBeTruthy();
+    expect(live.ageMs).toBeGreaterThan(24 * 60 * 60 * 1000);
+    expect(
+      result.views.exceptions.staleTransactions.some((r) => r.transactionId === customId),
+    ).toBe(true);
+  });
+
+  it('publishes retained daily aggregates into the Daily Performance view', () => {
+    const result = reconcileDerivedState({
+      existingEvents: [event({ idempotencyKey: 'agg-1', occurredAt: '2026-08-01T10:00:00.000Z' })],
+      incomingEvents: [],
+      dailyAggregates: [
+        { date: '2026-07-01', transitions: 4, completedTransactions: 1, medianTransitionMs: 9, maxTransitionMs: 11 },
+      ],
+      now: NOW,
+      config: { emitGaps: false },
+    });
+    expect(result.views.dailyPerformance.days.some((d) => d.date === '2026-07-01' && d.transitions === 4)).toBe(
+      true,
+    );
+  });
+
   it('disable path skips generation and preserves events', () => {
     const prior = [event({ idempotencyKey: 'keep-me' })];
     const result = reconcileDerivedState({
@@ -160,14 +219,15 @@ describe('workflow-health reconcile (#2889)', () => {
   it('scopes gap emission per known transaction', () => {
     const scopes = transactionScopesFromEvents([
       event({ sourceIssue: 1, transactionId: transactionIdFor(1, 'a'), idempotencyKey: 'a' }),
-      event({ sourceIssue: 2, transactionId: transactionIdFor(2, 'b'), idempotencyKey: 'b' }),
+      event({ sourceIssue: 2, transactionId: 'custom-b', idempotencyKey: 'b' }),
     ]);
     expect(scopes).toHaveLength(2);
+    expect(scopes.map((s) => s.transactionId).sort()).toEqual(['custom-b', transactionIdFor(1, 'a')].sort());
     const gaps = emitReconciliationGaps({
       events: scopes.map((s) =>
         event({
           sourceIssue: s.sourceIssue,
-          transactionId: transactionIdFor(s.sourceIssue, s.workUnitId),
+          transactionId: s.transactionId,
           idempotencyKey: `seed-${s.sourceIssue}`,
         }),
       ),
@@ -176,6 +236,21 @@ describe('workflow-health reconcile (#2889)', () => {
     expect(gaps.events.length).toBeGreaterThan(0);
     expect(gaps.events.every((e) => e.evidenceQuality === 'unknown_evidence_missing')).toBe(true);
     expect(gaps.events.every((e) => e.result === 'unknown')).toBe(true);
+    expect(new Set(gaps.events.map((e) => e.transactionId))).toEqual(
+      new Set(scopes.map((s) => s.transactionId)),
+    );
+  });
+
+  it('pilot classification succeeds even when WORKFLOW_HEALTH_DISABLED is set', () => {
+    const prior = process.env.WORKFLOW_HEALTH_DISABLED;
+    process.env.WORKFLOW_HEALTH_DISABLED = 'yes';
+    try {
+      const result = runPilot({ now: NOW });
+      expect(result.ok).toBe(true);
+    } finally {
+      if (prior === undefined) delete process.env.WORKFLOW_HEALTH_DISABLED;
+      else process.env.WORKFLOW_HEALTH_DISABLED = prior;
+    }
   });
 
   it('honors WORKFLOW_HEALTH_DISABLED via resolveReconcileConfig', () => {

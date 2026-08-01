@@ -40,7 +40,23 @@ Outputs:
 - `site/workflow-health/index.html` — static renderer (copied when present)
 
 A reconcile pass exits non-zero when any incoming envelope is rejected as
-malformed; a partial view is never reported as a successful pass.
+malformed, or when the prior store contains corrupt envelopes. A partial view
+is never persisted as a successful pass.
+
+### Keep idle/pickup visibility inside one watcher interval
+
+The informational watcher interval is five minutes. Do **not** schedule the
+GitHub Actions workflow every five minutes. Instead, invoke the local hook from
+the Cursor wake (5m) or check-in (12m) loops:
+
+```bash
+export WORKFLOW_HEALTH_STORE_FILE=/tmp/reconcile-store.json
+export WORKFLOW_HEALTH_OUT_DIR=site/workflow-health
+node scripts/workflow-health/local-watcher-reconcile.mjs path/to/events.json
+```
+
+This rebuilds derived views at watcher cadence while the Actions job remains a
+six-hour reporting artifact refresh.
 
 ### Run the seeded pilot
 
