@@ -142,31 +142,63 @@ describe('workflow event inventory (#2886)', () => {
     expect(result.ok).toBe(false);
     expect(result.errors).toContain('missing_gap_explanation:delivery/endEvidence/wake-packet');
   });
+
+  it('rejects duplicate stages, bad classes/locations, empty identity fields, and non-contiguous order', () => {
+    const stages = JSON.parse(JSON.stringify(STAGES));
+    stages[1].id = stages[0].id;
+    stages[0].startEvidence[0].evidenceClass = 'not-a-class';
+    stages[0].startEvidence[1].location = 'somewhere-else';
+    const deterministic = stages[1].startEvidence.find((s) => s.evidenceClass === 'deterministic');
+    deterministic.identityFields = [];
+    stages[2].order = 99;
+    const result = validateEventInventory(stages);
+    expect(result.ok).toBe(false);
+    expect(result.errors).toContain(`duplicate_stage:${stages[0].id}`);
+    expect(result.errors).toContain(
+      `invalid_evidence_class:${stages[0].id}/startEvidence/${stages[0].startEvidence[0].surface}`,
+    );
+    expect(result.errors).toContain(
+      `invalid_location:${stages[0].id}/startEvidence/${stages[0].startEvidence[1].surface}`,
+    );
+    expect(result.errors).toContain(
+      `deterministic_without_identity_fields:${stages[1].id}/startEvidence/${deterministic.surface}`,
+    );
+    expect(result.errors).toContain('stage_order_not_contiguous');
+  });
+
+  it('deep-freezes nested inventory data against importer mutation', () => {
+    expect(() => {
+      STAGES[0].startEvidence[0].evidenceClass = 'deterministic';
+    }).toThrow();
+    expect(STAGES[0].startEvidence[0].evidenceClass).toBe('evidence_missing');
+  });
 });
 
 describe('workflow-health adapter contract (#2886)', () => {
   it('pins the envelope version and the #2680 data-contract fields', () => {
     expect(ENVELOPE_SCHEMA_VERSION).toBe('lgfc-workflow-health-event:v1');
-    expect(ENVELOPE_REQUIRED_FIELDS).toEqual(
-      expect.arrayContaining([
-        'transactionId',
-        'sourceIssue',
-        'project',
-        'lane',
-        'pr',
-        'candidateSha',
-        'stage',
-        'phase',
-        'occurredAt',
-        'actor',
-        'result',
-        'blockerClass',
-        'nextExpectedAction',
-        'sloDeadline',
-        'idempotencyKey',
-        'supersedes',
-      ]),
-    );
+    expect(ENVELOPE_REQUIRED_FIELDS).toEqual([
+      'schemaVersion',
+      'transactionId',
+      'sourceIssue',
+      'project',
+      'lane',
+      'pr',
+      'candidateSha',
+      'stage',
+      'phase',
+      'occurredAt',
+      'actor',
+      'actorComponent',
+      'result',
+      'blockerClass',
+      'nextExpectedAction',
+      'sloDeadline',
+      'idempotencyKey',
+      'supersedes',
+      'evidence',
+      'evidenceQuality',
+    ]);
     expect(ENVELOPE_PHASES).toContain('unknown');
   });
 

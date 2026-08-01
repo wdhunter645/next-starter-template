@@ -115,12 +115,21 @@ export const CONTROLLER_TRANSITION_KINDS = Object.freeze([
 /** #2678 cumulative lane evidence comment marker. */
 export const CUMULATIVE_EVIDENCE_MARKER = '<!-- lgfc-cumulative-evidence:v1 -->';
 
+/** Deep-freeze nested inventory data so importers cannot mutate classification. */
+function deepFreeze(value) {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const child of Object.values(value)) deepFreeze(child);
+  }
+  return value;
+}
+
 /**
  * The ten required stages from the #2680 project contract, in order.
  * Each stage lists start/end evidence sources. A source is:
  * { surface, channel, location, marker, identityFields, evidenceClass, notes? }
  */
-export const STAGES = Object.freeze([
+export const STAGES = deepFreeze([
   {
     id: 'authority_ready',
     order: 1,

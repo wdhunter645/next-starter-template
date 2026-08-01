@@ -35,8 +35,11 @@ Where the two disagree, the module is canonical.
 - The #2677 controller observability stream and the #2678 cumulative lane
   evidence model are Promotion Candidates on their own component branches
   and are not yet on `main`.
-- Six stage boundaries have no deterministic GitHub-visible emission and are
-  classified as explicit gaps (see the inventory summary below).
+- Six non-deterministic evidence-source paths are classified as explicit gaps
+  (`gapCount` from `summarizeInventoryGaps()`). Several of those stage
+  boundaries also have deterministic GitHub-visible alternatives (for example
+  Delivery ACK and Eligibility fallback); the gap count is per source record,
+  not per stage.
 - No dashboard, materializer, or SLO engine exists yet; this work unit is
   inert reference data plus tests.
 
