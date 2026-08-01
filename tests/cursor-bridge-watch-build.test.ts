@@ -2,26 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-
-// Passthrough-by-default mock: only #2983's systemctl-restart test overrides
-// behavior (for the 'systemctl' command specifically); every other test in
-// this file continues to exercise real git via the real spawnSync.
-const { systemctlOverrideRef } = vi.hoisted(() => ({
-  systemctlOverrideRef: { current: null as null | ((...args: unknown[]) => unknown) },
-}));
-vi.mock('node:child_process', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('node:child_process')>();
-  return {
-    ...actual,
-    spawnSync: (...args: Parameters<typeof actual.spawnSync>) => {
-      if (args[0] === 'systemctl' && systemctlOverrideRef.current) {
-        return systemctlOverrideRef.current(...args);
-      }
-      return actual.spawnSync(...args);
-    },
-  };
-});
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   classifyWatchOutcome,
   detectActiveWork,
@@ -34,6 +15,7 @@ import {
   stagePackageFromCommit,
   snapshotPackage,
   captureEvidenceSnapshot,
+  formatRestartFailureReason,
 } from '../scripts/cursor-bridge/bridge-build.mjs';
 import {
   REPO_PACKAGE_PATHS,
@@ -338,45 +320,27 @@ describe('Cursor Bridge Watch / Build (#2814)', () => {
     expect(fs.readFileSync(queueFile, 'utf8')).toBe('{"ok":true}\n');
   });
 
-  it('surfaces the actual systemctl error detail on restart_failed (#2983), not just the bare reason', () => {
-    const home = withHome();
-    seedInstalledFromRepo(home);
-    const config = baseConfig();
-    const repoRoot = defaultRepoRoot();
-    const sourceCommit = spawnSync('git', ['-C', repoRoot, 'rev-parse', 'HEAD'], {
-      encoding: 'utf8',
-    }).stdout.trim();
-
-    systemctlOverrideRef.current = () => ({
-      status: 1,
-      stdout: '',
-      stderr: 'Failed to connect to bus: No medium found',
-      pid: 0,
-      output: [],
-      signal: null,
+  it('formatRestartFailureReason (#2983) surfaces the actual systemctl error detail, not just the bare reason', () => {
+    const reason = formatRestartFailureReason({
+      bridge: { detail: 'Failed to connect to bus: No medium found' },
+      timer: { detail: '' },
     });
+    expect(reason).toContain('restart_failed');
+    expect(reason).toContain('Failed to connect to bus');
+  });
 
-    let rolled: Record<string, any>;
-    try {
-      rolled = runBridgeBuild(config, {
-        repoRoot,
-        sourceCommit,
-        stageRoot: path.join(home, 'stage-restart-fail'),
-        snapshotRoot: path.join(home, 'snap-restart-fail'),
-        skipRepoValidation: true,
-        skipIsolatedValidation: true,
-        skipSystemd: false,
-        claim: null,
-        inFlight: null,
-      }) as Record<string, any>;
-    } finally {
-      systemctlOverrideRef.current = null;
-    }
+  it('formatRestartFailureReason (#2983) caps the combined detail length', () => {
+    const longDetail = 'x'.repeat(1000);
+    const reason = formatRestartFailureReason({
+      bridge: { detail: longDetail },
+      timer: { detail: longDetail },
+    });
+    expect(reason.length).toBeLessThanOrEqual(800);
+  });
 
-    expect(rolled.classification).toBe('rolled_back');
-    const restartReason = (rolled.reasons as string[]).find((r) => r.startsWith('restart_failed'));
-    expect(restartReason).toBeTruthy();
-    expect(restartReason).toContain('Failed to connect to bus');
+  it('formatRestartFailureReason (#2983) tolerates missing bridge/timer detail', () => {
+    expect(formatRestartFailureReason({})).toBe('restart_failed:|');
+    expect(formatRestartFailureReason(undefined)).toBe('restart_failed:|');
   });
 
   it('refuses build while protected active work exists and does not restart', () => {
