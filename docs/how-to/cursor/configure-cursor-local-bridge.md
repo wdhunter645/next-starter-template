@@ -166,15 +166,15 @@ Use a temporary bounded test Issue with `agent:cursor` and `handoff:ready`. Pref
 
 Observe in order:
 
-1. GitHub posts `CURSOR BRIDGE ACK: delivered`.
+1. Wake workflow writes a local queue packet only — **no** routine `CURSOR BRIDGE ACK` Issue comment.
 2. Local status may briefly show `launchTransaction.state: cli_spawned`.
-3. There is **no** `CURSOR BRIDGE STARTED` yet.
+3. There is **no** repository-visible Bridge STARTED telemetry yet (acceptance is local-only).
 4. Cursor emits `system/init`.
 5. Status shows `launchTransaction.state: running`, `acceptedAt`, and `sessionId`.
-6. GitHub posts `CURSOR BRIDGE STARTED` (includes delivery key and any semantic findings).
+6. Cursor updates Issue status to `status:implementation` (shared lifecycle; Bridge does not post `CURSOR BRIDGE STARTED`).
 7. The agent evaluates live Issue/comment context and either performs one bounded action or posts hold/correction/no-action.
-8. GitHub posts `CURSOR BRIDGE COMPLETED`.
-9. Claim and in-flight state clear; the delivery key is consumed exactly once.
+8. Cursor posts `IMPLEMENTATION HANDOFF` (or disposition) and updates Issue status to `status:review` (or matching hold status). Bridge does **not** post `CURSOR BRIDGE COMPLETED`.
+9. Claim and in-flight state clear locally; the delivery key is consumed exactly once.
 
 Useful commands:
 
@@ -194,12 +194,12 @@ This test is mandatory for #2739 closeout and must use a bounded test handoff. K
 2. Create or simulate a Cursor connection that spawns but does not emit `system/init`.
 3. Deliver the eligible packet.
 4. Confirm:
-   - no `CURSOR BRIDGE STARTED` comment is posted;
+   - no routine Bridge ACK/STARTED/COMPLETED telemetry comments are posted;
    - no consumed-resume marker is created;
    - the child is terminated at startup timeout;
    - the claim is released;
    - the same packet returns to `queue/` with `launchAttempts`, `lastLaunchFailure`, and future `notBefore`;
-   - only one `CURSOR BRIDGE FALLBACK: launch-retry` comment is posted for the packet;
+   - only one `CURSOR BRIDGE FALLBACK: launch-retry` comment is posted for the packet (actionable fault);
    - in-flight is cleared only after the packet is durably restored to `queue/`.
 5. Restore the normal timeout and restart the service.
 6. Confirm the packet is retried after `notBefore` and can complete after Cursor accepts it.

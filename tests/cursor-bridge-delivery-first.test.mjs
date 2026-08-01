@@ -150,7 +150,7 @@ Action: Implement the bounded bridge correction
     expect(prompt).toContain('Trusted notifications must reach Cursor.');
     expect(prompt).toContain('CHATGPT RESPONSE');
     expect(prompt).toContain('Required disposition after evaluating live Issue + comments + governance:');
-    expect(prompt).toContain('- hold: post a Cursor-authored hold explaining the semantic blocker;');
+    expect(prompt).toContain('- hold: post a Cursor-authored hold explaining the semantic blocker and set the matching canonical Issue status;');
     expect(prompt).toContain('Implement the bounded bridge correction');
     expect(parseResume(resume.body).responseRef).toContain('issuecomment-5153153493');
   });

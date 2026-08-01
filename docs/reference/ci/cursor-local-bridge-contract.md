@@ -29,7 +29,7 @@ Every component has a role. No infrastructure may be introduced without purpose,
 | Wake workflow (`.github/workflows/cursor-local-wake.yml`) | Near-real-time delivery | Trusted `issues` / `issue_comment` / manual dispatch | Host wake packet JSON | `lgfc-repo-runner` |
 | Actions runner service | Host job receiver | Jobs with `lgfc-repo-runner` | Process that can write packets | systemd runner unit |
 | Wake packet queue (`~/lgfc-cursor-bridge/queue/`) | Decouple job vs agent lifetime | Packets from wake workflow or reconciliation recovery | Files for Bridge | Host user permissions |
-| Cursor Local Bridge (`scripts/cursor-bridge/bridge.mjs`) | Sole Cursor launcher and supervisor | Packets, live Issue via `gh`, claim store, CLI auth | Transactional launch, evidence comments, fallback, heartbeat | `gh`, `cursor agent`/`agent` |
+| Cursor Local Bridge (`scripts/cursor-bridge/bridge.mjs`) | Sole Cursor launcher and supervisor | Packets, live Issue via `gh`, claim store, CLI auth | Transactional launch, local evidence, actionable fallback, heartbeat | `gh`, `cursor agent`/`agent` |
 | Launch transaction (`in-flight.json`) | Distinguish process spawn from agent acceptance | Claim, packet, Cursor stream events | `cli_spawned`, `running`, recovery disposition | Atomic local storage |
 | Local heartbeat | Prove useful Bridge health during idle and active launches | Watch-loop and launch state | `heartbeat.json` (atomic, mode `0600`) | Bridge process |
 | Local watchdog (`watchdog.mjs` + systemd timer) | Detect hung/stale Bridge and restart or alert | Heartbeat age, service, queue, workspace, `gh`/CLI auth, claim TTL, disk | Local restart/alert; optional debounced GitHub ops fault | systemd user timer |
@@ -102,7 +102,7 @@ Canonical ingress predicate: `scripts/cursor-bridge/lib/wake-ingress.mjs` (`shou
 
 ### Semantic assessment (Bridge delivers to Cursor; does not reject)
 
-Cursor evaluates live Issue/comment context and returns act, hold, correction-needed, or no-action. Bridge records these as informational findings in the launch prompt and STARTED comment:
+Cursor evaluates live Issue/comment context and returns act, hold, correction-needed, or no-action. Bridge records these as informational findings in the launch prompt only (not as repository-visible Bridge telemetry comments):
 
 - latest canonical `CHATGPT RESPONSE` / `CHATGPT CLOSEOUT` presence;
 - separate `LOCAL CURSOR RESUME` presence and response reference shape (including `Response:` URL form);
@@ -111,6 +111,26 @@ Cursor evaluates live Issue/comment context and returns act, hold, correction-ne
 - queue-routing / parent-project classification outcomes.
 
 Reconciliation applies the same mechanical Cursor-routing contract before writing a recovery packet (issues listed with required Cursor labels only). Deduplication keys are sanitized delivery keys (resume comment id when present, else packet/issue identity).
+
+## Shared operational lifecycle (#2997 design simplification)
+
+The GitHub Issue is the sole shared operational status surface for Cursor Local work. The Bridge is transport, launch safety, deduplication, and local runtime control only.
+
+Repository-visible lifecycle:
+
+1. Engineering assigns Cursor with routing labels and a resume signal.
+2. After Cursor accepts the session, Cursor updates the Issue to the canonical in-progress status (`status:implementation`).
+3. Cursor performs the work.
+4. On finish, Cursor posts an `IMPLEMENTATION HANDOFF` and updates the Issue to the canonical Engineering-review status (`status:review`).
+5. On hold/correction/no-action, Cursor posts that disposition and updates the Issue to the matching canonical status.
+
+Prohibited routine Bridge telemetry comments:
+
+- `CURSOR BRIDGE ACK`
+- `CURSOR BRIDGE STARTED`
+- `CURSOR BRIDGE COMPLETED`
+
+Retain local safety/diagnostics (`queue/`, `consumed/`, `claim.json`, `in-flight.json`, heartbeat, retry, watchdog, Bridge Watch/Build). Retain actionable GitHub fault reporting only when local recovery fails or human intervention is required (`CURSOR BRIDGE FALLBACK:*` and watchdog ops faults). `Bridge up/healthy` plus Issue status transitions are sufficient shared evidence. Cursor's `IMPLEMENTATION HANDOFF` or explicit disposition is the authoritative work result.
 
 ## Transactional launch acceptance
 
@@ -128,9 +148,9 @@ Mandatory behavior:
 4. Only after acceptance:
    - mark the resume consumed exactly once;
    - update the in-flight record to `running` with the Cursor session id;
-   - post `CURSOR BRIDGE STARTED`.
+   - record acceptance locally (log/heartbeat/in-flight) — do not post routine `CURSOR BRIDGE STARTED`.
 5. Continue heartbeat updates while the child runs.
-6. On success, post `CURSOR BRIDGE COMPLETED`, release the claim, clear in-flight state, and archive the packet.
+6. On success, release the claim, clear in-flight state, and archive the packet locally — do not post routine `CURSOR BRIDGE COMPLETED`.
 
 ### Pre-accept failure
 

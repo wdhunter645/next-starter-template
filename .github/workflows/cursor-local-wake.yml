@@ -21,7 +21,7 @@ on:
 
 permissions:
   contents: read
-  issues: write
+  issues: read
 
 concurrency:
   group: cursor-local-wake-${{ github.event.issue.number || inputs.issue_number || github.run_id }}
@@ -171,12 +171,5 @@ jobs:
           print(f"Wrote wake packet: {path}")
           PY
 
-      - name: Optional delivery ack (not started)
-        if: success()
-        env:
-          ISSUE: ${{ steps.meta.outputs.issue }}
-          DELIVERY_ID: ${{ steps.meta.outputs.delivery_id }}
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          BODY=$(printf 'CURSOR BRIDGE ACK: delivered\nDelivery id: %s\nRole: wake packet only — Bridge must revalidate eligibility before any Cursor launch.\n' "$DELIVERY_ID")
-          gh issue comment "$ISSUE" --repo wdhunter645/next-starter-template --body "$BODY"
+          # Delivery evidence is local (queue packet + Bridge status). Routine
+          # CURSOR BRIDGE ACK Issue comments are prohibited (#2997 design simplification).

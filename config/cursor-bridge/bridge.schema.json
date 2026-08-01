@@ -116,15 +116,6 @@
     "fallbackCommentPrefix": {
       "type": "string"
     },
-    "ackCommentPrefix": {
-      "type": "string"
-    },
-    "startedCommentPrefix": {
-      "type": "string"
-    },
-    "completedCommentPrefix": {
-      "type": "string"
-    },
     "cliBinaryCandidates": {
       "type": "array",
       "items": {

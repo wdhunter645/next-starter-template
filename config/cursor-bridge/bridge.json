@@ -27,9 +27,6 @@
   "responseMarker": "CHATGPT RESPONSE",
   "resumeMarker": "LOCAL CURSOR RESUME",
   "fallbackCommentPrefix": "CURSOR BRIDGE FALLBACK: unclaimed",
-  "ackCommentPrefix": "CURSOR BRIDGE ACK: delivered",
-  "startedCommentPrefix": "CURSOR BRIDGE STARTED",
-  "completedCommentPrefix": "CURSOR BRIDGE COMPLETED",
   "cliBinaryCandidates": [
     "agent",
     "cursor"
