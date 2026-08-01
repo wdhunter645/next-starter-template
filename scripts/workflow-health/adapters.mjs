@@ -298,14 +298,16 @@ export function adaptBridgeComments({
 
     if (line.startsWith(BRIDGE_MARKERS.COMPLETED)) {
       const exitMatch = body.match(/exit(?:Code)?:\s*(-?\d+)/i);
-      const exitCode = exitMatch ? Number(exitMatch[1]) : 0;
-      const pass = exitCode === 0;
+      // A COMPLETED comment without a parseable exit code proves the run
+      // ended but not how — result is unknown, never assumed success.
+      const exitCode = exitMatch ? Number(exitMatch[1]) : null;
+      const result = exitCode === null ? 'unknown' : exitCode === 0 ? 'pass' : 'fail';
       const built = emit({
         ...base,
         stage: 'execution',
         phase: 'end',
-        result: pass ? 'pass' : 'fail',
-        blockerClass: pass ? null : 'execution',
+        result,
+        blockerClass: result === 'pass' ? null : result === 'fail' ? 'execution' : 'unknown',
         nextExpectedAction: nextActionForStage('execution', 'end'),
         idempotencyKey: `bridge-completed:${meta.id}`,
         evidence: {
@@ -370,7 +372,9 @@ export function adaptControllerSnapshots({
       result: map.result,
       blockerClass: map.blockerClass,
       nextExpectedAction: nextActionForStage(map.stage, map.phase),
-      idempotencyKey: `controller:${kind}:${runId}:${sourceIssue}`,
+      // Include the observation timestamp so distinct snapshots with the
+      // same kind/run/issue are never collapsed as duplicates.
+      idempotencyKey: `controller:${kind}:${runId}:${sourceIssue}:${occurredAt}`,
       evidence: {
         channel: 'workflow_artifact',
         ref: `run:${runId}`,
@@ -413,32 +417,40 @@ export function adaptPostMergeEvidence({
     const status = String(result.status || '').toLowerCase();
     const pass = status === 'pass' || status === 'success' || status === 'ok';
     const runUrl = result.workflow_run_url || result.workflowRunUrl || null;
-    const occurredAt = result.completed_at || result.completedAt || result.at || new Date().toISOString();
-    const built = emit({
-      sourceIssue: Number(result.source_issue || result.sourceIssue || sourceIssue),
-      project,
-      workUnitId,
-      lane,
-      pr: pr == null ? null : Number(pr),
-      candidateSha: mergeSha,
-      stage: 'verification',
-      phase: 'end',
-      occurredAt,
-      actor: 'post-merge-validator',
-      actorComponent: 'post_merge_validator',
-      result: pass ? 'pass' : 'fail',
-      blockerClass: pass ? null : 'verification',
-      nextExpectedAction: nextActionForStage('verification', 'end'),
-      idempotencyKey: `post-merge-result:${pr || 'none'}:${mergeSha || 'none'}`,
-      evidence: {
-        channel: 'workflow_artifact',
-        ref: runUrl || `post-merge-result:${pr}`,
-        marker: 'post-merge-validation-result / post-merge-result.json',
-      },
-      evidenceQuality: 'deterministic',
-    });
-    if (built.ok) events.push(built.event);
-    else errors.push(...built.errors.map((e) => `post-merge-result:${e}`));
+    // The event timestamp must come from the artifact/run itself. Falling
+    // back to ingestion wall-clock time would corrupt chronological ordering
+    // for the materializer and SLO engine, so a result without a timestamp
+    // is rejected as evidence (closeout comments below are still processed).
+    const occurredAt = result.completed_at || result.completedAt || result.at || null;
+    if (!occurredAt) {
+      errors.push('post_merge_result_missing_timestamp');
+    } else {
+      const built = emit({
+        sourceIssue: Number(result.source_issue || result.sourceIssue || sourceIssue),
+        project,
+        workUnitId,
+        lane,
+        pr: pr == null ? null : Number(pr),
+        candidateSha: mergeSha,
+        stage: 'verification',
+        phase: 'end',
+        occurredAt,
+        actor: 'post-merge-validator',
+        actorComponent: 'post_merge_validator',
+        result: pass ? 'pass' : 'fail',
+        blockerClass: pass ? null : 'verification',
+        nextExpectedAction: nextActionForStage('verification', 'end'),
+        idempotencyKey: `post-merge-result:${pr || 'none'}:${mergeSha || 'none'}`,
+        evidence: {
+          channel: 'workflow_artifact',
+          ref: runUrl || `post-merge-result:${pr}`,
+          marker: 'post-merge-validation-result / post-merge-result.json',
+        },
+        evidenceQuality: 'deterministic',
+      });
+      if (built.ok) events.push(built.event);
+      else errors.push(...built.errors.map((e) => `post-merge-result:${e}`));
+    }
   }
 
   for (const comment of closeoutComments) {
@@ -844,7 +856,9 @@ export function adaptEvidenceMissingGaps({
         owner: STAGES.find((s) => s.id === gap.stage)?.owner || 'implementation_operations',
         action: `instrument_${gap.surface}`,
       },
-      idempotencyKey: `evidence-missing:${gap.stage}:${gap.boundary}:${gap.surface}`,
+      // Scoped to the transaction so gap events from different workflows
+      // never collide in the shared event store.
+      idempotencyKey: `evidence-missing:${transactionIdFor(sourceIssue, workUnitId)}:${gap.stage}:${gap.boundary}:${gap.surface}`,
       evidence: {
         channel: 'inventory_gap',
         ref: `${gap.stage}/${gap.boundary}/${gap.surface}`,

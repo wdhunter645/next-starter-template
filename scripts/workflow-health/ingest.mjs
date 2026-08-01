@@ -8,14 +8,36 @@
 import { validateEnvelope } from './envelope.mjs';
 
 /**
+ * Duplicate-suppression and supersession identity is scoped to the owning
+ * transaction so events from different work transactions can never suppress
+ * or supersede each other.
+ * @param {string} transactionId
+ * @param {string} idempotencyKey
+ */
+function scopedKey(transactionId, idempotencyKey) {
+  return `${transactionId}\u0000${idempotencyKey}`;
+}
+
+/** Locale-independent code-unit comparison for deterministic tie-breaks. */
+function compareCodeUnits(a, b) {
+  if (a === b) return 0;
+  return a < b ? -1 : 1;
+}
+
+/**
  * Merge incoming envelopes into an existing event store.
  *
  * Rules:
- * - Duplicate `idempotencyKey` → suppress (no second copy).
- * - An event whose `supersedes` names another key marks that key superseded;
- *   superseded events remain in history but are excluded from the active set.
+ * - Duplicate `idempotencyKey` within the same transaction → suppress
+ *   (no second copy). Identical keys on different transactions are distinct.
+ * - An event whose `supersedes` names an earlier key in the same transaction
+ *   marks that key superseded; superseded events remain in history but are
+ *   excluded from the active set. Self-supersession is ignored, and because
+ *   supersession only accepts chronologically earlier targets, cycles cannot
+ *   empty the active set.
  * - Invalid envelopes are rejected and reported; they never enter the store.
- * - Sort order is chronological by `occurredAt`, then idempotencyKey.
+ * - Sort order is chronological by `occurredAt`, then transaction and
+ *   idempotency key by code-unit comparison (locale-independent).
  *
  * @param {object[]} existing
  * @param {object[]} incoming
@@ -46,11 +68,12 @@ export function ingestEvents(existing = [], incoming = []) {
       }
       return;
     }
-    if (seenKeys.has(event.idempotencyKey)) {
+    const key = scopedKey(event.transactionId, event.idempotencyKey);
+    if (seenKeys.has(key)) {
       if (fromIncoming) suppressedDuplicates.push(event.idempotencyKey);
       return;
     }
-    seenKeys.add(event.idempotencyKey);
+    seenKeys.add(key);
     store.push({ ...event });
   };
 
@@ -60,22 +83,41 @@ export function ingestEvents(existing = [], incoming = []) {
   store.sort((a, b) => {
     const delta = Date.parse(a.occurredAt) - Date.parse(b.occurredAt);
     if (delta !== 0) return delta;
-    return a.idempotencyKey.localeCompare(b.idempotencyKey);
+    return compareCodeUnits(
+      scopedKey(a.transactionId, a.idempotencyKey),
+      scopedKey(b.transactionId, b.idempotencyKey),
+    );
   });
 
-  const supersededKeys = new Set();
+  // Supersession may only target a chronologically earlier event in the same
+  // transaction. Walking the sorted store and requiring the target to have
+  // been seen already makes self-references and cycles structurally
+  // impossible (a cycle would need a forward-in-time edge).
+  const supersededScoped = new Set();
+  const supersededRaw = new Set();
+  const walked = new Set();
   for (const event of store) {
-    if (event.supersedes) supersededKeys.add(event.supersedes);
+    if (
+      event.supersedes &&
+      event.supersedes !== event.idempotencyKey &&
+      walked.has(scopedKey(event.transactionId, event.supersedes))
+    ) {
+      supersededScoped.add(scopedKey(event.transactionId, event.supersedes));
+      supersededRaw.add(event.supersedes);
+    }
+    walked.add(scopedKey(event.transactionId, event.idempotencyKey));
   }
 
-  const active = store.filter((event) => !supersededKeys.has(event.idempotencyKey));
+  const active = store.filter(
+    (event) => !supersededScoped.has(scopedKey(event.transactionId, event.idempotencyKey)),
+  );
 
   return {
     ok: rejected.length === 0,
     events: store,
     active,
     suppressedDuplicates,
-    supersededKeys: [...supersededKeys],
+    supersededKeys: [...supersededRaw],
     rejected,
     mutatesExecutionAuthority: false,
   };

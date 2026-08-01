@@ -85,7 +85,7 @@ export function deriveStagePointer(active = []) {
     const events = byStage.get(stageId) || [];
     if (events.length === 0) break;
 
-    // Prefer the chronologically latest event for this stage.
+    // The chronologically latest event is the stage's current truth.
     const latest = events[events.length - 1];
     frontierEvent = latest;
     currentStage = stageId;
@@ -94,20 +94,21 @@ export function deriveStagePointer(active = []) {
     blockerClass = latest.blockerClass;
     nextExpectedAction = latest.nextExpectedAction;
 
-    const successfulEnd = events.find(
-      (e) => e.phase === 'end' && (e.result === 'pass' || e.result === 'deferred'),
-    );
-    if (successfulEnd) {
+    // Advancement requires the LATEST event itself to be a successful end.
+    // An older successful end never overrides newer blocked/fail/unknown
+    // evidence for the same stage.
+    const advanced =
+      latest.phase === 'end' && (latest.result === 'pass' || latest.result === 'deferred');
+    if (advanced) {
       lastSuccessfulTransition = {
         stage: stageId,
-        occurredAt: successfulEnd.occurredAt,
-        idempotencyKey: successfulEnd.idempotencyKey,
+        occurredAt: latest.occurredAt,
+        idempotencyKey: latest.idempotencyKey,
       };
-      // Continue into the next stage only after a successful end.
       continue;
     }
 
-    // Blocked / fail / unknown stops advancement.
+    // Blocked / fail / unknown / in-progress stops advancement.
     break;
   }
 
@@ -155,9 +156,18 @@ export function materializeTransaction({
   transactionId = null,
 } = {}) {
   const ingested = ingestEvents([], events);
+  // Isolate this transaction: history, duplicates, and supersession must not
+  // leak in from other transactions ingested alongside it.
+  const history = transactionId
+    ? ingested.events.filter((e) => e.transactionId === transactionId)
+    : ingested.events;
   const active = transactionId
     ? ingested.active.filter((e) => e.transactionId === transactionId)
     : ingested.active;
+  const supersededKeys = new Set(
+    history.filter((e) => e.supersedes).map((e) => e.supersedes),
+  );
+  const activeKeys = new Set(active.map((e) => e.idempotencyKey));
 
   const nowMs = typeof now === 'string' ? Date.parse(now) : now.getTime();
   const pointer = deriveStagePointer(active);
@@ -214,9 +224,9 @@ export function materializeTransaction({
     componentStatus,
     failingComponents,
     activeEventCount: active.length,
-    historicalEventCount: ingested.events.length,
+    historicalEventCount: history.length,
     suppressedDuplicates: ingested.suppressedDuplicates,
-    supersededKeys: ingested.supersededKeys,
+    supersededKeys: [...supersededKeys].filter((key) => !activeKeys.has(key)),
     derivedAt: typeof now === 'string' ? now : now.toISOString(),
     // Hard guarantee for acceptance criteria.
     mutatesExecutionAuthority: false,
@@ -229,8 +239,14 @@ export function materializeTransaction({
  */
 export function materializeAllTransactions({ events = [], now = new Date().toISOString() } = {}) {
   const ingested = ingestEvents([], events);
-  const ids = [...new Set(ingested.active.map((e) => e.transactionId))];
+  const ids = [...new Set(ingested.events.map((e) => e.transactionId))];
   return ids.map((transactionId) =>
-    materializeTransaction({ events: ingested.events, now, transactionId }),
+    materializeTransaction({
+      // Pass only this transaction's history so no cross-transaction
+      // duplicate suppression, supersession, or counting can occur.
+      events: ingested.events.filter((e) => e.transactionId === transactionId),
+      now,
+      transactionId,
+    }),
   );
 }

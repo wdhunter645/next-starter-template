@@ -260,6 +260,77 @@ describe('workflow-health adapters (#2887)', () => {
     expect(bundle.events.some((e) => e.actorComponent === 'cursor')).toBe(true);
   });
 
+  it('rejects a post-merge result without an artifact timestamp instead of using wall-clock', () => {
+    const { ok, events, errors } = adaptPostMergeEvidence({
+      sourceIssue: ISSUE,
+      project: PROJECT,
+      result: {
+        status: 'pass',
+        pr: 2990,
+        merge_sha: '3b5d5e30',
+        source_issue: ISSUE,
+      },
+      closeoutComments: [
+        {
+          id: 100,
+          created_at: '2026-08-01T15:51:00Z',
+          user: { login: 'github-actions' },
+          body: 'Post-merge source issue closeout completed.\nPR: #2990\n',
+        },
+      ],
+    });
+    expect(ok).toBe(false);
+    expect(errors).toContain('post_merge_result_missing_timestamp');
+    // Closeout comment evidence is still processed.
+    expect(events).toHaveLength(1);
+    expect(events[0].evidence.channel).toBe('issue_comment');
+  });
+
+  it('treats a COMPLETED comment without an exit code as unknown, never success', () => {
+    const { events } = adaptBridgeComments({
+      sourceIssue: ISSUE,
+      project: PROJECT,
+      comments: [
+        {
+          id: 50,
+          created_at: '2026-08-01T15:40:00Z',
+          user: { login: 'bridge' },
+          body: `${BRIDGE_MARKERS.COMPLETED}\nno structured fields here\n`,
+        },
+      ],
+    });
+    const end = events.find((e) => e.stage === 'execution' && e.phase === 'end');
+    expect(end.result).toBe('unknown');
+    expect(end.blockerClass).toBe('unknown');
+  });
+
+  it('keeps distinct controller observations with the same kind/run distinct', () => {
+    const { events } = adaptControllerSnapshots({
+      sourceIssue: ISSUE,
+      project: PROJECT,
+      snapshots: [
+        { kind: 'reconciliation_scan', at: '2026-08-01T14:00:00Z', runId: 'r1' },
+        { kind: 'reconciliation_scan', at: '2026-08-01T15:00:00Z', runId: 'r1' },
+      ],
+    });
+    const merged = ingestEvents([], events);
+    expect(merged.active).toHaveLength(2);
+  });
+
+  it('scopes gap-event idempotency keys per transaction', () => {
+    const a = adaptEvidenceMissingGaps({
+      sourceIssue: 1001,
+      occurredAt: '2026-08-01T12:00:00Z',
+    });
+    const b = adaptEvidenceMissingGaps({
+      sourceIssue: 1002,
+      occurredAt: '2026-08-01T12:00:00Z',
+    });
+    const merged = ingestEvents(a.events, b.events);
+    expect(merged.suppressedDuplicates).toEqual([]);
+    expect(merged.active.length).toBe(a.events.length + b.events.length);
+  });
+
   it('applies supersession without rewriting history', () => {
     const first = adaptCumulativeEvidenceComments({
       sourceIssue: ISSUE,
@@ -301,5 +372,45 @@ describe('workflow-health adapters (#2887)', () => {
     expect(merged.supersededKeys).toContain('cumulative:a');
     expect(merged.active).toHaveLength(1);
     expect(merged.active[0].idempotencyKey).toBe('cumulative:b');
+  });
+
+  it('ignores self-referential and cyclic supersession instead of emptying the active set', () => {
+    const base = {
+      schemaVersion: 'lgfc-workflow-health-event:v1',
+      transactionId: 'issue-2887',
+      sourceIssue: ISSUE,
+      project: PROJECT,
+      lane: 'development',
+      pr: null,
+      candidateSha: null,
+      stage: 'execution',
+      phase: 'start',
+      actor: 'x',
+      actorComponent: 'cursor',
+      result: 'pass',
+      blockerClass: null,
+      nextExpectedAction: null,
+      sloDeadline: null,
+      evidence: { channel: 'issue_comment', ref: 'c:1', marker: 'CURSOR BRIDGE STARTED' },
+      evidenceQuality: 'deterministic',
+    };
+    // Self-supersession.
+    const self = ingestEvents(
+      [],
+      [{ ...base, occurredAt: '2026-08-01T15:00:00Z', idempotencyKey: 'k1', supersedes: 'k1' }],
+    );
+    expect(self.active).toHaveLength(1);
+
+    // Forward reference (would-be cycle): the earlier event names the later
+    // event's key — never applied because targets must be earlier in time.
+    const cycle = ingestEvents(
+      [],
+      [
+        { ...base, occurredAt: '2026-08-01T15:00:00Z', idempotencyKey: 'k1', supersedes: 'k2' },
+        { ...base, occurredAt: '2026-08-01T15:01:00Z', idempotencyKey: 'k2', supersedes: 'k1' },
+      ],
+    );
+    expect(cycle.active).toHaveLength(1);
+    expect(cycle.active[0].idempotencyKey).toBe('k2');
   });
 });

@@ -8,6 +8,7 @@
  */
 
 import { REQUIRED_STAGE_IDS } from './event-inventory.mjs';
+import { ingestEvents } from './ingest.mjs';
 import { materializeTransaction } from './materializer.mjs';
 
 /** Default first-release informational SLO configuration. */
@@ -118,31 +119,42 @@ export function evaluateSlo({
   const materialized =
     state || materializeTransaction({ events, now: nowIso });
 
-  const active = events.filter(
-    (e) =>
-      !state ||
-      !state.supersededKeys?.includes(e.idempotencyKey),
-  );
+  // All SLO calculations use the same ingested (sorted, deduplicated,
+  // supersession-resolved) active set the materializer sees — never the raw
+  // caller-ordered event array.
+  let active = ingestEvents([], events).active;
+  if (materialized.transactionId) {
+    active = active.filter((e) => e.transactionId === materialized.transactionId);
+  }
 
   const breaches = [];
 
   // Pickup visibility: once authority_ready has ended (wake started), an
   // execution start (or eligibility fallback / manual pickup via PR) should
-  // appear within one watcher interval.
-  const authorityEnd = active.find(
+  // appear within one watcher interval. Evidence must occur at or after the
+  // authority-ready end being measured; earlier unrelated evidence never
+  // satisfies the SLO. `active` is sorted, so the last matching authority end
+  // is the latest one.
+  const authorityEnds = active.filter(
     (e) => e.stage === 'authority_ready' && e.phase === 'end' && e.result === 'pass',
   );
-  const pickupEvidence = active.find(
-    (e) =>
-      (e.stage === 'execution' && e.phase === 'start') ||
-      (e.stage === 'eligibility' && e.phase === 'end') ||
-      (e.stage === 'execution' && e.phase === 'end' && e.actorComponent === 'cursor'),
-  );
+  const authorityEnd = authorityEnds[authorityEnds.length - 1] || null;
+  const authorityEndMs = authorityEnd ? Date.parse(authorityEnd.occurredAt) : null;
+  const pickupEvidence = authorityEnd
+    ? active.find(
+        (e) =>
+          Date.parse(e.occurredAt) >= authorityEndMs &&
+          ((e.stage === 'execution' && e.phase === 'start') ||
+            (e.stage === 'eligibility' && e.phase === 'end') ||
+            (e.stage === 'execution' && e.phase === 'end' && e.actorComponent === 'cursor')),
+      )
+    : null;
 
+  // Tri-state: true (visible in time), false (breached), null (no authority
+  // end yet, or still pending inside the interval with no evidence).
   let pickupVisibleWithinInterval = null;
   if (authorityEnd) {
-    const deadlineMs =
-      Date.parse(authorityEnd.occurredAt) + minutesToMs(resolved.watcherIntervalMinutes);
+    const deadlineMs = authorityEndMs + minutesToMs(resolved.watcherIntervalMinutes);
     const deadlineIso = new Date(deadlineMs).toISOString();
     if (pickupEvidence) {
       pickupVisibleWithinInterval = Date.parse(pickupEvidence.occurredAt) <= deadlineMs;
@@ -170,9 +182,9 @@ export function evaluateSlo({
         evidenceRef: authorityEnd.evidence?.ref || null,
         informational: true,
       });
-    } else {
-      pickupVisibleWithinInterval = true;
     }
+    // else: still inside the interval with no evidence yet — pending (null),
+    // never reported as satisfied before evidence exists.
   }
 
   // Per-stage age thresholds (informational).

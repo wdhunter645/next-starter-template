@@ -157,6 +157,59 @@ describe('workflow-health materializer (#2887)', () => {
     expect(state.evidenceQuality).toBe('unknown_evidence_missing');
   });
 
+  it('does not advance past a stage whose latest evidence is blocked, even with an older successful end', () => {
+    const events = sampleFlow(); // execution end (pass) at 15:30
+    events.push({
+      schemaVersion: 'lgfc-workflow-health-event:v1',
+      transactionId: events[0].transactionId,
+      sourceIssue: ISSUE,
+      project: PROJECT,
+      lane: 'development',
+      pr: 2991,
+      candidateSha: null,
+      stage: 'execution',
+      phase: 'blocked',
+      occurredAt: '2026-08-01T15:45:00Z',
+      actor: 'bridge',
+      actorComponent: 'bridge',
+      result: 'blocked',
+      blockerClass: 'execution',
+      nextExpectedAction: { owner: 'implementation_operations', action: 'complete_execution' },
+      sloDeadline: null,
+      idempotencyKey: 'execution-blocked-later',
+      supersedes: null,
+      evidence: { channel: 'issue_comment', ref: 'c:9', marker: 'CURSOR BRIDGE FALLBACK:' },
+      evidenceQuality: 'deterministic',
+    });
+
+    const state = materializeTransaction({ events, now: '2026-08-01T15:50:00Z' });
+    expect(state.currentStage).toBe('execution');
+    expect(state.currentPhase).toBe('blocked');
+    expect(state.workflowStatus).toBe('blocked');
+    expect(state.blockerClass).toBe('execution');
+    // The older pass end must not have advanced the pointer to review.
+    expect(state.nextExpectedAction.action).toBe('complete_execution');
+  });
+
+  it('isolates per-transaction history and counts in materializeAllTransactions', () => {
+    const a = sampleFlow();
+    const b = adaptWakeWorkflowRun({
+      sourceIssue: 2888,
+      project: PROJECT,
+      workUnitId: '003',
+      run: { id: 200, created_at: '2026-08-01T16:00:00Z' },
+    }).events;
+    const all = materializeAllTransactions({
+      events: [...a, ...b],
+      now: '2026-08-01T16:05:00Z',
+    });
+    const txA = all.find((t) => t.sourceIssue === ISSUE);
+    const txB = all.find((t) => t.sourceIssue === 2888);
+    expect(txA.historicalEventCount).toBe(a.length);
+    expect(txB.historicalEventCount).toBe(b.length);
+    expect(txA.activeEventCount + txB.activeEventCount).toBe(a.length + b.length);
+  });
+
   it('materializes multiple transactions independently', () => {
     const a = sampleFlow();
     const b = adaptWakeWorkflowRun({
@@ -240,6 +293,74 @@ describe('workflow-health SLO engine (#2887)', () => {
 
     const slo = evaluateSlo({ events, state, now: '2026-08-01T15:11:00Z' });
     expect(slo.executableButIdleMs).toBe(10 * 60 * 1000);
+  });
+
+  it('reports pending (null) inside the interval before any pickup evidence exists', () => {
+    const wakeOnly = adaptWakeWorkflowRun({
+      sourceIssue: ISSUE,
+      project: PROJECT,
+      run: { id: 300, created_at: '2026-08-01T15:00:00Z' },
+    }).events;
+    const slo = evaluateSlo({
+      events: wakeOnly,
+      now: '2026-08-01T15:02:00Z',
+      config: { watcherIntervalMinutes: 5 },
+    });
+    expect(slo.pickupVisibleWithinInterval).toBe(null);
+    expect(slo.sloBreach).toBe(false);
+  });
+
+  it('never satisfies pickup visibility with evidence that predates the authority end', () => {
+    const wake = adaptWakeWorkflowRun({
+      sourceIssue: ISSUE,
+      project: PROJECT,
+      run: { id: 301, created_at: '2026-08-01T15:00:00Z' },
+    }).events;
+    // Stale STARTED comment from an earlier cycle, before this wake.
+    const staleStart = adaptBridgeComments({
+      sourceIssue: ISSUE,
+      project: PROJECT,
+      comments: [
+        {
+          id: 77,
+          created_at: '2026-08-01T14:00:00Z',
+          user: { login: 'bridge' },
+          body: `${BRIDGE_MARKERS.STARTED}\n`,
+        },
+      ],
+    }).events;
+    const slo = evaluateSlo({
+      events: [...staleStart, ...wake],
+      now: '2026-08-01T15:10:00Z',
+      config: { watcherIntervalMinutes: 5 },
+    });
+    expect(slo.pickupVisibleWithinInterval).toBe(false);
+    expect(slo.breaches.some((b) => b.kind === 'pickup_visibility')).toBe(true);
+  });
+
+  it('ignores superseded events in SLO calculations regardless of caller order', () => {
+    const events = sampleFlow({ withPickupDelay: true });
+    const started = events.find(
+      (e) => e.stage === 'execution' && e.phase === 'start',
+    );
+    // A correction supersedes the late STARTED pickup evidence.
+    const correction = {
+      ...started,
+      occurredAt: '2026-08-01T15:21:00Z',
+      idempotencyKey: 'started-correction',
+      supersedes: started.idempotencyKey,
+      result: 'unknown',
+      evidenceQuality: 'unknown_evidence_missing',
+      phase: 'unknown',
+    };
+    // Pass events reversed to prove order-independence.
+    const slo = evaluateSlo({
+      events: [correction, ...[...events].reverse()],
+      now: '2026-08-01T15:25:00Z',
+      config: { watcherIntervalMinutes: 5 },
+    });
+    // The superseded STARTED no longer counts as pickup; deadline passed.
+    expect(slo.pickupVisibleWithinInterval).toBe(false);
   });
 
   it('flags stage-age breaches against informational thresholds', () => {

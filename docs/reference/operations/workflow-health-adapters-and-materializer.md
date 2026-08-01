@@ -45,16 +45,29 @@ Machine-readable modules are canonical where this document and code disagree.
 ## Ground rules
 
 1. **Idempotent ingestion.** Replaying the same `idempotencyKey` suppresses
-   duplicates; history is retained.
+   duplicates; history is retained. Duplicate-suppression and supersession
+   identity is scoped per `transactionId`, so identical keys on different
+   transactions never suppress each other.
 2. **Supersession preserves history.** A later event with `supersedes` removes
-   the prior key from the *active* set only.
+   the prior key from the *active* set only. Supersession may only target a
+   chronologically earlier event in the same transaction; self-references and
+   cycles are structurally rejected.
 3. **Missing evidence → unknown.** Gap adapters emit
    `phase: unknown` / `evidenceQuality: unknown_evidence_missing`. They never
-   emit a healthy pass for an uninstrumented boundary.
+   emit a healthy pass for an uninstrumented boundary. In
+   `adaptEvidenceBundle` gap emission is **opt-in** via `emitGaps: true`;
+   reconciliation (#2889) is the intended scheduled caller that forces gap
+   visibility, while ad-hoc bundle callers with deterministic alternatives
+   are not flooded by default.
 4. **Component failures stay distinct.** A degraded controller does not mark
    Bridge or Cursor unhealthy.
 5. **No derived authority.** Every public return value sets
    `mutatesExecutionAuthority: false`.
+6. **UTC timestamps only.** `occurredAt` and `sloDeadline` must be ISO 8601
+   UTC (`Z` / `+00:00`); `lane` must be one of the four contract lanes.
+   Evidence without an authoritative source timestamp (for example a
+   post-merge artifact missing `completed_at`) is rejected, never backfilled
+   with ingestion wall-clock time.
 
 ## Adapter coverage
 
@@ -87,18 +100,27 @@ Authoritative source selection for a stage boundary must go through
 - `componentStatus` / `failingComponents`
 - `mutatesExecutionAuthority: false`
 
-Stage advancement requires a successful `end` (pass/deferred) before the next
-stage is considered. Unknown or blocked frontiers stop advancement.
+Stage advancement requires the **latest** event for a stage to be a successful
+`end` (pass/deferred) before the next stage is considered; an older successful
+end never overrides newer blocked/fail/unknown evidence. Unknown or blocked
+frontiers stop advancement. `materializeAllTransactions()` isolates each
+transaction's history, duplicates, and supersession from the others.
 
 ## SLO engine outputs
 
 `evaluateSlo()` returns `lgfc-workflow-health-slo:v1` with:
 
-- `pickupVisibleWithinInterval` (authority_ready end → execution/eligibility pickup within one watcher interval)
+- `pickupVisibleWithinInterval` — tri-state: `true` (pickup evidence at or
+  after the latest authority_ready end, within one watcher interval), `false`
+  (deadline passed), `null` (no authority end yet, or pending inside the
+  interval without evidence — never reported satisfied before evidence exists)
 - `executableButIdleMs`
 - `breaches[]` (each carries `sourceIssue`, `pr`, `evidenceRef`, `informational: true`)
 - `enforcement: 'informational'`
 - `mutatesExecutionAuthority: false`
+
+All SLO calculations run on the same ingested (sorted, deduplicated,
+supersession-resolved) active event set the materializer uses.
 
 ## Rollback
 

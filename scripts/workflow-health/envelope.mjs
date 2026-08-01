@@ -14,12 +14,33 @@ import {
   STAGE_IDS,
 } from './event-inventory.mjs';
 
+/** The four contract lanes from the #2680 / #2678 model. */
+export const ENVELOPE_LANES = Object.freeze([
+  'sandbox',
+  'development',
+  'promotion_candidate',
+  'production',
+]);
+
 /**
  * @param {unknown} value
  * @returns {value is string}
  */
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.length > 0;
+}
+
+/**
+ * The contract requires ISO 8601 UTC timestamps so envelope ordering is
+ * deterministic; local-offset timestamps are rejected.
+ * @param {unknown} value
+ */
+function isUtcTimestamp(value) {
+  return (
+    isNonEmptyString(value) &&
+    !Number.isNaN(Date.parse(value)) &&
+    /(?:Z|\+00:00)$/.test(value)
+  );
 }
 
 /**
@@ -58,8 +79,17 @@ export function validateEnvelope(event) {
   if (typeof event.sourceIssue !== 'number' || !Number.isInteger(event.sourceIssue) || event.sourceIssue < 1) {
     errors.push('invalid_sourceIssue');
   }
-  if (!isNonEmptyString(event.occurredAt) || Number.isNaN(Date.parse(event.occurredAt))) {
+  if (!ENVELOPE_LANES.includes(event.lane)) {
+    errors.push(`invalid_lane:${String(event.lane)}`);
+  }
+  if (!isUtcTimestamp(event.occurredAt)) {
     errors.push('invalid_occurredAt');
+  }
+  if (
+    event.sloDeadline !== null &&
+    !isUtcTimestamp(event.sloDeadline)
+  ) {
+    errors.push('invalid_sloDeadline');
   }
   if (!isNonEmptyString(event.idempotencyKey)) errors.push('invalid_idempotencyKey');
   if (
