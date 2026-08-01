@@ -1,0 +1,93 @@
+name: Claude Code Wake Delivery
+
+# Delivery only: post a deterministic @claude-mention alert comment when work
+# is routed to Claude Code / Engineering. Does not grant authority, approve,
+# merge, or prove that a Claude Code session picked the work up — see
+# docs/reference/ci/claude-code-wake-contract.md.
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue or PR number to deliver a wake alert for
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: claude-code-wake-${{ github.event.pull_request.number || github.event.issue.number || inputs.issue_number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  deliver:
+    if: >-
+      github.repository == 'wdhunter645/next-starter-template' &&
+      (
+        (
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.draft == false &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        ) ||
+        (
+          github.event_name == 'issue_comment' &&
+          github.event.issue.state == 'open' &&
+          github.event.issue.pull_request == null &&
+          github.event.comment.user.login == 'wdhunter645' &&
+          startsWith(github.event.comment.body, 'CLAUDE CODE RESUME')
+        ) ||
+        (
+          github.event_name == 'workflow_dispatch' &&
+          github.actor == 'wdhunter645'
+        )
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Resolve target number
+        id: meta
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          INPUT_NUMBER: ${{ inputs.issue_number }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            NUMBER="$INPUT_NUMBER"
+          elif [ "$EVENT_NAME" = "pull_request" ]; then
+            NUMBER="$PR_NUMBER"
+          else
+            NUMBER="$ISSUE_NUMBER"
+          fi
+          test -n "$NUMBER"
+          echo "number=$NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if already alerted
+        id: dedupe
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ steps.meta.outputs.number }}
+        run: |
+          set -euo pipefail
+          EXISTING=$(gh api "repos/wdhunter645/next-starter-template/issues/${NUMBER}/comments" \
+            --paginate --jq '[.[] | select(.body | contains("CLAUDE CODE WAKE: delivered"))] | length')
+          echo "already_alerted=$EXISTING" >> "$GITHUB_OUTPUT"
+
+      - name: Post wake alert comment
+        if: ${{ steps.dedupe.outputs.already_alerted == '0' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ steps.meta.outputs.number }}
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          DELIVERY_ID="claude-wake-${RUN_ID}-${NUMBER}"
+          BODY=$(printf '@claude\n\nCLAUDE CODE WAKE: delivered\nDelivery id: %s\nTrigger: %s\nRole: notification only — this comment does not grant authority, approval, merge, or execution scope. Read the source Issue/PR for the applicable role and decision before acting.\n' "$DELIVERY_ID" "$EVENT_NAME")
+          gh api "repos/wdhunter645/next-starter-template/issues/${NUMBER}/comments" -f body="$BODY"
