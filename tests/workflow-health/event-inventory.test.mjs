@@ -8,6 +8,7 @@ import {
   ENVELOPE_REQUIRED_FIELDS,
   ENVELOPE_SCHEMA_VERSION,
   EVIDENCE_CLASSES,
+  REQUIRED_STAGE_IDS,
   STAGE_IDS,
   STAGES,
   summarizeInventoryGaps,
@@ -29,6 +30,7 @@ describe('workflow event inventory (#2886)', () => {
       'continuation',
     ]);
     expect(STAGES.map((s) => s.order)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(STAGE_IDS).toEqual([...REQUIRED_STAGE_IDS]);
   });
 
   it('validates: every stage has classified start and end evidence', () => {
@@ -107,6 +109,37 @@ describe('workflow event inventory (#2886)', () => {
     expect(withGarbage.errors.filter((e) => e === 'malformed_stage_entry')).toHaveLength(3);
     expect(withGarbage.errors).toContain('malformed_source_entry:x/startEvidence');
     expect(withGarbage.errors).toContain('malformed_source_entry:x/endEvidence');
+  });
+
+  it('rejects sources without an evidence channel', () => {
+    const stages = JSON.parse(JSON.stringify(STAGES));
+    delete stages[0].startEvidence[0].channel;
+    const result = validateEventInventory(stages);
+    expect(result.ok).toBe(false);
+    expect(result.errors).toContain('malformed_source_entry:authority_ready/startEvidence');
+  });
+
+  it('rejects truncated or substituted stage sequences', () => {
+    const truncated = validateEventInventory(STAGES.slice(0, 9).map((s, i) => ({ ...s, order: i + 1 })));
+    expect(truncated.ok).toBe(false);
+    expect(truncated.errors).toContain('stage_ids_do_not_match_required_sequence');
+
+    const substituted = STAGES.map((s, i) =>
+      i === 4 ? { ...s, id: 'not_review' } : s,
+    );
+    const result = validateEventInventory(substituted);
+    expect(result.ok).toBe(false);
+    expect(result.errors).toContain('stage_ids_do_not_match_required_sequence');
+  });
+
+  it('requires a gap explanation on local_only sources too', () => {
+    const stages = JSON.parse(JSON.stringify(STAGES));
+    const delivery = stages.find((s) => s.id === 'delivery');
+    const packet = delivery.endEvidence.find((e) => e.evidenceClass === 'local_only');
+    delete packet.notes;
+    const result = validateEventInventory(stages);
+    expect(result.ok).toBe(false);
+    expect(result.errors).toContain('missing_gap_explanation:delivery/endEvidence/wake-packet');
   });
 });
 

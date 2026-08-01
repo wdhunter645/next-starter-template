@@ -565,6 +565,23 @@ export const STAGES = Object.freeze([
   },
 ]);
 
+/**
+ * The required #2680 stage sequence, pinned independently of STAGES so a
+ * truncated or substituted inventory cannot validate as healthy.
+ */
+export const REQUIRED_STAGE_IDS = Object.freeze([
+  'authority_ready',
+  'delivery',
+  'eligibility',
+  'execution',
+  'review',
+  'remediation',
+  'integration',
+  'verification',
+  'closeout',
+  'continuation',
+]);
+
 export const STAGE_IDS = Object.freeze(STAGES.map((s) => s.id));
 
 /**
@@ -601,7 +618,14 @@ export function validateEventInventory(stages = STAGES) {
         continue;
       }
       for (const source of sources) {
-        if (!source || typeof source !== 'object' || typeof source.surface !== 'string' || !source.surface) {
+        if (
+          !source ||
+          typeof source !== 'object' ||
+          typeof source.surface !== 'string' ||
+          !source.surface ||
+          typeof source.channel !== 'string' ||
+          !source.channel
+        ) {
           errors.push(`malformed_source_entry:${stage.id}/${group}`);
           continue;
         }
@@ -618,7 +642,9 @@ export function validateEventInventory(stages = STAGES) {
             errors.push(`deterministic_without_identity_fields:${label}`);
           }
         }
-        if (source.evidenceClass === 'evidence_missing' && !source.notes) {
+        // Every non-deterministic source is an explicit gap and must
+        // explain itself; missing evidence must be visible, never silent.
+        if (source.evidenceClass !== 'deterministic' && !source.notes) {
           errors.push(`missing_gap_explanation:${label}`);
         }
         if (source.channel === 'label' || /label-only/.test(source.surface)) {
@@ -632,6 +658,13 @@ export function validateEventInventory(stages = STAGES) {
   const expected = Array.from({ length: stages.length }, (_, i) => i + 1);
   if (JSON.stringify(orders) !== JSON.stringify(expected)) {
     errors.push('stage_order_not_contiguous');
+  }
+
+  // A truncated or substituted inventory must never validate as healthy:
+  // the supplied stages must be exactly the required #2680 sequence.
+  const ids = stages.map((s) => s?.id);
+  if (JSON.stringify(ids) !== JSON.stringify([...REQUIRED_STAGE_IDS])) {
+    errors.push('stage_ids_do_not_match_required_sequence');
   }
 
   return { ok: errors.length === 0, errors };
