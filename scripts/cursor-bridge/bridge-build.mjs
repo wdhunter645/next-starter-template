@@ -565,7 +565,9 @@ export function runBridgeBuild(config, opts = {}) {
       quiet: false,
       reasons: [
         !restarted.ok
-          ? `restart_failed:${restarted.bridge?.detail || ''}|${restarted.timer?.detail || ''}`.trim()
+          ? `restart_failed:${restarted.bridge?.detail || ''}|${restarted.timer?.detail || ''}`
+              .trim()
+              .slice(0, 800)
           : null,
         !evidenceCheck.ok ? evidenceCheck.reason : null,
         !verify.ok ? 'post_install_verification_failed' : null,
