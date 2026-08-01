@@ -1,0 +1,92 @@
+name: Workflow health reconcile
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Artifact refresh cadence (reporting only). Informational pickup/idle
+    # watcher interval remains 5 minutes via config/SLO + local wake loop;
+    # this job must not burn Actions minutes on a 5-minute cron.
+    - cron: "0 */6 * * *"
+  pull_request:
+    paths:
+      - ".github/workflows/workflow-health-reconcile.yml"
+      - "scripts/workflow-health/**"
+      - "tests/workflow-health/**"
+      - "docs/reference/operations/workflow-health-reconciliation-and-operator-handoff.md"
+      - "docs/how-to/operations/run-workflow-health-reconciliation.md"
+  push:
+    paths:
+      - ".github/workflows/workflow-health-reconcile.yml"
+      - "scripts/workflow-health/**"
+      - "tests/workflow-health/**"
+      - "docs/reference/operations/workflow-health-reconciliation-and-operator-handoff.md"
+      - "docs/how-to/operations/run-workflow-health-reconciliation.md"
+
+permissions:
+  contents: read
+
+env:
+  WORKFLOW_HEALTH_OUT_DIR: site/workflow-health
+
+jobs:
+  pilot:
+    name: Seeded pilot and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run workflow-health unit tests
+        run: npx vitest run tests/workflow-health
+
+      - name: Run seeded pilot
+        run: node scripts/workflow-health/pilot.mjs
+
+      - name: Write pilot summary
+        run: |
+          echo "## Workflow-health pilot" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deterministic seeded-failure pilot and unit tests passed." >> "$GITHUB_STEP_SUMMARY"
+          echo "Derived-state only — no GitHub execution authority mutation." >> "$GITHUB_STEP_SUMMARY"
+
+  generate:
+    name: Generate reconciled views artifact
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Reconcile from empty incoming (store bootstrap / gap-visible empty state)
+        env:
+          WORKFLOW_HEALTH_DISABLED: ${{ vars.WORKFLOW_HEALTH_DISABLED || '' }}
+        run: node scripts/workflow-health/reconcile.mjs
+
+      - name: Upload workflow-health artifact
+        if: ${{ env.WORKFLOW_HEALTH_DISABLED != '1' && env.WORKFLOW_HEALTH_DISABLED != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-health
+          path: ${{ env.WORKFLOW_HEALTH_OUT_DIR }}
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Write generate summary
+        run: |
+          echo "## Workflow-health reconcile generate" >> "$GITHUB_STEP_SUMMARY"
+          echo "Artifact generation is reporting-only. Production promotion remains a separate Product Authority decision." >> "$GITHUB_STEP_SUMMARY"

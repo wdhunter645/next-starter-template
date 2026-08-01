@@ -40,7 +40,10 @@ Machine-readable modules are canonical where this document and code disagree.
 - First-release SLOs are **informational** (one watcher interval for pickup
   visibility; optional per-stage age thresholds). Enforcement requires separate
   Product Authority.
-- Views (#2888) and scheduled reconciliation (#2889) are out of scope here.
+- Views (#2888) are out of scope here. Scheduled reconciliation, retention,
+  pilot, and operator handoff live in
+  `docs/reference/operations/workflow-health-reconciliation-and-operator-handoff.md`
+  (#2889).
 
 ## Ground rules
 
