@@ -18,10 +18,11 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildHealthViews } from './views.mjs';
+import { buildHealthViews, redactSensitive } from './views.mjs';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_OUT_DIR = 'site/workflow-health';
+const DEFAULT_REPOSITORY = 'wdhunter645/next-starter-template';
 
 export function loadEvents(eventsPath) {
   if (!eventsPath) {
@@ -43,11 +44,13 @@ export function buildStaticViews({
   eventsPath = null,
   outDir = DEFAULT_OUT_DIR,
   now = new Date().toISOString(),
+  repository = process.env.GITHUB_REPOSITORY || DEFAULT_REPOSITORY,
 } = {}) {
   const { events, eventSource } = loadEvents(eventsPath);
   const views = {
     ...buildHealthViews({ events, now }),
-    eventSource,
+    eventSource: redactSensitive(eventSource),
+    repository: redactSensitive(repository),
   };
 
   const resolvedOut = resolve(outDir);

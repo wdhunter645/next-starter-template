@@ -434,11 +434,21 @@ export function buildHealthViews({
 
   const ingested = ingestEvents([], events);
   const materialized = materializeAllTransactions({ events: ingested.events, now: nowIso });
+
+  // Group once so SLO evaluation stays O(events + transactions) rather than
+  // re-filtering the full event list per transaction.
+  const eventsByTransaction = new Map();
+  for (const eventRecord of ingested.events) {
+    const list = eventsByTransaction.get(eventRecord.transactionId) || [];
+    list.push(eventRecord);
+    eventsByTransaction.set(eventRecord.transactionId, list);
+  }
+
   const slos = new Map(
     materialized.map((state) => [
       state.transactionId,
       evaluateSlo({
-        events: ingested.events.filter((e) => e.transactionId === state.transactionId),
+        events: eventsByTransaction.get(state.transactionId) || [],
         state,
         now: nowIso,
         config: sloConfig,

@@ -228,6 +228,20 @@ describe('workflow-health static generator (#2888)', () => {
     expect(existsSync(join(dir, 'out', 'index.html'))).toBe(true);
   });
 
+  it('publishes a repository slug for link building and redacts the event source', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'wf-health-repo-'));
+    const eventsFile = join(dir, 'leaky@example.com-events.json');
+    writeFileSync(eventsFile, JSON.stringify([]));
+    const { views } = buildStaticViews({
+      eventsPath: eventsFile,
+      outDir: join(dir, 'out'),
+      now: NOW,
+      repository: 'owner/repo',
+    });
+    expect(views.repository).toBe('owner/repo');
+    expect(views.eventSource).not.toContain('leaky@example.com');
+  });
+
   it('produces an explicit unknown empty state when no events file is provided', () => {
     const dir = mkdtempSync(join(tmpdir(), 'wf-health-empty-'));
     const { views } = buildStaticViews({ outDir: join(dir, 'out'), now: NOW });

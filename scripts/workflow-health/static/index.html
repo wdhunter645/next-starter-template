@@ -85,16 +85,37 @@
     return t;
   }
 
+  var repository = null;
+
   function issueLink(n) {
     if (n == null) return el('span', '—');
+    if (!repository) return el('span', '#' + n);
     var a = document.createElement('a');
-    a.href = 'https://github.com/wdhunter645/next-starter-template/issues/' + encodeURIComponent(n);
+    a.href = 'https://github.com/' + repository + '/issues/' + encodeURIComponent(n);
     a.textContent = '#' + n;
     a.rel = 'noopener';
     return a;
   }
 
+  // Evidence refs become clickable only for http/https URLs; anything else
+  // stays plain text so unexpected schemes can never execute.
+  function evidenceLink(ref) {
+    if (!ref) return el('span', '—');
+    if (/^https?:\/\//i.test(String(ref))) {
+      var a = document.createElement('a');
+      a.href = ref;
+      a.textContent = 'evidence';
+      a.rel = 'noopener';
+      a.target = '_blank';
+      return a;
+    }
+    return el('span', ref);
+  }
+
   function render(data) {
+    repository = typeof data.repository === 'string' && /^[\w.-]+\/[\w.-]+$/.test(data.repository)
+      ? data.repository
+      : null;
     document.getElementById('meta').textContent =
       'Generated ' + data.generatedAt + ' · ' + data.eventCount + ' events · state: ' + data.dataState;
 
@@ -119,8 +140,8 @@
 
     var ex = data.exceptions;
     var exRows = []
-      .concat((ex.sloBreaches || []).map(function (b) { return ['SLO breach (' + b.kind + ')', issueLink(b.sourceIssue), b.stage, b.breachedAt, b.evidenceRef || '—']; }))
-      .concat((ex.protectedStops || []).map(function (p) { return ['Protected stop', issueLink(p.sourceIssue), p.stage, p.occurredAt, p.evidenceRef || '—']; }))
+      .concat((ex.sloBreaches || []).map(function (b) { return ['SLO breach (' + b.kind + ')', issueLink(b.sourceIssue), b.stage, b.breachedAt, evidenceLink(b.evidenceRef)]; }))
+      .concat((ex.protectedStops || []).map(function (p) { return ['Protected stop', issueLink(p.sourceIssue), p.stage, p.occurredAt, evidenceLink(p.evidenceRef)]; }))
       .concat((ex.evidenceMissing || []).map(function (m) { return ['Evidence missing', issueLink(m.sourceIssue), m.currentStage, '—', '—']; }))
       .concat((ex.staleTransactions || []).map(function (s) { return ['Stale (' + fmtMs(s.ageMs) + ')', issueLink(s.sourceIssue), s.currentStage, '—', '—']; }));
     document.getElementById('exceptions').appendChild(table(['Type', 'Issue', 'Stage', 'At', 'Evidence'], exRows));
