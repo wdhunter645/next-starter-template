@@ -49,6 +49,14 @@ jobs:
         env:
           LGFC_BRIDGE_SOURCE_COMMIT: ${{ inputs.source_commit }}
         run: |
+          # The self-hosted runner process may not inherit the invoking
+          # user's systemd --user D-Bus session (#2986), which makes
+          # `systemctl --user restart ...` fail with "Failed to connect to
+          # bus: No medium found" even when the session exists. Point at the
+          # standard runtime dir/bus path explicitly; harmless no-op if the
+          # environment already has these set correctly.
+          export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+          export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
           HOME_DIR="${LGFC_CURSOR_BRIDGE_HOME:-$HOME/lgfc-cursor-bridge}"
           export LGFC_CURSOR_BRIDGE_HOME="$HOME_DIR"
           export LGFC_CURSOR_BRIDGE_WORKSPACE="${LGFC_CURSOR_BRIDGE_WORKSPACE:-$GITHUB_WORKSPACE}"
