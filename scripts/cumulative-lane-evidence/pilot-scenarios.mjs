@@ -162,20 +162,58 @@ export function runPilotScenarios() {
       lane: 'promotion_candidate',
       parsedEvents: parsed,
     }).canExit;
+
+    // Negative control: with only the Promotion Candidate event present,
+    // earlier lanes must be blocked. Progression is not vacuous — each lane
+    // exit requires that lane's own authoritative exit evidence.
+    const promoOnly = parsed.slice(2);
+    const sandboxWithoutEvidence = evaluateLaneExit({
+      sourceIssue: SOURCE_ISSUE,
+      workUnitId: WORK_UNIT,
+      lane: 'sandbox',
+      parsedEvents: promoOnly,
+    });
+    const devWithoutEvidence = evaluateLaneExit({
+      sourceIssue: SOURCE_ISSUE,
+      workUnitId: WORK_UNIT,
+      lane: 'development',
+      parsedEvents: promoOnly,
+    });
+    const priorLanesBlockedWithoutEvidence =
+      sandboxWithoutEvidence.canExit === false &&
+      sandboxWithoutEvidence.blockedReasons.includes('no_authoritative_event_for_lane') &&
+      devWithoutEvidence.canExit === false &&
+      devWithoutEvidence.blockedReasons.includes('no_authoritative_event_for_lane');
+
     results.push({
       name: 'progression_sandbox_development_promotion',
-      ok: sandboxOk && devOk && promoOk && unit.authoritativeEventCount === 3,
-      details: { sandboxOk, devOk, promoOk, authoritativeEventCount: unit.authoritativeEventCount },
+      ok:
+        sandboxOk &&
+        devOk &&
+        promoOk &&
+        unit.authoritativeEventCount === 3 &&
+        priorLanesBlockedWithoutEvidence,
+      details: {
+        sandboxOk,
+        devOk,
+        promoOk,
+        authoritativeEventCount: unit.authoritativeEventCount,
+        priorLanesBlockedWithoutEvidence,
+      },
     });
   }
 
-  // 2) Return to Development from Promotion Candidate
+  // 2) Return to Development from Promotion Candidate — full lifecycle:
+  // the return event supersedes the prior Promotion Candidate exit, becomes
+  // the authoritative event for the slot, and revokes exit eligibility.
   {
     const returnEvent = {
       ...promotionExit({
         idempotencyKey: 'pilot-promotion-return',
         transition: 'return_to_development',
         result: 'fail',
+        supersedes: 'pilot-promotion-exit',
+        timestamp: '2026-08-01T03:00:00.000Z',
         summary: 'Return to Development for correction',
         nextExpectedTransition: 'enter',
       }),
@@ -186,10 +224,36 @@ export function runPilotScenarios() {
       },
     };
     const validation = validateCumulativeEvidenceEvent(returnEvent, {});
+    const comments = [
+      commentFromEvent(promotionExit(), 1, '2026-08-01T02:00:00.000Z'),
+      commentFromEvent(returnEvent, 2, '2026-08-01T03:00:00.000Z'),
+    ];
+    const unit = reconcileCumulativeWorkUnit({
+      sourceIssue: SOURCE_ISSUE,
+      workUnitId: WORK_UNIT,
+      lane: 'promotion_candidate',
+      comments,
+    });
+    const auth = unit.authoritativeEvents.find((e) => e.lane === 'promotion_candidate');
+    const returnIsAuthoritative =
+      unit.authoritativeEventCount === 1 && auth?.idempotencyKey === 'pilot-promotion-return';
+    const exitAfterReturn = evaluateLaneExit({
+      sourceIssue: SOURCE_ISSUE,
+      workUnitId: WORK_UNIT,
+      lane: 'promotion_candidate',
+      parsedEvents: comments.map((c, i) => ({
+        commentId: String(i + 1),
+        createdAt: c.createdAt,
+        event: JSON.parse(c.body.slice(EVENT_MARKER.length).trim()),
+      })),
+    });
+    const exitRevoked =
+      exitAfterReturn.canExit === false &&
+      exitAfterReturn.blockedReasons.includes('latest_authoritative_event_is_not_exit_or_closeout');
     results.push({
       name: 'return_to_development',
-      ok: validation.ok && returnEvent.transition === 'return_to_development',
-      details: { validation },
+      ok: validation.ok && returnIsAuthoritative && exitRevoked,
+      details: { validation, returnIsAuthoritative, exitRevoked, authoritative: auth },
     });
   }
 
@@ -271,7 +335,11 @@ export function runPilotScenarios() {
     });
   }
 
-  // 6) Rollback disposition — disable adapters, keep history
+  // 6) Rollback disposition — disable adapters, keep history. Asserts the
+  // actual disabled-adapter boundary: a mutation_disabled transaction maps
+  // to a hold/deferred draft only, drafts never join the authoritative
+  // evidence stream, and pre-existing legacy + cumulative history survives
+  // in the reconciled view with in-lane work still permitted.
   {
     const unit = reconcileCumulativeWorkUnit({
       sourceIssue: SOURCE_ISSUE,
@@ -283,17 +351,31 @@ export function runPilotScenarios() {
       ],
       legacyBodies: [{ id: 'L1', body: '## POST-MERGE CLOSEOUT CHECKLIST\n- retained' }],
     });
+    const disableDraft = unit.controllerDrafts.find(
+      (d) => d.event?.idempotencyKey === 'pilot-rollback-disable',
+    );
+    const draftIsHoldOnly =
+      disableDraft?.ok === true &&
+      disableDraft.event.transition === 'hold' &&
+      disableDraft.event.result === 'deferred';
+    const draftNotAuthoritative =
+      unit.authoritativeEventCount === 1 &&
+      unit.authoritativeEvents.every((e) => e.idempotencyKey !== 'pilot-rollback-disable');
+    const legacyRetained =
+      unit.legacy.records.length === 1 && unit.cumulativeEventCount === 1;
     results.push({
       name: 'rollback_preserves_history',
       ok:
-        unit.historyPreserved === true &&
-        unit.reversible === true &&
-        unit.laneExit.inLaneWorkPermitted === true &&
-        unit.legacy.records.length === 1,
+        draftIsHoldOnly &&
+        draftNotAuthoritative &&
+        legacyRetained &&
+        unit.laneExit.inLaneWorkPermitted === true,
       details: {
-        historyPreserved: unit.historyPreserved,
-        reversible: unit.reversible,
-        legacyCount: unit.legacy.records.length,
+        draftIsHoldOnly,
+        draftNotAuthoritative,
+        legacyRetained,
+        inLaneWorkPermitted: unit.laneExit.inLaneWorkPermitted,
+        disableDraft,
       },
     });
   }
