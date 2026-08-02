@@ -18,7 +18,7 @@ preview/component, Promotion Candidate, and Production that separates
 repository-declared configuration from observed live metadata, records drift
 explicitly, and lists owners without exposing secret values.
 
-## Boundary
+## Scope
 
 - No secret values in this report (names and presence only).
 - No Cloudflare, D1, or B2 writes; no destructive tests.
@@ -132,8 +132,6 @@ Primary drift to hand to later children and Operations:
 | `ADMIN_TOKEN` | yes (template) | **no** | Cloudflare Pages env (runtime admin gate) |
 | `ADMIN_EMAILS` | yes | yes | Admin role allowlist |
 | `MAILCHANNELS_*` / `NEXT_PUBLIC_GA_ID` | yes (disabled defaults) | not required for this matrix | Must stay disabled on preview/component |
-
-Legacy / out-of-scope secret names also exist in GitHub, left over from prior hosting/backend platforms this project no longer uses. They are **not** part of the Cloudflare production path declared by current `wrangler.toml` and are recorded only as residual account inventory, not as active LGFC runtime dependencies for this project.
 
 ### Isolation machine inventory
 
