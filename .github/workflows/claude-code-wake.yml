@@ -20,6 +20,7 @@ on:
 permissions:
   contents: read
   issues: write
+  pull-requests: write
 
 concurrency:
   group: claude-code-wake-${{ github.event.pull_request.number || github.event.issue.number || inputs.issue_number || github.run_id }}
