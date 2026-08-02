@@ -133,7 +133,7 @@ Primary drift to hand to later children and Operations:
 | `ADMIN_EMAILS` | yes | yes | Admin role allowlist |
 | `MAILCHANNELS_*` / `NEXT_PUBLIC_GA_ID` | yes (disabled defaults) | not required for this matrix | Must stay disabled on preview/component |
 
-Legacy / out-of-scope secret names also exist in GitHub (for example Vercel and Supabase). They are **not** part of the Cloudflare production path declared by current `wrangler.toml` and are recorded only as residual account inventory, not as active LGFC runtime dependencies for this project.
+Legacy / out-of-scope secret names also exist in GitHub, left over from prior hosting/backend platforms this project no longer uses. They are **not** part of the Cloudflare production path declared by current `wrangler.toml` and are recorded only as residual account inventory, not as active LGFC runtime dependencies for this project.
 
 ### Isolation machine inventory
 
