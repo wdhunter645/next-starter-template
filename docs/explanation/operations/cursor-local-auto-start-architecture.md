@@ -25,9 +25,9 @@ Mode B therefore added event delivery and a persistent local Bridge. Subsequent 
 
 1. a hung Bridge process could stay “active” without proving useful health;
 2. a fully eligible handoff could remain unclaimed if the wake event or host packet was missed;
-3. the CLI could spawn and open a connection without the Cursor agent accepting the task, while the Bridge prematurely marked the handoff consumed and reported `STARTED`.
+3. the CLI could spawn and open a connection without the Cursor agent accepting the task, while the Bridge prematurely marked the handoff consumed and treated spawn as acceptance evidence.
 
-The third boundary is critical. Transport success, process creation, connection establishment, agent acceptance, and completed work are different states and must not be collapsed.
+The third boundary is critical. Transport success, process creation, connection establishment, agent acceptance, and completed work are different states and must not be collapsed. Shared operator evidence is Issue status plus Cursor's substantive handoff, not routine Bridge ACK/STARTED/COMPLETED comments (#2997).
 
 ## Decision
 
@@ -111,7 +111,7 @@ Critical boundaries:
 - The Bridge **validates, claims, launches, and supervises**.
 - `spawn()` means only `CLI_SPAWNED`.
 - Cursor `system/init` means `AGENT_ACCEPTED`.
-- Only acceptance permits the consumed marker and `CURSOR BRIDGE STARTED` evidence.
+- Only acceptance permits the consumed marker and local `running` transaction evidence.
 
 ## Launch state machine
 
@@ -143,12 +143,13 @@ The Bridge then, in order:
 
 1. writes the consumed-resume marker;
 2. updates `in-flight.json` to `running` with `acceptedAt` and `sessionId`;
-3. posts `CURSOR BRIDGE STARTED`;
-4. continues heartbeat updates while the child executes.
+3. continues heartbeat updates while the child executes.
+
+It does **not** post routine `CURSOR BRIDGE STARTED` / `COMPLETED` Issue comments. Cursor updates Issue status (`status:implementation` → `status:review` or hold disposition) and posts the authoritative `IMPLEMENTATION HANDOFF` or hold/correction/no-action result.
 
 ### After acceptance
 
-A zero exit posts `COMPLETED`, releases the claim, clears transaction state, and archives the packet. A nonzero exit, execution timeout, Bridge restart, or supervision error preserves the consumed marker and suppresses auto-retry because repository mutation may already have occurred.
+A zero exit releases the claim, clears transaction state, and archives the packet locally. A nonzero exit, execution timeout, Bridge restart, or supervision error preserves the consumed marker and suppresses auto-retry because repository mutation may already have occurred.
 
 ## Component responsibilities
 
@@ -169,14 +170,14 @@ A zero exit posts `COMPLETED`, releases the claim, clears transaction state, and
 ## Event flow
 
 1. ChatGPT posts authority and a separate one-action resume; required labels are present.
-2. The wake workflow writes a packet and may post `ACK: delivered`.
-3. The Bridge dequeues the packet, re-fetches Issue state, and validates eligibility/auth.
+2. The wake workflow writes a local host packet only (no routine `CURSOR BRIDGE ACK` Issue comment).
+3. The Bridge dequeues the packet, re-fetches Issue state, and validates mechanical eligibility/auth.
 4. The Bridge acquires the serial claim and writes `cli_spawned` transaction state.
 5. The CLI starts in `stream-json` mode.
-6. If no `system/init` arrives before timeout, the child is terminated and the packet is retryable; no `STARTED` or consumed marker exists.
-7. On `system/init`, the Bridge marks consumed, records the session, and posts `STARTED`.
-8. Heartbeats continue while the agent runs.
-9. Completion or post-accept failure releases the claim and records the correct duplicate-safety disposition.
+6. If no `system/init` arrives before timeout, the child is terminated and the packet is retryable; no consumed marker exists.
+7. On `system/init`, the Bridge marks consumed and records the session locally.
+8. Heartbeats continue while the agent runs; Cursor owns Issue status transitions and substantive handoff.
+9. Completion or post-accept failure releases the claim and records the correct duplicate-safety disposition locally (actionable FALLBACK comments only when intervention is required).
 10. Reconciliation remains an independent recovery path for eligible work lacking pending or consumed evidence.
 
 ## Why this design is required

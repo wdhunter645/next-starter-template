@@ -25,7 +25,6 @@ import {
   fallbackAcceptedFailure,
   fallbackLaunchRetry,
   fallbackUnclaimed,
-  postIssueComment,
   notifyLocal,
 } from './lib/notify.mjs';
 import { cliAuthPreflight, launchLocalAgent } from './lib/launch.mjs';
@@ -442,15 +441,8 @@ async function processPacket(config, dirs, packetPath) {
           `${new Date().toISOString()} launch_state=agent_accepted session_id=${sessionId}\n`,
           { mode: 0o600 },
         );
-        try {
-          postIssueComment(
-            issueNumber,
-            `${config.startedCommentPrefix || 'CURSOR BRIDGE STARTED'}\nIssue: #${issueNumber}\nDelivery key: ${resumeId}\nSession id: ${sessionId}\nAction: ${action || '(Cursor evaluates — Bridge delivery-first)'}\nSemantic findings: ${(eligibility.semanticFindings || []).join(', ') || '(none)'}\n`,
-          );
-          writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
-        } catch (err) {
-          appendBridgeLog(config, `started comment failed: ${err.message}`);
-        }
+        // Shared lifecycle evidence is Issue status + Cursor handoff (#2997).
+        // Do not post routine CURSOR BRIDGE STARTED telemetry comments.
       },
       onHeartbeat: ({ accepted, sessionId, state, at }) => {
         pulseHeartbeat(config, dirs, 'agent-running', {
@@ -497,15 +489,8 @@ async function processPacket(config, dirs, packetPath) {
       return { ok: false, reason: lifecycle.reason };
     }
 
-    try {
-      postIssueComment(
-        issueNumber,
-        `${config.completedCommentPrefix || 'CURSOR BRIDGE COMPLETED'}\nIssue: #${issueNumber}\nExit: 0\nClaim released.\n`,
-      );
-      writeMeta(config, { lastOutboundGithubAt: new Date().toISOString() });
-    } catch (err) {
-      appendBridgeLog(config, `completed comment failed: ${err.message}`);
-    }
+    // Shared lifecycle evidence is Issue status + Cursor IMPLEMENTATION HANDOFF (#2997).
+    // Do not post routine CURSOR BRIDGE COMPLETED telemetry comments.
     releaseClaim(config);
 
     clearInFlightAfterDurable(config, () => {
