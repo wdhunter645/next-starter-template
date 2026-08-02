@@ -14,8 +14,10 @@ SELECT
   'https://www.lougehrigfanclub.com'            AS external_url,
   'posted'                                      AS status
 FROM (
-  SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
-  UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10
+  -- D1's compound-SELECT term limit (5) is lower than stock SQLite's default (500),
+  -- so the 10-term UNION ALL chain this migration originally used fails on D1 with
+  -- "too many terms in compound SELECT". VALUES avoids compound-select parsing.
+  SELECT column1 AS n FROM (VALUES (1), (2), (3), (4), (5), (6), (7), (8), (9), (10))
 )
 WHERE NOT EXISTS (
   SELECT 1 FROM events WHERE status='posted' AND start_date >= date('now')
