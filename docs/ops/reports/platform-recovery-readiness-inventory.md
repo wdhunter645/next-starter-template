@@ -129,7 +129,7 @@ Also reconcile: `docs/governance/OPERATIONS-AND-RECOVERY.md`,
 | Parent project | #2779 |
 | Component branch | `component/platform-recovery-readiness` |
 | Consumed #2778 tip | `72e0943661dfe4dc2e0dafdb286630f159e8f5cc` |
-| Implementation SHA (validator+docs+tests) |  |
+| Implementation SHA (validator+docs+tests) | `4559e6dfcfd5e015b4cab8c40e1422dd5e8ec04d` |
 
 ## Results (this run)
 
