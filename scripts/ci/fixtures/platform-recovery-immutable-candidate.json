@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "synthetic": true,
+  "productionMutation": false,
+  "label": "synthetic-immutable-candidate-fixture",
+  "currentFailedCandidate": {
+    "gitSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "deploymentId": "syn-pages-deploy-failed-0001",
+    "pagesProject": "lgfc-lite-synthetic-nonprod",
+    "reason": "synthetic post-deploy smoke failure (fixture only)"
+  },
+  "lastKnownGoodCandidate": {
+    "gitSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "deploymentId": "syn-pages-deploy-good-0001",
+    "pagesProject": "lgfc-lite-synthetic-nonprod",
+    "configFingerprintAlgorithm": "sha256",
+    "acceptedAt": "2026-08-03T12:00:00.000Z"
+  },
+  "rollbackProcedureRefs": [
+    "docs/how-to/website/website-production-rollback.md",
+    "docs/how-to/ops/run-emergency-recovery.md",
+    "docs/reference/delivery/delivery-and-rollback-profiles.md"
+  ],
+  "returnToServiceChecks": [
+    "home_route_smoke",
+    "health_or_static_export_present",
+    "wrangler_binding_names_intact",
+    "no_secret_values_in_evidence"
+  ],
+  "notes": [
+    "All SHAs and deployment IDs are synthetic placeholders — not Production identities.",
+    "Live Cloudflare Pages rollback remains separately authorized and is not executed by this fixture."
+  ]
+}

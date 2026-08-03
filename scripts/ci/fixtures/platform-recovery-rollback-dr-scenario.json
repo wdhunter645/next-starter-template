@@ -1,0 +1,67 @@
+{
+  "purpose": "Bounded synthetic disaster-recovery scenario for #2896 — no Production outage",
+  "productionOutageInduced": false,
+  "productionMutation": false,
+  "scenarioId": "synthetic-dr-component-rollback-001",
+  "symptomClass": "synthetic_degraded_preview_only",
+  "impact": "Isolated Development exercise; no public Production impact",
+  "immutableCandidate": {
+    "selectionRule": "component_branch_tip",
+    "componentBranch": "component/platform-recovery-readiness",
+    "requiredPaths": [
+      "wrangler.toml",
+      "package.json",
+      "functions/api/health.ts",
+      ".github/workflows/d1-migrations.yml",
+      "docs/how-to/website/website-production-rollback.md",
+      "docs/how-to/ops/run-emergency-recovery.md",
+      "docs/reference/delivery/delivery-and-rollback-profiles.md",
+      "scripts/ci/platform-recovery-d1-b2-isolation.mjs",
+      "docs/ops/reports/platform-recovery-d1-b2-isolation-proof.md"
+    ]
+  },
+  "rollbackDecisionPath": [
+    "classify_impact",
+    "pause_conflicting_work",
+    "select_immutable_candidate",
+    "verify_candidate_reconstruction",
+    "dry_run_rollback_procedure",
+    "verify_data_media_isolation_available",
+    "communications_checklist",
+    "return_to_service_verification",
+    "record_limitations"
+  ],
+  "stopConditions": [
+    {
+      "id": "production_mutation_attempt",
+      "trigger": "Any live Cloudflare Pages deploy/rollback or Production D1/B2 write",
+      "expectedDisposition": "STOP"
+    },
+    {
+      "id": "secret_value_in_evidence",
+      "trigger": "Secret or credential value present in evidence artifact",
+      "expectedDisposition": "STOP"
+    },
+    {
+      "id": "paid_dependency",
+      "trigger": "Paid backup/retention product required",
+      "expectedDisposition": "STOP_PRODUCT_AUTHORITY"
+    },
+    {
+      "id": "public_outage_simulation",
+      "trigger": "Intentional public Production outage",
+      "expectedDisposition": "STOP"
+    }
+  ],
+  "communicationsChecklist": [
+    "Record scenario id and candidate SHA on source Issue",
+    "Notify Day-2 / Administration that exercise is synthetic only",
+    "Do not page Production on-call for synthetic Development drill"
+  ],
+  "returnToServiceProbes": [
+    { "id": "health_handler_present", "path": "functions/api/health.ts" },
+    { "id": "rollback_runbook_present", "path": "docs/how-to/website/website-production-rollback.md" },
+    { "id": "emergency_recovery_runbook_present", "path": "docs/how-to/ops/run-emergency-recovery.md" },
+    { "id": "d1_b2_isolation_tooling_present", "path": "scripts/ci/platform-recovery-d1-b2-isolation.mjs" }
+  ]
+}

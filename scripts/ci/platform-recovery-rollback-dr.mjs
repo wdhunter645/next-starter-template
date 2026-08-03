@@ -25,7 +25,7 @@ const REPO_ROOT = join(__dirname, '../..');
 
 const DISABLE_ENV = 'LGFC_PLATFORM_RECOVERY_ROLLBACK_DR_DISABLED';
 
-export const FIXTURE_DR_SCENARIO = 'scripts/ci/fixtures/platform-recovery-dr-scenario.json';
+export const FIXTURE_DR_SCENARIO = 'scripts/ci/fixtures/platform-recovery-rollback-dr-scenario.json';
 export const EVIDENCE_DOC = 'docs/ops/reports/platform-recovery-rollback-dr-proof.md';
 
 export const ROLLBACK_RUNBOOKS = Object.freeze([
