@@ -38,6 +38,22 @@ describe('platform-recovery-rollback-integrated-dr helpers', () => {
     expect(result.target.productionMutation).toBe(false);
   });
 
+  it('rejects malformed failed-candidate identities', () => {
+    const result = selectRollbackTarget({
+      currentFailedCandidate: {
+        gitSha: 'not-a-sha',
+        deploymentId: 'failed-1',
+      },
+      lastKnownGoodCandidate: {
+        gitSha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+        deploymentId: 'good-1',
+        pagesProject: 'syn',
+      },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('invalid_failed_candidate_identity');
+  });
+
   it('rejects non-distinct candidate identities', () => {
     const result = selectRollbackTarget({
       currentFailedCandidate: {
@@ -53,10 +69,11 @@ describe('platform-recovery-rollback-integrated-dr helpers', () => {
     expect(result.ok).toBe(false);
   });
 
-  it('parses wrangler markers offline', () => {
+  it('parses wrangler markers offline and ignores comments/whitespace variants', () => {
     const text = `
-pages_build_output_dir = "./out"
-binding = "DB"
+pages_build_output_dir="./out"
+# binding = "DB"
+binding="DB"
 database_name = "lgfc_lite"
 database_id = "22d0dc3e-ad34-43af-8e6a-2063df1a1e04"
 `;
@@ -64,6 +81,14 @@ database_id = "22d0dc3e-ad34-43af-8e6a-2063df1a1e04"
     expect(parsed.ok).toBe(true);
     expect(parsed.binding).toBe('DB');
     expect(parsed.pagesBuildOutputDir).toBe('./out');
+
+    const commentedOnly = `
+# pages_build_output_dir = "./out"
+# binding = "DB"
+# database_name = "lgfc_lite"
+# database_id = "22d0dc3e-ad34-43af-8e6a-2063df1a1e04"
+`;
+    expect(parseWranglerConfig(commentedOnly).ok).toBe(false);
   });
 
   it('reconstructs source/config paths from repository tree', () => {
@@ -108,8 +133,17 @@ database_id = "22d0dc3e-ad34-43af-8e6a-2063df1a1e04"
       },
       reconstruct,
       rollback,
+      evidenceTexts: [comms.body, JSON.stringify(rollback.target)],
     });
     expect(rts.ok).toBe(true);
+
+    const leaked = runReturnToServiceChecks({
+      candidate: { returnToServiceChecks: ['no_secret_values_in_evidence'] },
+      reconstruct,
+      rollback,
+      evidenceTexts: ['api_token=super-secret-value'],
+    });
+    expect(leaked.ok).toBe(false);
   });
 });
 
@@ -129,13 +163,21 @@ describe('platform-recovery-rollback-integrated-dr runner', () => {
     const result = runPlatformRecoveryRollbackIntegratedDr({
       env: { LGFC_FORCE_PRODUCTION_ROLLBACK: '1' },
       actorRole: 'test-runner',
-      includeNestedIsolation: false,
     });
     expect(result.ok).toBe(false);
     expect(result.productionMutation).toBe(false);
     expect(result.summary.recommendation).toBe(
       'ROLLBACK_INTEGRATED_DR_BLOCKED_PROTECTED_STOP',
     );
+  });
+
+  it('fails when nested isolation is skipped', () => {
+    const result = runPlatformRecoveryRollbackIntegratedDr({
+      actorRole: 'test-runner',
+      includeNestedIsolation: false,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.nestedIsolation.skipped).toBe(true);
   });
 
   it('passes rollback + integrated DR with fixtures', () => {
@@ -153,6 +195,7 @@ describe('platform-recovery-rollback-integrated-dr runner', () => {
     );
     expect(result.candidate.gitSha).toBe('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
     expect(result.nestedIsolation.ok).toBe(true);
+    expect(result.nestedIsolation.skipped).toBe(false);
     expect(result.returnToService.ok).toBe(true);
     expect(result.phaseResults.every((p) => p.ok)).toBe(true);
     expect(result.limitations.length).toBeGreaterThan(0);

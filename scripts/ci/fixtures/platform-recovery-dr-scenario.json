@@ -33,7 +33,7 @@
       "id": "rollback_deployment",
       "owner": "Implementation / Operations (synthetic) / Day-2 (live activation deferred)",
       "action": "Record exact rollback target SHA + deployment ID; do not call Cloudflare APIs",
-      "stopIf": ["LGFC_FORCE_PRODUCTION_ROLLBACK", "LGFC_FORCE_PRODUCTION_OUTAGE"]
+      "stopIf": ["LGFC_FORCE_PRODUCTION_ROLLBACK", "LGFC_FORCE_PRODUCTION_OUTAGE", "LGFC_FORCE_PRODUCTION_DR"]
     },
     {
       "id": "data_media_isolation",

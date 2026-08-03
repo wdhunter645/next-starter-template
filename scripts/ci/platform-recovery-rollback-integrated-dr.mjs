@@ -23,7 +23,7 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { runPlatformRecoveryD1B2Isolation } from './platform-recovery-d1-b2-isolation.mjs';
@@ -36,6 +36,12 @@ const DISABLE_ENV = 'LGFC_PLATFORM_RECOVERY_ROLLBACK_DR_DISABLED';
 const FORCE_PRODUCTION_ROLLBACK = 'LGFC_FORCE_PRODUCTION_ROLLBACK';
 const FORCE_PRODUCTION_OUTAGE = 'LGFC_FORCE_PRODUCTION_OUTAGE';
 const FORCE_PRODUCTION_DR = 'LGFC_FORCE_PRODUCTION_DR';
+
+export const PROTECTED_FORCE_FLAGS = Object.freeze([
+  FORCE_PRODUCTION_ROLLBACK,
+  FORCE_PRODUCTION_OUTAGE,
+  FORCE_PRODUCTION_DR,
+]);
 
 export const FIXTURE_CANDIDATE =
   'scripts/ci/fixtures/platform-recovery-immutable-candidate.json';
@@ -61,12 +67,14 @@ export const RECONSTRUCT_PATHS = Object.freeze([
   'scripts/ci/platform-recovery-d1-b2-isolation.mjs',
 ]);
 
-/** Offline wrangler.toml fields required for configuration reconstruct. */
-export const REQUIRED_WRANGLER_MARKERS = Object.freeze([
-  'pages_build_output_dir',
-  'binding = "DB"',
-  'database_name = "lgfc_lite"',
-  'database_id =',
+/** Heuristic forbidden tokens for evidence secret scanning (names/patterns only). */
+export const FORBIDDEN_EVIDENCE_TOKENS = Object.freeze([
+  'api_token=',
+  'app_key=',
+  'password=',
+  'secret_value=',
+  'bearer ',
+  '-----begin',
 ]);
 
 export const TARGETS = Object.freeze({
@@ -113,23 +121,43 @@ export function isSha40(value) {
   return typeof value === 'string' && /^[a-f0-9]{40}$/i.test(value);
 }
 
+export function isDeploymentId(value) {
+  return typeof value === 'string' && value.trim().length >= 4;
+}
+
+/** Strip TOML full-line and trailing comments for active-assignment parsing. */
+export function stripTomlComments(text) {
+  return String(text || '')
+    .split('\n')
+    .map((line) => {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) return '';
+      // Preserve quoted strings while removing trailing comments.
+      let inQuotes = false;
+      let out = '';
+      for (let i = 0; i < line.length; i += 1) {
+        const ch = line[i];
+        if (ch === '"' && line[i - 1] !== '\\') inQuotes = !inQuotes;
+        if (ch === '#' && !inQuotes) break;
+        out += ch;
+      }
+      return out;
+    })
+    .join('\n');
+}
+
 export function parseWranglerConfig(text) {
-  const markers = {};
-  for (const marker of REQUIRED_WRANGLER_MARKERS) {
-    markers[marker] = typeof text === 'string' && text.includes(marker);
-  }
-  const bindingMatch = text?.match(/binding\s*=\s*"([^"]+)"/);
-  const nameMatch = text?.match(/database_name\s*=\s*"([^"]+)"/);
-  const idMatch = text?.match(/database_id\s*=\s*"([^"]+)"/);
-  const outMatch = text?.match(/pages_build_output_dir\s*=\s*"([^"]+)"/);
+  const active = stripTomlComments(text);
+  const bindingMatch = active.match(/binding\s*=\s*"([^"]+)"/);
+  const nameMatch = active.match(/database_name\s*=\s*"([^"]+)"/);
+  const idMatch = active.match(/database_id\s*=\s*"([^"]+)"/);
+  const outMatch = active.match(/pages_build_output_dir\s*=\s*"([^"]+)"/);
   return {
-    markers,
     binding: bindingMatch?.[1] || null,
     databaseName: nameMatch?.[1] || null,
     databaseId: idMatch?.[1] || null,
     pagesBuildOutputDir: outMatch?.[1] || null,
     ok:
-      Object.values(markers).every(Boolean) &&
       bindingMatch?.[1] === 'DB' &&
       nameMatch?.[1] === 'lgfc_lite' &&
       Boolean(idMatch?.[1]) &&
@@ -151,10 +179,17 @@ export function selectRollbackTarget(candidate) {
       target: null,
     };
   }
-  if (!isSha40(good.gitSha) || !good.deploymentId) {
+  if (!isSha40(good.gitSha) || !isDeploymentId(good.deploymentId)) {
     return {
       ok: false,
       reason: 'invalid_last_known_good_identity',
+      target: null,
+    };
+  }
+  if (!isSha40(failed.gitSha) || !isDeploymentId(failed.deploymentId)) {
+    return {
+      ok: false,
+      reason: 'invalid_failed_candidate_identity',
       target: null,
     };
   }
@@ -180,6 +215,47 @@ export function selectRollbackTarget(candidate) {
   };
 }
 
+export function scanEvidenceForSecrets(texts = []) {
+  const joined = texts.filter((t) => typeof t === 'string').join('\n').toLowerCase();
+  const leaked = FORBIDDEN_EVIDENCE_TOKENS.filter((tok) => joined.includes(tok));
+  return { ok: leaked.length === 0, leaked };
+}
+
+/**
+ * Ensure scenario declares and aligns with protected force-flag stop matrix.
+ */
+export function validateScenarioGuards(scenario) {
+  const checks = [];
+  checks.push({
+    name: 'scenario_production_mutation_false',
+    ok: scenario?.productionMutation === false,
+    detail: `productionMutation=${scenario?.productionMutation}`,
+  });
+  checks.push({
+    name: 'scenario_authority_forbids_mutation',
+    ok: scenario?.authority?.productionMutationAuthorized === false,
+    detail: `productionMutationAuthorized=${scenario?.authority?.productionMutationAuthorized}`,
+  });
+  checks.push({
+    name: 'scenario_authority_forbids_outage',
+    ok: scenario?.authority?.outageSimulationAuthorized === false,
+    detail: `outageSimulationAuthorized=${scenario?.authority?.outageSimulationAuthorized}`,
+  });
+
+  const stopIfAll = (scenario?.phases || []).flatMap((p) => p.stopIf || []);
+  for (const flag of PROTECTED_FORCE_FLAGS) {
+    checks.push({
+      name: `scenario_stopIf_declares:${flag}`,
+      ok: stopIfAll.includes(flag),
+      detail: stopIfAll.includes(flag) ? 'declared in phase stopIf' : 'missing from scenario stopIf matrix',
+    });
+  }
+  return {
+    ok: checks.every((c) => c.ok),
+    checks,
+  };
+}
+
 export function proveSourceConfigReconstruction(repoRoot = REPO_ROOT) {
   const started = performance.now();
   const pathResults = [];
@@ -194,11 +270,22 @@ export function proveSourceConfigReconstruction(repoRoot = REPO_ROOT) {
     ? readFileSync(join(repoRoot, 'wrangler.toml'), 'utf8')
     : null;
   const wrangler = parseWranglerConfig(wranglerText || '');
-  const fingerprintSource = [
-    wranglerText || '',
-    ...pathResults.filter((p) => p.ok).map((p) => p.path),
-  ].join('\n');
-  const configFingerprint = sha256Text(fingerprintSource);
+  const fingerprintParts = [];
+  for (const p of pathResults.filter((x) => x.ok)) {
+    const abs = join(repoRoot, p.path);
+    // Directories contribute a stable sorted listing; files contribute content.
+    try {
+      const st = readdirSync(abs, { withFileTypes: true });
+      const listing = st
+        .map((e) => `${e.isDirectory() ? 'd' : 'f'}:${e.name}`)
+        .sort()
+        .join('|');
+      fingerprintParts.push(`${p.path}\n${listing}`);
+    } catch {
+      fingerprintParts.push(`${p.path}\n${readFileSync(abs, 'utf8')}`);
+    }
+  }
+  const configFingerprint = sha256Text(fingerprintParts.join('\n---\n'));
   const workflowsDir = join(repoRoot, '.github/workflows');
   let workflowCount = 0;
   if (existsSync(workflowsDir)) {
@@ -253,7 +340,7 @@ export function buildSyntheticCommunicationsRecord({
   };
 }
 
-export function runReturnToServiceChecks({ candidate, reconstruct, rollback }) {
+export function runReturnToServiceChecks({ candidate, reconstruct, rollback, evidenceTexts = [] }) {
   const checks = [];
   const rts = Array.isArray(candidate?.returnToServiceChecks)
     ? candidate.returnToServiceChecks
@@ -276,10 +363,13 @@ export function runReturnToServiceChecks({ candidate, reconstruct, rollback }) {
       reconstruct?.wrangler?.databaseName === 'lgfc_lite',
     detail: `binding=${reconstruct?.wrangler?.binding}; database=${reconstruct?.wrangler?.databaseName}`,
   });
+  const secretScan = scanEvidenceForSecrets(evidenceTexts);
   checks.push({
     id: 'no_secret_values_in_evidence',
-    ok: true,
-    detail: 'fixture + evidence paths contain names only; values not present',
+    ok: secretScan.ok,
+    detail: secretScan.ok
+      ? `scanned ${evidenceTexts.length} evidence blob(s); no forbidden tokens`
+      : `leaked=${secretScan.leaked.join(',')}`,
   });
   checks.push({
     id: 'rollback_target_identity',
@@ -299,12 +389,7 @@ export function runReturnToServiceChecks({ candidate, reconstruct, rollback }) {
 
 function protectedStopChecks(env) {
   const checks = [];
-  const forces = [
-    FORCE_PRODUCTION_ROLLBACK,
-    FORCE_PRODUCTION_OUTAGE,
-    FORCE_PRODUCTION_DR,
-  ];
-  for (const key of forces) {
+  for (const key of PROTECTED_FORCE_FLAGS) {
     const forced = envTruthy(env, key);
     checks.push({
       name: `protected_stop:${key}`,
@@ -435,6 +520,18 @@ export function runPlatformRecoveryRollbackIntegratedDr(opts = {}) {
       severity: 'blocker',
     });
 
+    if (scenario) {
+      const guard = validateScenarioGuards(scenario);
+      for (const c of guard.checks) {
+        checks.push({
+          name: c.name,
+          ok: c.ok,
+          detail: c.detail,
+          severity: 'blocker',
+        });
+      }
+    }
+
     checks.push({
       name: 'evidence_doc_present',
       ok: existsSync(join(REPO_ROOT, EVIDENCE_DOC)),
@@ -533,7 +630,7 @@ export function runPlatformRecoveryRollbackIntegratedDr(opts = {}) {
       severity: 'blocker',
     });
 
-    // Phase: nested D1/B2 isolation (#2895)
+    // Phase: nested D1/B2 isolation (#2895) — required for integrated proof
     if (includeNestedIsolation) {
       const isoStart = performance.now();
       nestedIsolation = runPlatformRecoveryD1B2Isolation({
@@ -543,19 +640,23 @@ export function runPlatformRecoveryRollbackIntegratedDr(opts = {}) {
       measured.nestedIsolationMs = Math.round(performance.now() - isoStart);
     } else {
       nestedIsolation = {
-        ok: true,
+        ok: false,
         skipped: true,
         productionMutation: false,
+        summary: { recommendation: 'NESTED_ISOLATION_REQUIRED' },
       };
       measured.nestedIsolationMs = 0;
     }
     phaseResults.push({
       id: 'data_media_isolation',
-      ok: nestedIsolation?.ok === true && nestedIsolation?.productionMutation === false,
+      ok:
+        nestedIsolation?.ok === true &&
+        nestedIsolation?.productionMutation === false &&
+        !nestedIsolation?.skipped,
       detail: nestedIsolation?.disabled
         ? 'nested isolation disabled via env'
         : nestedIsolation?.skipped
-          ? 'nested isolation skipped by option'
+          ? 'FAIL: nested isolation required for integrated DR proof'
           : `nested_ok=${nestedIsolation?.ok}; recommendation=${nestedIsolation?.summary?.recommendation || 'n/a'}`,
     });
     checks.push({
@@ -607,10 +708,19 @@ export function runPlatformRecoveryRollbackIntegratedDr(opts = {}) {
     });
 
     // Phase: return-to-service
+    const evidenceTexts = [
+      candidateRaw || '',
+      scenarioRaw || '',
+      communications?.body || '',
+      rollback.ok ? JSON.stringify(rollback.target) : '',
+      readText(EVIDENCE_DOC) || '',
+      readText(HOWTO_DOC) || '',
+    ];
     returnToService = runReturnToServiceChecks({
       candidate,
       reconstruct,
       rollback,
+      evidenceTexts,
     });
     phaseResults.push({
       id: 'return_to_service',
@@ -801,7 +911,8 @@ function main(argv = process.argv.slice(2)) {
   process.exit(result.ok ? 0 : 1);
 }
 
-const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+const isMain =
+  process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
 if (isMain) {
   main();
 }
