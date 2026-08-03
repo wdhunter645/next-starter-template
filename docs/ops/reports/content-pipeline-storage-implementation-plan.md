@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Bill, Atlas, Cursor, database implementers, and LGFC maintainers
+Audience: Bill, ChatGPT, Cursor, database implementers, and LGFC maintainers
 Authority Level: Controlled
 Owns: Migration sequencing and implementation plan for content pipeline storage
 Does Not Own: SQL migration files, runtime deployment, or merge approval
@@ -89,7 +89,7 @@ Create when scheduled discovery authorized:
 
 ## B2 vs R2 decision
 
-**Implement with B2** per storage model. Revisit R2 only if Bill/Atlas authorize
+**Implement with B2** per storage model. Revisit R2 only if Bill/ChatGPT authorize
 platform consolidation.
 
 ## Seed promotion workflow (target)

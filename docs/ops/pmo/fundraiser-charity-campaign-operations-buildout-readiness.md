@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Authority
 Owns: Priority #2 PMO readiness decision, fundraiser program candidate scope, child-project boundaries, campaign operations design/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, issue creation, merge authority, production secrets, vendor configuration, Givebutter account configuration, fundraiser execution launch
@@ -11,7 +11,7 @@ Last Reviewed: 2026-06-17
 
 # Fundraiser / Charity Campaign Operations Buildout Readiness
 
-> This program is BLOCKED from execution until Atlas/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/Atlas explicitly launch it.
+> This program is BLOCKED from execution until ChatGPT/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/ChatGPT explicitly launch it.
 
 ## Purpose
 
@@ -38,13 +38,13 @@ This document does not launch implementation, create child issues, authorize Cur
 ## Current known truth
 
 - PMO Backlog Priority #2 is a future program candidate, not an executable queue by itself.
-- Program #1255 and child #1259 remain ahead of this program unless Bill/Atlas explicitly reprioritize.
+- Program #1255 and child #1259 remain ahead of this program unless Bill/ChatGPT explicitly reprioritize.
 - Priority #1 Website Completion / Fan Club Product Buildout is parked as #1685 with child issues #1686 through #1694.
 - Givebutter is the likely external campaign platform boundary, but account/vendor configuration is out of scope for this documentation package.
 - The LGFC website should own only internal display, routing, campaign spotlight, deterministic website-side state, privacy-safe recognition, and pre-launch verification rules.
 - Donor/sponsor recognition must not expose public PII by default.
 - Campaign surfaces must fail closed when campaign configuration is missing, disabled, invalid, stale, or unpublished.
-- Cursor is the intended implementation agent after explicit Bill/Atlas launch authorization.
+- Cursor is the intended implementation agent after explicit Bill/ChatGPT launch authorization.
 
 ## Intended final state
 
@@ -67,7 +67,7 @@ The intended final state before implementation launch is:
 | PMO source | PMO Backlog Priority #2 |
 | Source issue | #1696 |
 | Execution agent after launch | Cursor |
-| Current readiness | Planning-ready; blocked from implementation until Atlas/Bill launch |
+| Current readiness | Planning-ready; blocked from implementation until ChatGPT/Bill launch |
 | Primary implementation plan | `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` |
 | Primary operations authority | This readiness document plus the future fundraiser operations playbook task output |
 | Product surface | Fundraiser campaign operations, campaign spotlight, leaderboard/winner display, recognition, and pre-launch verification |
@@ -77,7 +77,7 @@ The intended final state before implementation launch is:
 
 | Priority item | project name | Current state | Design authority | Implementation plan state | Readiness decision |
 | --- | --- | --- | --- | --- | --- |
-| 2 | Fundraiser / Charity Campaign Operations Buildout | PMO July 2026 program candidate | This readiness doc plus PMO backlog row | `fundraiser-charity-campaign-operations-buildout.md` | Ready for Bill/Atlas planning review; blocked from launch |
+| 2 | Fundraiser / Charity Campaign Operations Buildout | PMO July 2026 program candidate | This readiness doc plus PMO backlog row | `fundraiser-charity-campaign-operations-buildout.md` | Ready for Bill/ChatGPT planning review; blocked from launch |
 | 2a | Fundraiser operations playbook | Draft concept | This readiness doc; future Task 001 output | Covered by Tasks 001, 007, 008 | Needs documentation before build |
 | 2b | Givebutter integration model | Draft concept | This readiness doc; future Task 002 output | Covered by Tasks 002, 004, 006, 007 | Needs external/internal boundary confirmation |
 | 2c | Leaderboard / winner system | Draft concept | This readiness doc; future Tasks 002 and 003 outputs | Covered by Tasks 003, 006, 007 | Needs scoring and snapshot rules |
@@ -130,11 +130,11 @@ The intended final state before implementation launch is:
 
 Before Cursor receives implementation assignment for this program:
 
-1. Program #1255/#1259 status must be resolved, or Bill/Atlas must explicitly reprioritize.
+1. Program #1255/#1259 status must be resolved, or Bill/ChatGPT must explicitly reprioritize.
 2. Parked Priority #1 status (#1685–#1694) must be resolved, deferred, or explicitly superseded.
 3. A current program issue must explicitly launch Priority #2.
 4. Child task issues must be created from the implementation plan only after launch approval.
-5. Cursor must receive one task issue at a time unless Bill/Atlas explicitly approve parallel execution.
+5. Cursor must receive one task issue at a time unless Bill/ChatGPT explicitly approve parallel execution.
 6. Givebutter/vendor configuration decisions must be recorded outside implementation code tasks.
 7. Donor privacy rules must be accepted before any public recognition task starts.
 
@@ -142,4 +142,4 @@ Before Cursor receives implementation assignment for this program:
 
 Priority #2 is now documented as a future PMO July 2026 program candidate.
 
-It is **planning-ready**, not executable. It becomes implementation-ready only after Bill/Atlas explicitly launch it and authorize child task issue creation from `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md`.
+It is **planning-ready**, not executable. It becomes implementation-ready only after Bill/ChatGPT explicitly launch it and authorize child task issue creation from `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md`.

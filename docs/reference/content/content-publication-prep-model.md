@@ -1,6 +1,6 @@
 ---
 Doc Type: Reference
-Audience: Bill, Atlas, Cursor, admin implementers, and LGFC editors
+Audience: Bill, ChatGPT, Cursor, admin implementers, and LGFC editors
 Authority Level: Controlled
 Owns: Publication preparation model separating approval from public publication
 Does Not Own: Runtime publication automation, admin UI code, or route implementation

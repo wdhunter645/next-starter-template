@@ -1,0 +1,119 @@
+name: Cursor Bridge Build
+
+# Rebuild and promote the Chromebook Bridge from one immutable main commit (#2814).
+# Invoked when Bridge Watch returns rebuild_required, or by authorized manual dispatch.
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_commit:
+        description: Immutable main commit SHA to install
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: cursor-bridge-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository == 'wdhunter645/next-starter-template'
+    runs-on: [self-hosted, linux, x64, lgfc-repo-runner]
+    timeout-minutes: 30
+    steps:
+      - name: Checkout requested immutable commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_commit }}
+          fetch-depth: 0
+
+      - name: Refuse symbolic or non-main identities
+        env:
+          SOURCE_COMMIT: ${{ inputs.source_commit }}
+        run: |
+          test -n "$SOURCE_COMMIT"
+          echo "$SOURCE_COMMIT" | grep -Eq '^[0-9a-f]{40}$'
+          FULL="$(git rev-parse "$SOURCE_COMMIT")"
+          test "$FULL" = "$SOURCE_COMMIT"
+          git fetch origin main
+          git merge-base --is-ancestor "$SOURCE_COMMIT" origin/main
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Bridge Build
+        env:
+          LGFC_BRIDGE_SOURCE_COMMIT: ${{ inputs.source_commit }}
+        run: |
+          # The self-hosted runner process may not inherit the invoking
+          # user's systemd --user D-Bus session (#2986), which makes
+          # `systemctl --user restart ...` fail with "Failed to connect to
+          # bus: No medium found" even when the session exists. Point at the
+          # standard runtime dir/bus path explicitly; harmless no-op if the
+          # environment already has these set correctly.
+          export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+          export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
+          HOME_DIR="${LGFC_CURSOR_BRIDGE_HOME:-$HOME/lgfc-cursor-bridge}"
+          export LGFC_CURSOR_BRIDGE_HOME="$HOME_DIR"
+          export LGFC_CURSOR_BRIDGE_WORKSPACE="${LGFC_CURSOR_BRIDGE_WORKSPACE:-$GITHUB_WORKSPACE}"
+          RESULT_FILE=/tmp/lgfc-bridge-build-result.json
+          set +e
+          node "$GITHUB_WORKSPACE/scripts/cursor-bridge/bridge-build.mjs" "$LGFC_BRIDGE_SOURCE_COMMIT" \
+            > "$RESULT_FILE"
+          BUILD_RC=$?
+          set -e
+          # Always run secret scan + result validation; never print unscanned content.
+          if grep -qE 'CURSOR_API_KEY=|gh[a-z]_[A-Za-z0-9]+|github_pat_|GH_TOKEN=|GITHUB_TOKEN=' "$RESULT_FILE" 2>/dev/null; then
+            echo "secret-bearing output refused" >&2
+            exit 1
+          fi
+          if [ ! -s "$RESULT_FILE" ]; then
+            echo "bridge-build produced empty result (exit=$BUILD_RC)" >&2
+            exit 1
+          fi
+          # Result content has already passed the secret scan above, so it is
+          # safe to surface for diagnosis (#2978) -- classification alone does
+          # not explain a failed/manual_review_required result. Only print on
+          # a non-zero build exit so successful runs don't routinely expose
+          # extra log content (review feedback on #2979).
+          if [ "$BUILD_RC" -ne 0 ]; then
+            echo "bridge-build result (build exited non-zero):"
+            cat "$RESULT_FILE"
+          fi
+          export BUILD_RC
+          export RESULT_FILE
+          # Inline node (not a Python heredoc): JS is indentation-insensitive,
+          # so the extractor can live inside this YAML block scalar safely.
+          CLASS="$(node -e '
+            const fs = require("fs");
+            const raw = fs.readFileSync(process.env.RESULT_FILE, "utf8").trim();
+            if (!raw) {
+              console.error("empty_result");
+              process.exit(1);
+            }
+            let data;
+            try {
+              data = JSON.parse(raw);
+            } catch (err) {
+              console.error("invalid_json:" + err.message);
+              process.exit(1);
+            }
+            console.log(data.classification || "unknown");
+          ')"
+          echo "classification=$CLASS"
+          case "$CLASS" in
+            promoted|rebuild_deferred)
+              if [ "$CLASS" = "promoted" ] && [ "$BUILD_RC" -ne 0 ]; then
+                echo "promoted classification with non-zero exit refused" >&2
+                exit 1
+              fi
+              exit 0
+              ;;
+            *)
+              exit 1
+              ;;
+          esac

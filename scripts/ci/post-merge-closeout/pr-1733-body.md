@@ -174,7 +174,7 @@ Pre-merge closeout prediction: pass
 Source issue state before merge: open
 Expected post-merge source issue action: no-op — #1719 remains the durable Priority #3 master program controller
 Reviewer disposition parseability: pass
-Queue continuation after closeout: halt — Priority #3 execution remains blocked until explicit Bill/Atlas authorization
+Queue continuation after closeout: halt — Priority #3 execution remains blocked until explicit Bill/ChatGPT authorization
 
 ## ACCEPTANCE CRITERIA
 - [x] Required source issue exists, is open, is same-repository, and is not a PR.

@@ -3,10 +3,10 @@ Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
 Owns: Authority disposition inventory for Delivery System v1 Task 2 (#2486) touched documents and related agent-policy routing
-Does Not Own: Final domain policy filenames until later delivery-system children land
+Does Not Own: Domain policy content, constitutional precedence, or implementation behavior
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2477, #2486, #2478
-Last Reviewed: 2026-07-13
+Related Issues: #2477, #2486, #2478, #2686, #2687, #2688, #2689, #2690
+Last Reviewed: 2026-07-21
 ---
 
 # Two-Model Authority Disposition Map
@@ -51,17 +51,17 @@ Binding material currently under `docs/ops/ai/` conflicts with DIATAXIS ops fold
 
 Until Task 4 migration completes, legacy `docs/ops/ai/` binding files remain **interim authoritative** for agent execution. New binding policy must not be added under `docs/ops/ai/`.
 
-## Domain policy targets (not in #2486 allowlist — later children)
+## Domain policy disposition
 
-| Domain | Target policy path | Introduced by |
+| Domain | Canonical policy path | Disposition |
 | --- | --- | --- |
-| Product and Design | `docs/governance/PRODUCT-AND-DESIGN.md` | Later delivery-system child |
-| PMO and Portfolio | `docs/governance/PMO-PORTFOLIO.md` | Task 3 |
-| Delivery and Release | `docs/governance/DELIVERY-AND-RELEASE.md` | Task 5 |
-| Agent Team | `docs/governance/AGENT-TEAM.md` | Task 4 |
-| CI and Verification | `docs/governance/CI-AND-VERIFICATION.md` | Task 7 |
-| Operations and Recovery | `docs/governance/OPERATIONS-AND-RECOVERY.md` | Task 9 |
-| Platform and Environment | `docs/governance/PLATFORM-AND-ENVIRONMENT.md` | Task 6 |
+| Product and Design | `docs/governance/PRODUCT-AND-DESIGN.md` | Introduced by #2687 and activated through integrated reconciliation #2690 |
+| PMO and Portfolio | `docs/governance/PMO-PORTFOLIO.md` | Active canonical owner |
+| Delivery and Release | `docs/governance/DELIVERY-AND-RELEASE.md` | Active canonical owner |
+| Agent Team | `docs/governance/AGENT-TEAM.md` | Active canonical owner |
+| CI and Verification | `docs/governance/CI-AND-VERIFICATION.md` | Introduced by #2689 and activated through integrated reconciliation #2690 |
+| Operations and Recovery | `docs/governance/OPERATIONS-AND-RECOVERY.md` | Active canonical owner |
+| Platform and Environment | `docs/governance/PLATFORM-AND-ENVIRONMENT.md` | Introduced by #2688 and activated through integrated reconciliation #2690 |
 
 ## Validation checklist (#2486)
 

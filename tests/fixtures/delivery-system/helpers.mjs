@@ -7,7 +7,7 @@ export function prBody(overrides = {}) {
     deliveryModel: 'A',
     changeMode: 'project',
     targetEnvironment: 'production',
-    approvalProfile: 'chat-bill-production',
+    approvalProfile: 'work-bill-production',
     gateProfile: 'production-candidate',
     rollbackProfile: 'one-step',
     componentBranch: 'not-applicable',

@@ -1,12 +1,12 @@
 ---
 Doc Type: Implementation Plan
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
 Owns: Cursor task sequence, child-project boundaries, validation model, file-area expectations, and closeout rules for Fundraiser / Charity Campaign Operations Buildout
 Does Not Own: Runtime implementation before task issues, issue creation before launch authorization, merge authority, vendor configuration, donation processing, campaign compliance administration, fundraiser launch execution
 Status: planning-ready
 Project: fundraiser-charity-campaign-operations-buildout
-Owner: Atlas
+Owner: ChatGPT
 Execution Mode: cursor-after-launch-authorization
 Source Issue: 1696
 Related Program Issue: pending-program-issue-after-launch
@@ -17,7 +17,7 @@ Last Reviewed: 2026-06-17
 
 # Fundraiser / Charity Campaign Operations Buildout Implementation Plan
 
-> This program is BLOCKED from execution until Atlas/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/Atlas explicitly launch it.
+> This program is BLOCKED from execution until ChatGPT/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/ChatGPT explicitly launch it.
 
 ## Purpose
 
@@ -43,12 +43,12 @@ This plan does not authorize this documentation PR to change application code, w
 ## Current known truth
 
 - PMO Backlog Priority #2 is a high-priority future program candidate.
-- Program #1255 and child #1259 remain ahead of this program unless Bill/Atlas explicitly reprioritize.
+- Program #1255 and child #1259 remain ahead of this program unless Bill/ChatGPT explicitly reprioritize.
 - Priority #1 Website Completion / Fan Club Product Buildout is parked as #1685 with child issues #1686 through #1694.
 - Givebutter is treated as the likely external campaign platform boundary, not as an internal donation system to rebuild.
 - Donor/sponsor recognition must not expose public PII by default.
 - Campaign spotlight behavior must fail closed when missing, disabled, invalid, stale, or unpublished.
-- Cursor is the intended implementation agent after Bill/Atlas launch authorization.
+- Cursor is the intended implementation agent after Bill/ChatGPT launch authorization.
 
 ## Intended final state
 
@@ -60,7 +60,7 @@ At the end of this program:
 4. Leaderboard and winner behavior is deterministic, snapshot-based, and privacy-safe.
 5. Sponsor/donor recognition uses approved display fields only and exposes no public PII.
 6. Pre-launch testing package validates campaign visibility, links, privacy, fail-closed behavior, and closeout state.
-7. Cursor stops each task at GitHub `READY FOR REVIEW`; Atlas does not self-approve or self-merge.
+7. Cursor stops each task at GitHub `READY FOR REVIEW`; ChatGPT does not self-approve or self-merge.
 
 ## Source documents
 
@@ -92,13 +92,13 @@ Cursor must reconcile before building. Existing website campaign surfaces, CMS/c
 | 005 | Sponsor and donor recognition privacy model | Define recognition display rules, consent boundaries, public fields, tier/logo handling, anonymous display, and prohibited PII. | Sponsor / donor recognition | `docs/reference/website/**`, `docs/how-to/website/**`, `docs/ops/reports/**` | Docs/how-to checks; privacy checklist | 001 through 004 | 006 |
 | 006 | Website-side campaign configuration and display implementation | Implement only accepted website-side campaign config/display surfaces with fail-closed behavior. | Campaign website implementation | Scoped `src/**`, scoped `functions/api/**` only if required, `tests/**`, `docs/ops/reports/**` | Targeted tests; fail-closed tests; manual route checklist | 002 through 005 | 007 |
 | 007 | Fundraiser pre-launch testing package | Build pre-launch verification covering campaign state, links, leaderboard, recognition privacy, fail-closed behavior, and archive readiness. | Testing package | `docs/how-to/website/**`, `docs/ops/reports/**`, `tests/**` if required by accepted implementation | Docs/how-to checks; targeted tests if test files change | 006 | 008 |
-| 008 | Program closeout and operator handoff | Consolidate evidence, publish operator handoff, identify deferred work, and prepare Bill/Atlas acceptance packet. | Whole program | `docs/ops/reports/**`, scoped `docs/ops/pmo/**`, scoped `docs/ops/implementation-plans/**` | Docs check; closeout checklist | 001 through 007 | terminal |
+| 008 | Program closeout and operator handoff | Consolidate evidence, publish operator handoff, identify deferred work, and prepare Bill/ChatGPT acceptance packet. | Whole program | `docs/ops/reports/**`, scoped `docs/ops/pmo/**`, scoped `docs/ops/implementation-plans/**` | Docs check; closeout checklist | 001 through 007 | terminal |
 
 ## Dependency map
 
 | Task | Predecessor | Successor | Stage-before-merge | Halt condition | Resume condition |
 | --- | --- | --- | --- | --- | --- |
-| 001 | launch authorization | 002 | yes | Launch not authorized | Bill/Atlas launch source issue exists |
+| 001 | launch authorization | 002 | yes | Launch not authorized | Bill/ChatGPT launch source issue exists |
 | 002 | 001 | 003 | yes | Operations model missing | Task 001 merged |
 | 003 | 001 and 002 | 004 | yes | External/internal data boundary unresolved | Task 002 merged |
 | 004 | 001 and 002 | 005 | yes | Campaign surface ownership unresolved | Task 002 merged |
@@ -145,7 +145,7 @@ Task 007 must convert this checklist into the final pre-launch verification arti
 
 ## Launch gate
 
-This plan becomes executable only when Bill/Atlas create or update a program issue with explicit launch authorization.
+This plan becomes executable only when Bill/ChatGPT create or update a program issue with explicit launch authorization.
 
 Launch authorization must identify program issue number, first task source issue, Cursor as implementation agent, issue-creation authority, task sequencing mode, and Cursor stop condition.
 
@@ -156,9 +156,9 @@ Default stop condition: GitHub `READY FOR REVIEW`.
 - Cursor does not approve PRs.
 - Cursor does not merge PRs.
 - Cursor does not close, reopen, or relabel GitHub issues unless a source issue explicitly grants that authority.
-- Atlas does not self-approve Atlas-authored PRs.
+- ChatGPT does not self-approve ChatGPT-authored PRs.
 - Source issue closeout occurs only after merge verification and post-merge validator state are clean.
-- Program closeout requires Task 008 evidence and explicit Bill/Atlas acceptance.
+- Program closeout requires Task 008 evidence and explicit Bill/ChatGPT acceptance.
 
 ## Readiness conclusion
 
@@ -166,4 +166,4 @@ This implementation plan is sufficient for future Cursor task issue creation aft
 
 Status: `planning-ready`.
 
-Execution: blocked until Bill/Atlas launch the program.
+Execution: blocked until Bill/ChatGPT launch the program.

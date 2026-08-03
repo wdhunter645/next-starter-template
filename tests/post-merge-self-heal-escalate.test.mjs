@@ -107,12 +107,12 @@ describe('post-merge self-healing escalation body generator', () => {
 		expect(body).toContain('## Failure reason');
 		expect(body).toContain('## Cursor implementation constraints');
 		expect(body).toContain('review-comment:220011');
-		expect(body).toContain('Bill/Atlas authorization required: no');
+		expect(body).toContain('Bill/ChatGPT authorization required: no');
 	});
 
 	it('marks operator authorization when required', () => {
 		const body = buildEscalationIssueBody(operatorFinding());
-		expect(body).toContain('Bill/Atlas authorization required: yes');
+		expect(body).toContain('Bill/ChatGPT authorization required: yes');
 	});
 
 	it('renders update comments with latest evidence', () => {

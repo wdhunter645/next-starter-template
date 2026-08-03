@@ -1,6 +1,6 @@
 ---
 Doc Type: Report
-Audience: Bill, Atlas, operators, and AI implementation agents
+Audience: Bill, ChatGPT, operators, and AI implementation agents
 Authority Level: Operational Evidence
 Owns: Program #1685 structural baseline launch-readiness verification after CI Program #1963 closeout
 Does Not Own: Parent issue #1685 closure authority, Program #2039 scope, or production deploy authorization
@@ -13,7 +13,7 @@ Last Reviewed: 2026-06-29
 
 ## Purpose
 
-Record launch-readiness verification for Program **#1685 — Website Completion / Fan Club Product Buildout** after CI Program **#1963** closeout and confirm whether the structural website baseline is ready for Bill/Atlas launch review.
+Record launch-readiness verification for Program **#1685 — Website Completion / Fan Club Product Buildout** after CI Program **#1963** closeout and confirm whether the structural website baseline is ready for Bill/ChatGPT launch review.
 
 ## Scope
 
@@ -24,7 +24,7 @@ This report covers Program #1685 structural baseline verification only. It does 
 - Child tasks #1686–#1694 are **closed** with `status:complete`.
 - Audit #1962 and closeout exceptions #1951, #1957, #1959, #1961, #2031 are **closed**.
 - CI Program #1963 (terminal PR #2067) is **closed**; CI stabilization is no longer blocking #1685 launch readiness.
-- Parent issue #1685 remains **open** pending Bill/Atlas acceptance.
+- Parent issue #1685 remains **open** pending Bill/ChatGPT acceptance.
 - Structural Fan Club surfaces (`/fanclub`, subpages, member flows) are implemented on `main`.
 - `/admin/clubstaging` is **out of scope** for #1685 (Program #2039 / #2043).
 
@@ -66,7 +66,7 @@ CI on `main` after merge: `gate-quality.yml` success on merge SHA `5b7219828aa70
 | Homepage `homepage_*` inventory surfaces | deferred | follow-up issue if prioritized |
 | Photo detail modal/route | deferred | Fan Club UX follow-up |
 | Member binary photo upload | deferred | media intake program |
-| Production member-session smoke | operator | Bill/Atlas pre-launch checklist |
+| Production member-session smoke | operator | Bill/ChatGPT pre-launch checklist |
 | Scheduled `launch-readiness:e2e` in CI (H-011) | bounded deferral | optional post-#2039 workflow PR |
 | Public launch copy polish | out of scope | #2039 / #2042 |
 | `/admin/clubstaging` | out of scope | #2039 / #2043 |
@@ -75,7 +75,7 @@ CI on `main` after merge: `gate-quality.yml` success on merge SHA `5b7219828aa70
 
 ## Launch-readiness conclusion
 
-**Program #1685 structural website baseline: ready for Bill/Atlas launch review.**
+**Program #1685 structural website baseline: ready for Bill/ChatGPT launch review.**
 
 Recommended operator actions:
 

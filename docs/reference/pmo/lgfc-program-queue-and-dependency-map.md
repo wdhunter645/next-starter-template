@@ -5,7 +5,7 @@ Authority Level: Operational Authority
 Owns: Launched-program queue mode, dependency-map requirements, execution-mode selection, continue/halt decision rules, and dispatcher requirements for PMO-governed programs
 Does Not Own: Workflow YAML implementation, GitHub merge authority, issue mutation authority, ChatGPT account-level scheduled automation, or uncontrolled orchestrator label automation
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #2391, #2386, #2360, #2361, #2363, #2364, #1449, #1448, #1411, #1255, #1256, #1258, #1259, #1501, #1500, #1719, #1720, #1721, #1725
+Related Issues: #2391, #2386, #2360, #2361, #2363, #2364, #1449, #1448, #1411, #1255, #1256, #1258, #1259, #1501, #1500, #1719, #1720, #1721, #1725, #2775
 Last Reviewed: 2026-07-16
 ---
 
@@ -24,7 +24,7 @@ This document owns:
 - dependency-map structure and approval requirements;
 - continue/halt decision rules Cursor may apply from documentation;
 - dispatcher/watch requirements for keeping a launched queue moving;
-- authority boundaries for Bill (merge) and Atlas/ChatGPT (batch verification/rebaseline).
+- authority boundaries for Bill (merge) and ChatGPT (batch verification/rebaseline).
 
 This document does not own:
 
@@ -53,13 +53,14 @@ This document does not own:
   ChatGPT became capable of implementation. **Do not reopen #1500.** Reconciliation
   evidence for Priority #3 queue/wave and closeout planning is recorded in
   `docs/ops/reports/program-1500-queue-wave-reconciliation.md` (Task #1725).
-- Priority #3 program #1719 (PMO Governance / Workflow Automation Completion) is
-  **Implementation Active** under continuous reduced-gate serial authorization
-  (2026-07-16). Project branch: `component/pmo-governance-workflow-automation`
-  (Model B / `component-auto-integration`). Task #1720 complete (PR #2543). Task
-  #1721 owns workflow-automation design migration / gap inventory. Task #1725 is
-  closed complete and must not be rerun. Remaining work belongs to #1719 children,
-  not to Program #1500.
+- Priority #3 program #1719 (PMO Governance / Workflow Automation Completion)
+  completed its `#1720`–`#1727` documentation chain on project branch
+  `component/pmo-governance-workflow-automation` (Model B /
+  `component-auto-integration`), but the resulting Promotion Candidate went
+  stale against current `main` before Production review. **Replacement
+  candidate requalification is in progress under #2775** (2026-08-03). Task
+  #1725 is closed complete and must not be rerun. Remaining work belongs to
+  #2775, not to Program #1500.
 - `#1448` rebaseline is **closed complete**.
 - issue `#1411` is a **completed planning/control artifact** (completed,
   status:complete). It is not an open blocked program. Future execution work
@@ -72,8 +73,8 @@ This document does not own:
   requires a manual dispatcher, scheduled ChatGPT watch, or repo-native automation
   path defined in `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`.
 - Bill owns merge authority to `main`, launch gates, and destructive issue actions.
-- Atlas/ChatGPT owns governance review, queue conformance, batch verification,
-  rebaseline authority, and Atlas-controlled component integration for Model B.
+- ChatGPT owns governance review, queue conformance, batch verification,
+  rebaseline authority, and component integration control for Model B.
 - Cursor may not merge to `main`, approve, close, relabel, advance queues, or mutate
   issue state unless the active source issue explicitly authorizes that action.
   Non-`main` component integration may proceed under source-issue
@@ -112,7 +113,7 @@ one source issue → one PR → READY FOR REVIEW → human review → closeout �
 ```
 
 - Cursor executes exactly one source issue per PR.
-- The next task requires a new explicit authorization (Atlas/Bill/controller
+- The next task requires a new explicit authorization (ChatGPT/Bill/controller
   `@cursor` comment or a new source issue assignment).
 - Cursor must not infer the next task from queue order, labels, or merge state.
 - The operator must still create an Ops remediation issue if a process failure
@@ -150,7 +151,7 @@ Launched-program queue mode does not grant Cursor merge, close, relabel, queue m
 
 For launched or launch-control work, closeout is not complete until queue continuation has been checked.
 
-The responsible Atlas/ChatGPT/operator path must verify:
+The responsible ChatGPT/operator path must verify:
 
 1. the predecessor issue state and terminal labels;
 2. the successor or dependent issues named by the issue body, parent issue, PR body, or dependency map;
@@ -188,7 +189,7 @@ Required map fields per task or checkpoint:
 
 Approval:
 
-- Atlas prepares the map in the implementation plan.
+- ChatGPT prepares the map in the implementation plan.
 - Bill approves the map before launch or issue creation.
 - Until approved, the program issue remains in one-task handoff mode.
 
@@ -265,14 +266,14 @@ Cursor must **halt** (stop at `READY FOR REVIEW` or report without implementing)
 
 When halted, Cursor reports the blocking checkpoint, the next queue item if known, and the continue/halt decision. Cursor does not infer authorization from labels, merge state, or queue order alone.
 
-If the halt is caused by missing dispatcher/watch behavior, stale blocked successor state, or launch-halting process failure, Atlas/ChatGPT must create or update an Ops remediation issue under `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`.
+If the halt is caused by missing dispatcher/watch behavior, stale blocked successor state, or launch-halting process failure, ChatGPT must create or update an Ops remediation issue under `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`.
 
 ## Authority Model
 
 | Role | Authority |
 | --- | --- |
 | Bill | Merge, launch gates, destructive issue actions, strategy exceptions |
-| Atlas/ChatGPT | Governance review, queue conformance, batch verification, rebaseline, dispatcher/remediation routing when authorized |
+| ChatGPT | Governance review, queue conformance, batch verification, rebaseline, dispatcher/remediation routing when authorized |
 | Cursor | Bounded implementation, validation, PR-body evidence, `READY FOR REVIEW` handoff |
 
 Cursor does not own merge, approval, closeout, relabel, production, or secret authority in either execution mode.

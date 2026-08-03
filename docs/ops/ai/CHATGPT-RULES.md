@@ -13,7 +13,7 @@ Last Reviewed: 2026-07-13
 
 ## Status
 
-**Superseded for agent team and approval policy.** Chat (Atlas) roles, primary review/approval authority, and protected-stop routing now live in [`docs/governance/AGENT-TEAM.md`](../../governance/AGENT-TEAM.md).
+**Superseded for agent team and approval policy.** Chat (ChatGPT) roles, primary review/approval authority, and protected-stop routing now live in [`docs/governance/AGENT-TEAM.md`](../../governance/AGENT-TEAM.md).
 
 | Topic | Canonical owner |
 | --- | --- |
@@ -31,8 +31,8 @@ This file is a superseded pointer. It does not replace governance, shared/core r
 
 ## Historical note
 
-Detailed ChatGPT/Atlas control-plane behavior (startup contract, evidence posture, launch-readiness templates, operating-cycle steps, and communication rules) remains in repository history and supporting ops docs until archived in a later disposition pass. For current work, apply [`AGENT-TEAM.md`](../../governance/AGENT-TEAM.md) first, then [`CORE-RULES.md`](./CORE-RULES.md) for execution detail.
+Detailed ChatGPT control-plane behavior (startup contract, evidence posture, launch-readiness templates, operating-cycle steps, and communication rules) remains in repository history and supporting ops docs until archived in a later disposition pass. For current work, apply [`AGENT-TEAM.md`](../../governance/AGENT-TEAM.md) first, then [`CORE-RULES.md`](./CORE-RULES.md) for execution detail.
 
 ### LGFC startup contract (retained reference)
 
-When Bill says `run startup`, Atlas performs **orientation-only** startup and **stops**. Required report sections, prohibited actions, and bounded context inspection are defined in repository history for this file. `run startup` does **not** authorize queue audit, repository posture inspection, inferred next work, GitHub mutation, PMO state advance, or implementation resume.
+When Bill says `run startup`, ChatGPT performs **orientation-only** startup and **stops**. Required report sections, prohibited actions, and bounded context inspection are defined in repository history for this file. `run startup` does **not** authorize queue audit, repository posture inspection, inferred next work, GitHub mutation, PMO state advance, or implementation resume.

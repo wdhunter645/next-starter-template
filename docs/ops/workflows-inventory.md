@@ -2,436 +2,229 @@
 Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: Live operating procedures, incident response, monitoring, operator workflows
-Does Not Own: Redefining design/architecture/platform specs; historical records
-Canonical Reference: /docs/ops/OPERATING_MANUAL.md
-Last Reviewed: 2026-02-20
+Owns: Operator-facing GitHub Actions inventory routing and current workflow disposition summary
+Does Not Own: CI domain policy, merge-protection settings, workflow YAML implementation, or competing check classification
+Canonical Reference: /docs/governance/CI-AND-VERIFICATION.md
+Related Issues: #2769, #2469, #2175, #2208
+Last Reviewed: 2026-07-22
 ---
 
 # GitHub Actions Workflows Inventory
 
-## Overview
-
-Authoritative tier model:
-- `docs/governance/tier-a-tier-b-overwatch-model_MASTER.md`
+## Authority
 
-This repository uses a **two-tier workflow architecture** to separate PR governance checks (GATE) from operational monitoring and maintenance tasks (OPS). This separation ensures that PRs are never blocked by operational workflows and that required status checks remain predictable and deterministic.
-
----
-
-## Architecture: Two Tiers, Zero Coupling
-
-### Tier A: GATE (PR Blocking Checks)
-
-**Purpose:** Fast, deterministic, repository-local governance gates that validate PR quality before merge.
-
-**Characteristics:**
-- **Allowed triggers:** `schedule`, `workflow_dispatch`, `push` (main-only), and `pull_request_target` **only when used for non-gating work accounting** (e.g., PR→Issue lifecycle)
-- **Never:** become a required PR check or block merges
-- **Operates on:** `main` branch state unless explicitly operating on PR metadata (e.g., PR→Issue association)
-- **Must:** signal through Issues and logs (not by failing PR-required checks)
-- **Naming:** `.github/workflows/ops-*.yml` and workflow name begins with `OPS — `
-
-**Examples:**
-- Code quality checks (lint, typecheck, tests)
-- ZIP file enforcement
-- Intent label validation
-- Drift detection
-- Repository structure validation
-
-### Tier B: OPS (Operations & Monitoring)
-
-**Purpose:** Operational monitoring, overwatch logging, and Issue-driven work routing.
-
-**Key rule:** Tier B may respond to PR events for **work accounting** (PR→Issue creation/association and PR-close→Issue close), but Tier B workflows are **never** required PR checks and must never block merges.
-
-**Characteristics:**
-- **Allowed triggers:** `schedule`, `workflow_dispatch`, `push` (main-only), and `pull_request_target` **only when used for non-gating work accounting** (e.g., PR→Issue lifecycle)
-- **Never:** become a required PR check or block merges
-- **Operates on:** `main` branch state unless explicitly operating on PR metadata (e.g., PR→Issue association)
-- **Must:** signal through Issues and logs (not by failing PR-required checks)
-- **Naming:** `.github/workflows/ops-*.yml` and workflow name begins with `OPS — `
-
-**Examples:**
-- Site health assessment
-- Design compliance audits
-- Deployment retries
-- Main branch change monitoring
-- Nightly drift detection
-
----
-
-## Hard Rule: No Coupling Between Tiers
-
-**GATE and OPS workflows must never reference one another.**
-
-- ❌ No `workflow_call` between tiers
-- ❌ No shared reusable workflows between tiers
-- ❌ No workflow dependencies across tiers
-
-**If shared code is required:**
-- Use a small repo-local helper script (no network, no environment introspection), OR
-- Duplicate logic to preserve isolation
-
-**Why this matters:**
-- Prevents operational workflows from blocking PRs
-- Ensures required status checks remain stable and predictable
-- Simplifies troubleshooting and maintenance
-- Avoids cascading failures
-
----
-
-## GATE Workflows (PR Checks)
-
-These workflows run on pull requests and are the **only** workflows that should be configured as required status checks in branch protection.
-
-### `gate-drift.yml`
-- **Name:** `GATE — Drift Control`
-- **Purpose:** Validates PR compliance with repository governance rules
-- **Checks:**
-  - No ZIP files in repository tree
-  - No ZIP files in PR commit history (ZIP taint detection)
-  - PR intent allowlist validation
-  - Critical LGFC invariants
-- **Triggers:** `pull_request`, `workflow_dispatch`
-- **Note:** Drift-gate now waits for intent labeler completion to avoid transient label removal flake. If labeler detects mixed intent, it may remove intent labels; operator must split PR or apply correct single intent label per governance.
-
-### `gate-intent-labeler.yml`
-- **Name:** `GATE — Intent Labeler`
-- **Purpose:** Auto-assigns intent labels based on file-touch analysis
-- **Behavior:**
-  - Analyzes changed files in PR
-  - Applies exactly one intent label (or none for mixed changes)
-  - Posts guidance for mixed-intent PRs
-- **Triggers:** `pull_request` (opened, synchronize, reopened, ready_for_review)
-
-### `gate-zip-safety.yml`
-- **Name:** `GATE — ZIP Safety`
-- **Purpose:** Single source of truth for ZIP file enforcement
-- **Checks:**
-  - No `.zip` files committed in repository content
-  - No `.zip` files in PR diff
-- **Triggers:** `pull_request` (targeting `main`)
-- **Note:** Consolidated from multiple ZIP enforcement workflows
-
-### `gate-quality.yml`
-- **Name:** `GATE — Quality Checks`
-- **Purpose:** Validates code quality and correctness
-- **Checks:**
-  - Repository structure validation
-  - TypeScript type checking
-  - ESLint linting
-  - Unit tests
-- **Triggers:** `pull_request`, `workflow_dispatch`
-
----
-
-## OPS Workflows (Main-Only Operations)
-
-These workflows operate on `main` branch only and **must never** be configured as required status checks.
-
-### `ops-assess.yml`
-- **Name:** `OPS — Site Assessment`
-- **Purpose:** Validates site build, routes, navigation, and page markers
-- **Behavior:**
-  - Runs nightly and on `main` push when `docs/ops/scan-trigger.md` changes
-  - Creates GitHub issue on failure (with `assessment-failure` label)
-  - Uploads detailed artifacts (90-day retention)
-- **Triggers:** `schedule` (nightly 2 AM UTC), `push` (main, when `docs/ops/scan-trigger.md` changes), `workflow_dispatch`
-- **Artifacts:**
-  - `assess-report-json` (machine-readable results)
-  - `assess-summary-md` (human-readable summary)
-  - `routes-found` (route index)
-
-### `ops-design-compliance-audit.yml`
-- **Name:** `OPS — Design Compliance Audit`
-- **Purpose:** Monitors alignment between as-built production and documented design
-- **Behavior:**
-  - Alert-only: always green ✅ regardless of audit results
-  - Non-blocking: observability only, no auto-fixing
-  - Tests production site: `https://www.lougehrigfanclub.com`
-- **Triggers:** `push` (main, when `docs/ops/scan-trigger.md` changes), `schedule` (nightly 2 AM UTC), `workflow_dispatch`
-- **Note:** Previously included `pull_request` trigger with skip logic - now removed entirely
-
-### `ops-cf-pages-retry.yml`
-- **Name:** `OPS — Cloudflare Pages Auto-Retry`
-- **Purpose:** Retries failed Cloudflare Pages deployments
-- **Behavior:**
-  - Manual operation via `workflow_dispatch`
-  - Finds latest failed deployment (or uses provided deployment ID)
-  - Retries up to 2 times with status polling
-- **Triggers:** `workflow_dispatch` only
-- **Note:** Removed `pull_request` trigger to eliminate from PR checks
-
-### `ops-main-change-monitor.yml`
-- **Name:** `OPS — Main Change Monitor`
-- **Purpose:** Detects and alerts on unapproved direct pushes to main
-- **Behavior:**
-  - Merged PRs: INFO-only logging (workflow succeeds)
-  - Direct pushes: Creates/updates GitHub issue + workflow fails (triggers notifications)
-  - Issue label: `unapproved-main-change`
-  - Admin mentions: Configured via `ADMIN_GITHUB_LOGINS` repo variable (comma-separated usernames)
-- **Triggers:** `push` (main), `workflow_dispatch`
-- **Configuration:**
-  - Set repo variable `ADMIN_GITHUB_LOGINS` with comma-separated GitHub usernames
-  - Example: `wdhunter645,admin-user`
-  - Default: `wdhunter645` (if variable not set)
-
-### `production-audit.yml`
-- **Name:** `Production Audit (Playwright Invariants)`
-- **Purpose:** Validates production site against invariant test suite
-- **Behavior:**
-  - Runs Playwright tests against production URL
-  - Creates/updates GitHub issue on failure
-  - Uploads Playwright HTML report (30-day retention)
-- **Triggers:** `push` (main, when `docs/ops/scan-trigger.md` changes), `schedule` (twice daily at 12:15 UTC and 00:15 UTC), `workflow_dispatch`
-- **Artifacts:**
-  - `playwright-report-production` (HTML report)
-
----
-
-## Production Scan Trigger Mechanism
-
-### On-Demand Production Scans
-
-To run production scans immediately (without waiting for scheduled runs):
-
-1. **Update the trigger marker file:** `docs/ops/scan-trigger.md`
-   - Update the timestamp
-   - Document the reason for triggering scans
-   - Optionally link to the PR that prompted this scan
-
-2. **Commit and merge to main:**
-   - Create a feature branch
-   - Commit the changes
-   - Create and merge a PR
-
-3. **Workflows triggered on merge:**
-   - `production-audit.yml` — Playwright invariants
-   - `ops-assess.yml` — Site assessment
-   - `ops-design-compliance-audit.yml` — Design compliance
-
-**Alternative:** Use `workflow_dispatch` in GitHub Actions UI for individual workflow runs.
-### `snapshot.yml`
-- **Name:** `Snapshot Backup (Repo + Cloudflare Pages)`
-- **Purpose:** Creates recoverable moment-in-time snapshots of repository state and Cloudflare Pages configuration
-- **What it captures:**
-  - **Repository snapshot:**
-    - Current commit SHA, branch, author, and timestamp
-    - Changed files from last commit
-    - Package.json metadata (name, version)
-    - Top-level repository tree
-  - **Cloudflare Pages snapshot:**
-    - Pages project configuration (build settings, environment variable names)
-    - Custom domain configurations
-    - Latest 3 deployment records
-- **Triggers:**
-  - `workflow_dispatch` (manual run - recommended before major changes)
-  - `push` to `main` (limited to workflow/script/snapshot/docs changes only)
-- **Artifacts produced:**
-  - `repo-snapshot`: Repository snapshot JSON + smoketest log (90-day retention)
-  - `cloudflare-pages-snapshot`: Cloudflare JSONs + README + smoketest log (90-day retention)
-- **Required secrets/environment variables:**
-  - `CLOUDFLARE_API_TOKEN` (secret)
-  - `CF_ACCOUNT_ID` (secret or environment variable)
-  - `CF_PAGES_PROJECT` (secret or environment variable)
-- **Expected runtime:** 1-2 minutes (both jobs run in parallel)
-- **Artifacts location:** GitHub Actions artifacts (downloadable from workflow run page)
-- **Security:** Captures environment variable names only, never values; no secrets written to artifacts
-
----
-
-## Enforcement Rules
-
-### Rule 1: OPS workflows must never use `pull_request` trigger
-
-Search command to verify:
-```bash
-grep -r "pull_request" .github/workflows/ops-*.yml
-```
-
-**Expected result:** No matches (exit code 1)
-
-**If violations found:** Remove the `pull_request` trigger from the OPS workflow
-
-### Rule 2: No `workflow_call` between tiers
-
-GATE workflows must not call OPS workflows, and vice versa.
-
-Search command to verify:
-```bash
-grep -r "workflow_call" .github/workflows/gate-*.yml .github/workflows/ops-*.yml
-```
-
-**Expected result:** No matches (exit code 1), OR only internal calls within the same tier
-
-### Rule 3: Naming conventions are mandatory
-
-- **GATE workflows:**
-  - File: `.github/workflows/gate-*.yml`
-  - Name: Must begin with `GATE — `
-
-- **OPS workflows:**
-  - File: `.github/workflows/ops-*.yml`
-  - Name: Must begin with `OPS — `
-
-**Why this matters:** Ensures required status checks cannot accidentally include OPS workflows
-
----
-
-## Branch Protection Configuration
-
-**After merging Task 002 merge-protection consolidation,** update Branch Protection settings for `main` to include the consolidated deterministic merge-protection checks documented in `docs/reference/ci/merge-protection-surface.md`.
-
-### Required Status Checks (merge protection only)
-
-Add these to "Require status checks to pass before merging":
-- `quality` (`GATE — Quality Checks`)
-- `gitleaks` (`GATE — Secret Scan`)
-- `pr-issue-accounting` (`GATE — PR Issue Accounting`)
-
-Retire this check if it is still listed:
-- `check-no-zip-files` (`GATE — ZIP Safety`) — assimilated into `quality`
-
-Other GATE workflows such as drift control, intent labeler, and reviewer lifecycle remain outside this consolidated surface until their dedicated CI redesign tasks land.
-
-### DO NOT Include (OPS workflows)
-
-Ensure these are **NOT** in required status checks:
-- `OPS — Site Assessment`
-- `OPS — Design Compliance Audit`
-- `OPS — Cloudflare Pages Auto-Retry`
-- `OPS — Main Change Monitor`
-
-**Why this matters:**
-- OPS workflows are operational/monitoring tasks, not PR quality gates
-- Including OPS in required checks can block PRs when operational tasks fail
-- Main Change Monitor only runs on `main` push (never on PRs)
-
----
-
-## Legacy Workflows (Removed)
-
-The following workflows have been **removed** as part of this redesign:
-
-### Converted to GATE
-- `drift-gate.yml` → `gate-drift.yml`
-- `intent-labeler.yml` → `gate-intent-labeler.yml`
-- `block-zip-artifacts.yml` → `gate-zip-safety.yml` (consolidated)
-- `quality.yml` → `gate-quality.yml`
-
-### Converted to OPS
-- `assess.yml` → `ops-assess.yml`
-- `design-compliance-audit.yml` → `ops-design-compliance-audit.yml`
-- `cf-pages-auto-retry.yml` → `ops-cf-pages-retry.yml`
-
-### New Workflows
-- `ops-main-change-monitor.yml` (NEW) — Detects unapproved main changes
-
-### Other Workflows (Not Modified)
-
-The following workflows are **not part of this redesign** and remain as-is:
-- `ai_review.yml`
-- `b2-d1-daily-sync.yml`
-- `b2-s3-smoke-test.yml`
-- `ci.yml`
-- `d1-migrations.yml`
-- `deploy-dev.yml`
-- `deploy-prod.yml`
-- `deploy.yml`
-- `design-compliance-warn.yml`
-- `gitleaks.yml`
-- `lgfc-validate.yml`
-- `opencode.yml`
-- `post-recovery-425-verify.yml`
-- `pr-triage-zip-taint.yml`
-- `preview-invariants.yml`
-- `purge-zip-history.yml`
-- `test-homepage.yml`
-- `test.yml`
-- `zip-history-audit.yml`
-
-**Note:** These workflows may need future review to determine if they should be categorized as GATE or OPS, but they are explicitly **out of scope** for this PR.
-
----
-
-## Troubleshooting
-
-### OPS workflow appearing in PR checks
-
-**Symptom:** An `OPS — ...` workflow shows up as a status check on a pull request
-
-**Cause:** The workflow file contains a `pull_request` trigger
-
-**Fix:**
-1. Open the workflow file in `.github/workflows/ops-*.yml`
-2. Remove the `pull_request` trigger from the `on:` section
-3. Ensure triggers are limited to: `schedule`, `workflow_dispatch`, `push` (main only)
-4. Commit and push the change
-
-### GATE workflow not running on PRs
-
-**Symptom:** A `GATE — ...` workflow does not run when a PR is opened
-
-**Cause:** Missing `pull_request` trigger
-
-**Fix:**
-1. Open the workflow file in `.github/workflows/gate-*.yml`
-2. Ensure the `on:` section includes `pull_request`
-3. Commit and push the change
-
-### Main Change Monitor not sending notifications
-
-**Symptom:** Direct pushes to `main` don't create issues or send alerts
-
-**Possible causes:**
-1. **Workflow disabled:** Check if `ops-main-change-monitor.yml` is enabled in Actions settings
-2. **Permissions missing:** Workflow needs `issues: write` permission
-3. **Admin variable not set:** Set `ADMIN_GITHUB_LOGINS` repo variable with GitHub usernames
-
-**Fix:**
-1. Verify workflow is enabled: Settings → Actions → Workflows
-2. Check workflow permissions in the YAML file
-3. Add repo variable: Settings → Secrets and variables → Actions → Variables → New repository variable
-   - Name: `ADMIN_GITHUB_LOGINS`
-   - Value: `wdhunter645,other-admin` (comma-separated)
-
----
-
-## Maintenance
-
-### Adding a New GATE Workflow
-
-1. Create file: `.github/workflows/gate-<name>.yml`
-2. Set workflow name: `name: GATE — <Description>`
-3. Add `pull_request` trigger
-4. Add `workflow_dispatch` for debugging (optional)
-5. Keep checks fast, deterministic, and repo-local
-6. Do NOT call OPS workflows
-7. Update this inventory document
-8. Add to branch protection required checks (after merge)
-
-### Adding a New OPS Workflow
-
-1. Create file: `.github/workflows/ops-<name>.yml`
-2. Set workflow name: `name: OPS — <Description>`
-3. Add triggers: `schedule`, `workflow_dispatch`, `push` (main only)
-4. Do NOT add `pull_request` trigger
-5. Do NOT call GATE workflows
-6. Update this inventory document
-7. Do NOT add to branch protection required checks
-
----
+This file is an **operator inventory**. It does not own CI policy.
+
+Resolve conflicts in this order:
+
+1. `docs/governance/CI-AND-VERIFICATION.md` — CI and Verification Domain Policy
+2. `docs/governance/PR_PROCESS.md` — PR process procedure
+3. Supporting CI references:
+   - `.github/CI_GUARDRAILS_MAP.md`
+   - `docs/reference/ci/merge-protection-surface.md`
+   - `docs/reference/ci/pr-process-current-state.md`
+   - `docs/reference/ci/pr-workflow-ci-inventory.md`
+   - `docs/reference/ci/lgfc-ci-workflow-classification-matrix.md`
+   - `docs/reference/ci/pr-process-rebuild-retired-assets.md`
+
+Historical February 2026 GATE/OPS redesign text formerly in this file is superseded. Do not restore required-check lists, ZIP-gate filenames, or “add every GATE to branch protection” guidance from that era.
+
+## Current known truth (main)
+
+Live repository ruleset `Main` requires exactly these deterministic checks:
+
+| Job id | Workflow file | Workflow name |
+| --- | --- | --- |
+| `quality` | `gate-quality.yml` | `GATE — Quality Checks` |
+| `gitleaks` | `gitleaks.yml` | `GATE — Secret Scan` |
+
+Do **not** configure as required:
+
+- advisory checks (`pr-hygiene`, `diff-scope`, `reviewer-response-completion`)
+- manual-only / paused gates (including `pr-issue-accounting`, drift, intent labeler, docs guardrails, design-compliance warn, post-merge-readiness)
+- OPS, post-merge, orchestrator, bridge, PMO, or one-shot workflows
+- retired #1075 names
+
+Promotion of any advisory or manual-only check to required status requires evidence and ruleset alignment per `docs/governance/PR_PROCESS.md` and `docs/governance/CI-AND-VERIFICATION.md`.
+
+## Architecture summary
+
+Current CI separates:
+
+- **Required merge safety** — `quality`, `gitleaks`
+- **Advisory PR hygiene** — stable PR-body, diff-scope, reviewer lifecycle signals
+- **Manual-only / paused** — stubs awaiting justified rebuild
+- **Single-owner post-merge closeout** — `post-merge-closeout.yml`
+- **OPS / platform / delivery automation** — scheduled, push-main, dispatch, or non-main profiles
+- **Retired #1075 phase engine** — absent; do not restore
+
+OPS and support workflows must not become merge blockers for `main`.
+
+## Required merge protection
+
+| File | Name | Triggers | Jobs | Class |
+| --- | --- | --- | --- | --- |
+| `gate-quality.yml` | GATE — Quality Checks | `pull_request`, `push`, `workflow_dispatch` | `quality` | Required |
+| `gitleaks.yml` | GATE — Secret Scan | `pull_request`, `push`, `workflow_dispatch` | `gitleaks` | Required |
+
+## Active advisory PR checks
+
+| File | Name | Triggers | Jobs | Class |
+| --- | --- | --- | --- | --- |
+| `gate-pr-hygiene.yml` | GATE — PR Hygiene | `pull_request`, `workflow_dispatch` | `pr-hygiene` | Advisory |
+| `gate-diff-scope.yml` | GATE — Diff Scope | `pull_request`, `workflow_dispatch` | `diff-scope` | Advisory |
+| `reviewer-response-completion.yml` | GATE — Reviewer Response Completion | `pull_request`, `pull_request_review`, `workflow_dispatch` | `reviewer-response-completion` | Advisory |
+
+## Manual-only / paused
+
+These are `workflow_dispatch` only (or manual backfill). They are **not** merge blockers.
+
+| File | Name | Jobs | Disposition |
+| --- | --- | --- | --- |
+| `gate-intent-labeler.yml` | GATE — Intent Labeler | `label-intent` | Defer / rebuild only if justified |
+| `ops-pr-issue-accounting.yml` | GATE — PR Issue Accounting | `pr-issue-accounting` | Defer / rebuild only if justified (filename is `ops-*`; display name still GATE) |
+| `gate-drift.yml` | GATE — Drift Control | `drift-gate` | Defer / rebuild only if justified |
+| `gate-branch-freshness.yml` | GATE — Branch Freshness | `branch-freshness` | Defer |
+| `docs-guardrails.yml` | Docs Guardrails | `docs_guardrails` | Defer |
+| `design-compliance-warn.yml` | Design Compliance (Warn) | `design_compliance_warn` | Defer |
+| `gate-post-merge-readiness.yml` | GATE — Post-Merge Readiness | `post-merge-readiness` | Manual backfill only; do not restore auto PR triggers |
+| `post-merge-intent-verification.yml` | Post-Merge Maintainer Body Apply (Retired) | `retired` | Compatibility marker; read-only / no mutation |
+| `pr-triage-zip-taint.yml` | PR Triage - ZIP Taint Classification | `triage` | Manual triage remnant |
+| `preview-invariants.yml` | Preview Invariants (Cloudflare Pages) | `preview_invariants` | Manual preview checks |
+| `lgfc-d1-migrate.yml` | LGFC D1 Migrate (remote) | `migrate` | Manual remote migrate |
+| `ai_review.yml` | AI Code Review | `review` | Manual AI review |
+| `ops-cf-pages-retry.yml` | OPS — Cloudflare Pages Auto-Retry | `retry-on-internal-error` | Manual retry |
+| `ops-agent-doctrine-issue-closeout.yml` | OPS — Agent Doctrine Issue Closeout | `close-issues` | Manual closeout helper |
+| `purge-zip-history.yml` | Purge ZIPs from Git History (FORCE PUSH) | `purge` | Dangerous manual history rewrite — keep gated |
+| `repository-runner-health.yml` | Repository Runner Health | `health` | Manual runner health |
+
+## Post-merge ownership
+
+Automatic source-issue closeout has **one** owner:
+
+| File | Name | Triggers | Role |
+| --- | --- | --- | --- |
+| `post-merge-closeout.yml` | Post-Merge Detection | `pull_request_target` (closed / merged to `main`) | Single automatic closeout owner |
+
+Supporting / bounded (must not claim the same automatic closeout ownership):
+
+| File | Name | Triggers | Role |
+| --- | --- | --- | --- |
+| `post-merge-pr-body-closeout.yml` | Post-Merge PR Body Closeout | `push`, `workflow_dispatch` | Manual / backfill closeout |
+| `post-merge-remediation.yml` | Post-Merge Remediation | `workflow_run` | Failure remediation support |
+| `ops-post-merge-self-healing.yml` | OPS — Post-Merge Self-Healing | `schedule`, `workflow_dispatch` | Exception hygiene |
+| `ops-pr-process-metrics.yml` | OPS — PR Process Metrics | `pull_request`, `workflow_dispatch` | Metrics (PR-visible; not required) |
+| `diataxis-post-merge-validate.yml` | DIATAXIS Post-Merge Validation | `pull_request` closed (merged → `main`) | Documentation validation support |
+
+## Production / platform OPS
+
+| File | Name | Triggers | Role |
+| --- | --- | --- | --- |
+| `ops-assess.yml` | OPS — Site Assessment | `schedule`, `push`, `workflow_dispatch` | Site assessment |
+| `ops-design-compliance-audit.yml` | OPS — Design Compliance Audit | `schedule`, `push`, `workflow_dispatch` | Alert-only design audit |
+| `production-audit.yml` | OPS — Production Audit | `schedule`, `push`, `workflow_dispatch` | Playwright production invariants |
+| `snapshot.yml` | OPS — Snapshot Backup | `schedule`, `push`, `workflow_dispatch` | Repo + Cloudflare Pages snapshot |
+| `b2-s3-smoke-test.yml` | OPS — B2 S3 Smoke Test | `schedule`, `workflow_dispatch` | B2 smoke |
+| `b2-d1-daily-sync.yml` | OPS — B2 D1 Daily Sync | `schedule`, `workflow_dispatch` | B2/D1 sync |
+| `ops-main-change-monitor.yml` | OPS — Main Change Monitor | `push`, `workflow_dispatch` | Unapproved main-push alerts |
+| `d1-migrations.yml` | D1 Migrations | `push` | D1 migration apply |
+| `enforce-pr-only.yml` | Enforce PR Only Changes | `push` | Direct-push policy signal |
+
+Production scan trigger marker remains `docs/ops/scan-trigger.md` for on-demand OPS scans after merge to `main`.
+
+## Docs / governance PR support (non-required)
+
+These may appear on the PR check panel. They are **not** `main` required checks unless separately promoted.
+
+| File | Name | Triggers | Notes |
+| --- | --- | --- | --- |
+| `agent-governance.yml` | Agent Governance | `pull_request`, `workflow_dispatch` | Agent governance check |
+| `design-authority-check.yml` | Design Authority Check | `pull_request` (docs paths) | Duplicate design-definition guard |
+| `diataxis-folder-authority.yml` | DIATAXIS Folder Authority | `pull_request` (docs paths) | Advisory; overlaps sibling workflow |
+| `diataxis-folder-authority-check.yml` | DIATAXIS Folder Authority Check | `pull_request` (subset docs) | Advisory; shared comment marker with sibling |
+| `zip-history-audit.yml` | ZIP History Audit (Full History) | `pull_request`, `workflow_dispatch` | Full-history ZIP scan; PR-visible noise risk |
+| `cursor-review.yml` | Cursor PR Review | `pull_request` | Review helper |
+
+## Delivery / component / orchestrators
+
+Generic implementation-plan orchestration remains. The dedicated #1075 CI phase engine does **not**.
+
+| File | Name | Triggers | Notes |
+| --- | --- | --- | --- |
+| `component-child-integration.yml` | Component Child Integration | `pull_request` (`component/**`), `workflow_run`, `workflow_dispatch` | Model B child integration |
+| `orchestrator-issue-factory.yml` | Orchestrator — Issue Factory | `push` | Generic plan issue factory |
+| `orchestrator-queue-advance.yml` | Orchestrator — Queue Advance | `issues` | Queue advance |
+| `orchestrator-agent-trigger.yml` | Orchestrator — Agent Trigger | `issues` | Agent trigger |
+| `orchestrator-draft-pr.yml` | Orchestrator — Draft PR Creator | `issues` | Draft PR creation |
+| `orchestrator-pr-state-sync.yml` | Orchestrator — PR State Sync | `pull_request` | PR-visible state sync |
+| `project-implementation-orchestrator.yml` | Project Implementation Orchestrator | `pull_request_target`, `workflow_dispatch` | High-sensitivity orchestrator |
+
+## AI bridge / PMO / labels / wake
+
+| File | Name | Triggers | Notes |
+| --- | --- | --- | --- |
+| `ai-execution-bridge.yml` | AI Execution Bridge | `issues`, `workflow_dispatch` | Bridge execution |
+| `ai-execution-bridge-smoke.yml` | AI Execution Bridge Smoke Test | `push`, `schedule`, `workflow_dispatch` | Bridge smoke |
+| `cursor-local-wake.yml` | Cursor Local Wake Delivery | `issues`, `issue_comment`, `workflow_dispatch` | Local wake delivery |
+| `opencode.yml` | OpenCode Maintenance | `issue_comment` | Maintenance automation |
+| `pmo-dashboard-ci-build.yml` | PMO dashboard CI build | `schedule`, `push`, `workflow_dispatch` | Dashboard build |
+| `pmo-dashboard-ci-deploy.yml` | PMO dashboard CI deploy | `workflow_run`, `push`, `workflow_dispatch` | Pages deploy |
+| `program-2477-chat-attention-pulse.yml` | Program 2477 Chat Attention Pulse | `schedule` (`*/15`), `workflow_dispatch` | Program-specific pulse |
+| `ensure-ai-build-label.yml` | Ensure AI Build Label | `push` (self-path), `workflow_dispatch` | Label bootstrap |
+| `ops-stale-issue-label-cleanup.yml` | OPS — Stale Issue Label Cleanup | `push` (self-path), `workflow_dispatch` | Label cleanup |
+| `copilot-setup-steps.yml` | Copilot Setup Steps | `push`, `workflow_dispatch` | Copilot setup |
+
+## One-shot / deprecated candidates
+
+These remain in the tree pending separately authorized retirement. Treat as non-authority.
+
+| File | Name | Triggers | Notes |
+| --- | --- | --- | --- |
+| `gate-ensure-issue.yml` | gate-ensure-issue | `pull_request_target` | Deprecated noop stub |
+| `bridge-1314-verification-closeout.yml` | Bridge 1314 Verification Closeout | `workflow_dispatch`, `push` (self-path) | Historical bridge closeout |
+| `bridge-optional-closeout.yml` | Bridge Optional Closeout | `workflow_dispatch`, `push` (self-path) | Historical issue closeout |
+| `ops-close-superseded-pr-1492.yml` | OPS — Close Superseded PR #1492 | `workflow_dispatch`, `push` (self-path) | Hardcoded PR #1492 closeout |
+| `post-recovery-425-verify.yml` | Post-Recovery Verification (PR #425) | `pull_request` (path-limited), `workflow_dispatch` | Historical recovery verification |
+
+## Retired assets (must remain absent)
+
+Retired by #2469 / related closeout — do not restore without new authorization:
+
+- `ci-orchestration-engine.yml`
+- `gate-reviewer-response.yml`
+- `gate-close-work-issue.yml`
+- parked legacy `ci.yml`, `deploy.yml`, `deploy-dev.yml`, `deploy-prod.yml`, `lgfc-validate.yml`, `test.yml`, `test-homepage.yml`
+- `.github/ci-orchestration-state.json`
+- `scripts/orchestrator/ci-orchestration-engine.mjs`
+- `lgfc-ci-phase:*` issue generation
+- `gate-zip-safety.yml` / required job `check-no-zip-files` (ZIP enforcement lives inside `quality`)
+
+Retired by #2524:
+
+- `update-docs.md` / `update-docs.lock.yml` (Copilot README auto-sync)
+
+## Operator rules
+
+1. **Required checks for `main`:** only `quality` and `gitleaks`.
+2. **Do not** add OPS, advisory, manual-only, or retired checks to the required ruleset without promotion evidence.
+3. **Do not** treat a red advisory/support PR check as a merge blocker unless the live ruleset lists it as required.
+4. **New workflows:** classify under `docs/governance/CI-AND-VERIFICATION.md`, update the classification matrix / PR workflow inventory, and update this operator inventory in the same change set when practical.
+5. **GATE naming** (`gate-*.yml` / `GATE — …`) does not automatically mean “required.”
+6. **OPS naming** (`ops-*.yml` / `OPS — …`) must never become a `main` required check.
+7. Prefer thin routing to July controlled references over duplicating long policy text here.
+
+## Count
+
+Current `.github/workflows/` file count at last review of this document: **64**.
+
+When the live tree and this count disagree, trust the live tree and open a bounded docs correction under the active CI inventory issue.
 
 ## References
 
-- **PR Template:** `.github/PULL_REQUEST_TEMPLATE.md`
-- **Website Process:** `/.github/pull_request_template.md`
-- **Website Governance:** `/docs/governance/PR_GOVERNANCE.md`
-- **Intent Labels:** `/docs/governance/pr-intent-labels.md`
-- **ZIP Governance:** `/docs/governance/platform-intent-and-zip-governance.md`
-
----
-
-**Last Updated:** 2026-02-04  
-**Version:** 1.0 (Initial ground-up redesign)
+- Domain policy: `docs/governance/CI-AND-VERIFICATION.md`
+- Guardrails map: `.github/CI_GUARDRAILS_MAP.md`
+- Merge protection surface: `docs/reference/ci/merge-protection-surface.md`
+- Classification matrix: `docs/reference/ci/lgfc-ci-workflow-classification-matrix.md`
+- PR workflow inventory: `docs/reference/ci/pr-workflow-ci-inventory.md`
+- PR process: `docs/governance/PR_PROCESS.md`
+- PR template: `.github/pull_request_template.md`

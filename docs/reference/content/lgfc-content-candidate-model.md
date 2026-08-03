@@ -1,6 +1,6 @@
 ---
 Doc Type: Reference
-Audience: Bill, Atlas, Cursor, LGFC maintainers, editors, and implementation agents
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, editors, and implementation agents
 Authority Level: Controlled
 Owns: Canonical LGFC content candidate registry field, state, and promotion model for Program #2273
 Does Not Own: D1 migrations, runtime APIs, admin UI, crawler automation, or public publication

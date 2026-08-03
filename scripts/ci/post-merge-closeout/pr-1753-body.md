@@ -24,7 +24,7 @@
 
 ## QUEUE / DEPENDENCY MAP STATUS (REQUIRED FOR LAUNCHED-PROGRAM QUEUE TASKS)
 - Dependency-map result: pass — Task 009 complete on main; Task 008 disposition package is the authorized next deliverable
-- Next queue item: post-merge tracker sync after Task 008 merge (Phase 4 queue complete pending Atlas review)
+- Next queue item: post-merge tracker sync after Task 008 merge (Phase 4 queue complete pending ChatGPT review)
 - Continue/halt decision: continue — Task 008 authorized on #1259 2026-06-17
 
 Canonical reference: `/docs/reference/pmo/lgfc-program-queue-and-dependency-map.md`

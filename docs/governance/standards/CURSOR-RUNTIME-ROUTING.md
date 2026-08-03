@@ -5,8 +5,8 @@ Authority Level: Binding
 Owns: LGFC Cursor runtime selection, local-versus-cloud invocation boundary, assignment runtime metadata, and local resume routing
 Does Not Own: Cursor product configuration, local poller implementation, implementation scope, merge approval, or cloud billing
 Canonical Reference: /Agent.md
-Related Issues: #2477, #2489
-Last Reviewed: 2026-07-13
+Related Issues: #2477, #2489, #2667, #2997, #3013
+Last Reviewed: 2026-08-03
 ---
 
 # Cursor Runtime Routing
@@ -37,25 +37,19 @@ Runtime: either
 
 `@cursor` is a Cursor Cloud invocation. It is prohibited for local LGFC work.
 
-Local Cursor routing uses all of the following:
+Local Cursor routing uses the following eligibility signal — labels and status only, no comment-marker protocol (#3013):
 
 - source issue label `agent:cursor`;
 - source issue label `handoff:ready`;
-- an explicit issue or PR comment beginning with `LOCAL CURSOR RESUME`;
-- manual operator action or the documented local poll-wake loop.
+- issue is open and not already carrying an already-handed-off status label (`status:review`, `status:complete`, `status:post-merge-verify`).
 
-Required local resume shape:
+There is no required resume/response comment. Comments are ordinary context Cursor reads after launch; they carry no routing or gating authority.
 
-```text
-LOCAL CURSOR RESUME
-Issue: #<issue-number>
-Source handoff: <comment URL>
-Resume from: <GitHub authority comment URL>
-Next local action:
-- <one bounded action>
-```
+**Primary local transport (auto-start):** GitHub Actions wake delivery on the Chromebook runner writes a host packet; **Cursor Local Bridge** revalidates the full eligibility contract, claims the serial lane, and launches authenticated local `cursor agent` — or falls back to notify + unclaimed. Architecture: `docs/explanation/operations/cursor-local-auto-start-architecture.md`. Contract: `docs/reference/ci/cursor-local-bridge-contract.md`. Install: `docs/how-to/cursor/configure-cursor-local-bridge.md`.
 
-Labels and comments are durable routing and context markers. They do not prove that a local Cursor process is running and must not be described as an automatic cloud invocation.
+**Backup / legacy:** manual operator action or the documented local poll-wake loop (stdout sentinel only; requires an open agent chat).
+
+Labels are the durable routing signal. They do not prove that a local Cursor process is running and must not be described as an automatic cloud invocation. The Actions runner alone does not notify or start Cursor.
 
 ## Assignment requirement
 
@@ -72,10 +66,13 @@ For LGFC work:
 
 Local Cursor resumes from repository-controlled state, not chat memory. The detailed procedures are:
 
+- `docs/explanation/operations/cursor-local-auto-start-architecture.md` (as-built design)
+- `docs/reference/ci/cursor-local-bridge-contract.md` (primary auto-start contract)
+- `docs/how-to/cursor/configure-cursor-local-bridge.md`
 - `docs/ops/ai/chatgpt-cursor-handoff-workflow.md`
-- `docs/how-to/cursor/github-poll-wake-loop.md`
+- `docs/how-to/cursor/github-poll-wake-loop.md` (legacy backup)
 
-If either procedure conflicts with this standard, this standard controls runtime selection and the procedures must be corrected.
+If a procedure conflicts with this standard, this standard controls runtime selection and the procedures must be corrected.
 
 ## Prohibited behavior
 
@@ -84,7 +81,7 @@ Do not:
 - use `@cursor` to start, resume, revise, or remediate local LGFC work;
 - treat a cloud-agent acknowledgement as evidence that the local agent is active;
 - switch an assignment from local to cloud because local execution is delayed;
-- use labels alone as execution authorization;
+- invent an additional comment-marker gate on top of labels/status — labels and status are the sole execution authorization (#3013);
 - rely on chat-only instructions for local resume.
 
 ## Exception path
@@ -105,5 +102,5 @@ For agent-authority or assignment-template changes:
 1. Confirm the assignment contains exactly one Runtime field.
 2. Search active authority for `@cursor`.
 3. Retain `@cursor` only where it is explicitly identified as prohibited, historical, or cloud-only.
-4. Confirm local instructions use labels plus `LOCAL CURSOR RESUME`.
+4. Confirm local instructions rely on `agent:cursor` + `handoff:ready` labels and status only — no comment-marker requirement.
 5. Run repository documentation-header and DIATAXIS checks.

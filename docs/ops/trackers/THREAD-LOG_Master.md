@@ -22,7 +22,7 @@ Last Reviewed: 2026-06-11
 PR `#1552` (Task 001 — pre-merge post-merge-readiness gate) merged to `main` via merge
 commit `90754605b1da7135c8bfdad2b422484d0ce59990`. Source issue `#1544` closed with
 `status:complete` after Post-Merge Detection passed. Program queue still required
-Atlas/Bill human sign-off on the child issue before treating Task 001 as fully accepted.
+ChatGPT/Bill human sign-off on the child issue before treating Task 001 as fully accepted.
 
 ### Objective
 Record Bill (wdhunter645) sign-off acceptance for Program #1500 Task 001 on child issue
@@ -52,7 +52,7 @@ Task 002 implementation from this sign-off alone.
 Post on https://github.com/wdhunter645/next-starter-template/issues/1544 when signed in as owner:
 
 ```markdown
-## Atlas/Bill sign-off — Task 001 accepted
+## ChatGPT/Bill sign-off — Task 001 accepted
 
 Sign-off accepted for Program #1500 Task 001 (`#1544`).
 
@@ -147,7 +147,7 @@ workflow, CI script, orchestration script, or `targets-ci-pending.json` changes.
 
 ### Result
 Program #1500 is ready for review. Implementation remains blocked until buildout
-PR merges and Atlas/Bill explicitly assign `#1544` (Task 001).
+PR merges and ChatGPT/Bill explicitly assign `#1544` (Task 001).
 
 ### Next Action
 Merge buildout PR; assign Codex to `#1544` only after explicit launch authorization.

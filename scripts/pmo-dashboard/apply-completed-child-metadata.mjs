@@ -10,28 +10,28 @@ const REPO = 'wdhunter645/next-starter-template';
 const METADATA = {
   1256: `Dashboard Lifecycle: completed
 Priority #: 1
-Owner / Agent: Atlas
+Owner / Agent: ChatGPT
 Anticipated Completion Date: TBD
 Project Description: Content strategy and editorial inventory for Lou Gehrig historical content, media associations, editorial rotation, search/discovery, and intake/review workflows under program #1255.
 
 `,
   1258: `Dashboard Lifecycle: completed
 Priority #: 2
-Owner / Agent: Atlas
+Owner / Agent: ChatGPT
 Anticipated Completion Date: TBD
 Project Description: Website operations and admin workflows for post-launch LGFC operations, including fan club, moderation, content/media management, events, fundraiser, and matchup admin under program #1255.
 
 `,
   1259: `Dashboard Lifecycle: completed
 Priority #: 3
-Owner / Agent: Atlas
+Owner / Agent: ChatGPT
 Anticipated Completion Date: TBD
 Project Description: Canonical Website QA and production validation for program #1255: route, navigation, auth, mobile, D1/B2 verification, public-core closeout, and production audit handoff.
 
 `,
   1264: `Dashboard Lifecycle: completed
 Priority #: 4
-Owner / Agent: Atlas
+Owner / Agent: ChatGPT
 Anticipated Completion Date: TBD
 Project Description: Superseded duplicate of #1259; closed as stale with no independent execution history. Retained for program #1255 audit continuity only.
 

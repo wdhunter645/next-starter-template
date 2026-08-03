@@ -120,7 +120,7 @@ Reviewer items:
 - review-comment:3382471537 — acknowledged — `## Program Issue Portfolio Model` retained; portfolio content reflects v3 issue-number model — thread state: outdated
 - review-comment:3382471540 — acknowledged — project-level map heading retained; Program #1255 / #1256 relationship documented in section body — thread state: outdated
 - review-comment:3382471546 — acknowledged — issue-level fields heading retained; required queue fields unchanged from v2 contract — thread state: outdated
-- review-comment:3382481016 — acknowledged — launch-state table `unless Bill/Atlas explicitly reopen/reactivate or launch` applies only after Program #1255 completion/signoff per controlling launch-state statement; not a bypass of #1255 gate — thread state: outdated
+- review-comment:3382481016 — acknowledged — launch-state table `unless Bill/ChatGPT explicitly reopen/reactivate or launch` applies only after Program #1255 completion/signoff per controlling launch-state statement; not a bypass of #1255 gate — thread state: outdated
 - review-comment:3382481026 — acknowledged — linked `program-5-admin-page-and-tools-design-readiness.md` is legacy filename/path; v3 alignment of that doc is a separate backlog follow-up before promotion — thread state: outdated
 - review-comment:3382487102 — acknowledged — issue title format (`Program:`) vs doc reference format (`Program #<n> — <name>`) distinction noted; both appear in PMO-V3-OPERATING-MODEL terminology and program issue rules — thread state: outdated
 - review-comment:3382487165 — acknowledged — Program #1255 child project `#1256` relationship is explicit in queue map project-level section; heading clarity acceptable on merge head — thread state: outdated

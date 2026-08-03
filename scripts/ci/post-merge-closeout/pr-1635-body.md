@@ -13,7 +13,7 @@
 
 ## QUEUE / DEPENDENCY MAP STATUS
 - Dependency-map result: not-applicable — post-merge closeout remediation
-- Next queue item: halt — Program #1255 Task 010 remains blocked pending #1258 reopen verification and Atlas/Bill authorization
+- Next queue item: halt — Program #1255 Task 010 remains blocked pending #1258 reopen verification and ChatGPT/Bill authorization
 - Continue/halt decision: halt — closeout remediation only
 
 ## PROGRESS + READINESS (MANDATORY)

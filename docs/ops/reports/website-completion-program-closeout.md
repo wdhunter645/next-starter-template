@@ -1,9 +1,9 @@
 ---
 Doc Type: Report
-Audience: Bill, Atlas, operators, and AI implementation agents
+Audience: Bill, ChatGPT, operators, and AI implementation agents
 Authority Level: Operational Evidence
 Owns: Program #1685 final validation and implementation-ready closeout for Tasks 001–008
-Does Not Own: Parent issue #1685 closure (requires Bill/Atlas acceptance), production configuration, or merge authority
+Does Not Own: Parent issue #1685 closure (requires Bill/ChatGPT acceptance), production configuration, or merge authority
 Canonical Reference: /docs/ops/implementation-plans/website-completion-fan-club-product-buildout.md
 Related issues: #1694, #1685, #1686, #1687, #1688, #1689, #1690, #1691, #1692, #1693, #1962
 Last Reviewed: 2026-06-23
@@ -15,7 +15,7 @@ Last Reviewed: 2026-06-23
 
 Consolidate implementation evidence for Program **#1685 — Website Completion / Fan Club
 Product Buildout** after Tasks 001–008 and declare the next-program handoff state for
-Bill/Atlas acceptance.
+Bill/ChatGPT acceptance.
 
 ## Scope
 
@@ -33,7 +33,7 @@ reopening deferred work without a new source issue.
 
 ## Intended final state
 
-Bill/Atlas accept this closeout report, confirm remaining deferred items, and decide
+Bill/ChatGPT accept this closeout report, confirm remaining deferred items, and decide
 whether to close #1685 or open bounded follow-up issues for deferred gaps.
 
 ## Task Outcome Matrix
@@ -72,7 +72,7 @@ whether to close #1685 or open bounded follow-up issues for deferred gaps.
 
 ## Next-Program Handoff State
 
-**Program #1685 implementation track:** ready for Bill/Atlas acceptance.
+**Program #1685 implementation track:** ready for Bill/ChatGPT acceptance.
 
 Recommended operator actions:
 
@@ -82,7 +82,7 @@ Recommended operator actions:
 4. Close or reconcile open task issues (#1686–#1693) after post-merge closeout automation completes.
 5. Close parent issue #1685 when acceptance criteria are satisfied.
 
-**Not authorized in this task:** merging follow-up PRs, relabeling issues, or closing #1685 without explicit Bill/Atlas instruction.
+**Not authorized in this task:** merging follow-up PRs, relabeling issues, or closing #1685 without explicit Bill/ChatGPT instruction.
 
 ## Key Evidence Paths
 

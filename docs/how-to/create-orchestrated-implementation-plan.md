@@ -21,7 +21,7 @@ Last Reviewed: 2026-06-08
    Doc Type: Implementation Plan
    Status: production-ready
    Project: <project-name>
-   Owner: Atlas
+   Owner: ChatGPT
    Execution Mode: orchestrated
    ---
    ```
@@ -32,7 +32,7 @@ Last Reviewed: 2026-06-08
    ## Task 001 — <short title>
 
    Type: repository | website | governance | docs | recovery
-   Agent: codex | cursor | copilot | atlas
+   Agent: codex | cursor | copilot | ChatGPT
    Priority: 1
    Depends On: none | Task 000
    Allowed Files:

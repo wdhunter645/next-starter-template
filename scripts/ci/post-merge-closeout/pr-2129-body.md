@@ -26,7 +26,7 @@ Allowed files:
 ## ACCEPTANCE CRITERIA
 - [x] Program #2039 evidence consolidated.
 - [x] Public launch readiness stated with operator exceptions.
-- [x] Bill/Atlas acceptance criteria prepared.
+- [x] Bill/ChatGPT acceptance criteria prepared.
 - [x] All required CI gates green on latest head (verified at merge SHA `6338bbb9e6c77bced3f69acfb7b503c8a2900afd`).
 - [x] Post-merge closeout remediation body generated for merged PR #2129
 

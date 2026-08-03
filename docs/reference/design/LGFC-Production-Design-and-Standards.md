@@ -1,20 +1,21 @@
 ---
 Doc Type: Reference
 Audience: Human + AI
-Authority Level: Canonical
-Owns: Production behavior, routing rules, navigation invariants
-Does Not Own: Implementation details inside components
-Canonical Reference: /docs/governance/standards/document-authority-hierarchy_MASTER.md
-Last Reviewed: 2026-06-03
+Authority Level: Controlled
+Owns: Production behavior, routing rules, and navigation invariants as the primary supporting specification
+Does Not Own: Product and Design Domain Policy; implementation details inside components
+Canonical Reference: /docs/governance/PRODUCT-AND-DESIGN.md
+Related Issues: #2687
+Last Reviewed: 2026-07-21
 ---
 
 # LGFC Production Design and Standards
 
-This document defines the **production behavior of the Lou Gehrig Fan Club website**.
+This document is the **primary supporting production-behavior specification** for the Lou Gehrig Fan Club website under the Product and Design Domain Policy (`docs/governance/PRODUCT-AND-DESIGN.md`).
 
-All implementations must conform to this document.
+All implementations must conform to this document for locked production behavior facts.
 
-If any implementation conflicts with this file, **this document wins**.
+This file is **not** a Domain Policy co-owner. Conflicts with domain policy, Product Authority decisions, or other supporting specs resolve through `docs/governance/PRODUCT-AND-DESIGN.md`.
 
 ---
 

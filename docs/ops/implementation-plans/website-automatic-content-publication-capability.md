@@ -1,12 +1,12 @@
 ---
 Doc Type: Implementation Plan
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
 Owns: Cursor task sequence, child-task boundaries, validation model, file-area expectations, and closeout rules for Website Automatic Content Publication Capability
 Does Not Own: Runtime implementation before assigned task issues, merge authority, production secrets, Program #1738 source rules, or Program #2039 staging route implementation
 Status: planning-ready
 Project: website-automatic-content-publication-capability
-Owner: Atlas
+Owner: ChatGPT
 Execution Mode: cursor-after-launch-authorization
 Source Issue: 2040
 Related Program Issue: 2040
@@ -70,20 +70,20 @@ At the end of Program #2040:
 | Work source | Assigned child task issue only |
 | PR source issue | Exactly one source issue per PR |
 | Stop condition | `READY FOR REVIEW` |
-| Merge authority | Bill/Atlas after required review and checks |
+| Merge authority | Bill/ChatGPT after required review and checks |
 | Public publication | Requires recorded approval state |
 
 ## Dependency Map
 
 | Task | issue | Title | Predecessor | Stage-before-merge | Halt condition | Resume condition | Successor |
 | ---: | ---: | --- | --- | --- | --- | --- | --- |
-| 001 | #2049 | Manual workflow evidence review and publication candidate inventory | #1738 handoff evidence | yes | #1738 evidence missing or incomplete | Bill/Atlas confirm evidence or rebaseline scope | #2050 |
-| 002 | #2050 | Publication state model and approval authority design | #2049 | yes | State or approval authority unclear | Bill/Atlas confirm authority model | #2051 |
+| 001 | #2049 | Manual workflow evidence review and publication candidate inventory | #1738 handoff evidence | yes | #1738 evidence missing or incomplete | Bill/ChatGPT confirm evidence or rebaseline scope | #2050 |
+| 002 | #2050 | Publication state model and approval authority design | #2049 | yes | State or approval authority unclear | Bill/ChatGPT confirm authority model | #2051 |
 | 003 | #2051 | Admin staged-content review and rotation control surface design | #2050 and #2043 | yes | Staging surface or review boundary unclear | Admin staging boundary confirmed | #2052 |
-| 004 | #2052 | Scheduled publication and controlled rotation implementation plan | #2050 and #2051 | yes | Schedule or rotation control cannot be bounded | Bill/Atlas confirm schedule/rotation boundary | #2053 |
-| 005 | #2053 | Audit trail rollback unpublish and evidence retention design | #2050 | yes | Recovery or retention rules unclear | Bill/Atlas confirm evidence requirements | #2054 |
+| 004 | #2052 | Scheduled publication and controlled rotation implementation plan | #2050 and #2051 | yes | Schedule or rotation control cannot be bounded | Bill/ChatGPT confirm schedule/rotation boundary | #2053 |
+| 005 | #2053 | Audit trail rollback unpublish and evidence retention design | #2050 | yes | Recovery or retention rules unclear | Bill/ChatGPT confirm evidence requirements | #2054 |
 | 006 | #2054 | Publication safety CI ops checks and fail-closed rules | #2050 through #2053 | yes | Safety checks cannot be made deterministic | Checks converted to follow-up scope or accepted exception | #2055 |
-| 007 | #2055 | Implementation of approved publication support slices | #2049 through #2054 | yes | Approved implementation slices are not bounded | Bill/Atlas approve narrowed implementation slice | #2056 |
+| 007 | #2055 | Implementation of approved publication support slices | #2049 through #2054 | yes | Approved implementation slices are not bounded | Bill/ChatGPT approve narrowed implementation slice | #2056 |
 | 008 | #2056 | Program validation and operator handoff report | #2049 through #2055 | yes | Open blocker lacks follow-up owner | Blocker converted to follow-up issue or accepted exception | terminal |
 
 ## Task 001 — Manual workflow evidence review
@@ -199,4 +199,4 @@ Each implementation PR must record relevant validation:
 
 ## Closeout
 
-Program #2040 closes only after Task #2056 evidence and explicit Bill/Atlas acceptance.
+Program #2040 closes only after Task #2056 evidence and explicit Bill/ChatGPT acceptance.

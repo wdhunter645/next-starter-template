@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Atlas, Bill, LGFC maintainers, and AI implementation agents
+Audience: ChatGPT, Bill, LGFC maintainers, and AI implementation agents
 Authority Level: Controlled
 Owns: Recommended GitHub disposition comments for legacy Website Operations Admin issues under #1258 Task 013
 Does Not Own: GitHub issue mutation, label changes, or bulk closure execution
@@ -13,14 +13,14 @@ Last Reviewed: 2026-06-14
 
 ## Purpose
 
-Provide copy-paste disposition comments for Atlas batch review of `#1053` and
+Provide copy-paste disposition comments for ChatGPT batch review of `#1053` and
 `#1118`–`#1127` after Phase 4 Tasks 003–012 complete. This package **does not**
 execute GitHub mutations.
 
 ## Boundary
 
 - No issues closed, relabeled, or edited by this document pass
-- No bulk close without explicit Atlas/Bill authorization
+- No bulk close without explicit ChatGPT/Bill authorization
 - Merge evidence on `main` and Phase 4 verification PRs are authoritative over stale issue labels
 
 Assessment date: **2026-06-14** (after Task 012 merge PR `#1651`).
@@ -48,7 +48,7 @@ Per-surface runbooks published under `docs/how-to/website/`:
 
 | issue | Disposition | Original merge | Phase 4 verification | Recommended issue action |
 | --- | --- | --- | --- | --- |
-| `#1053` | Subordinated historical index | N/A (coordination) | Task 013 docs | Body update + pointer to `#1258`; closeout deferred to Atlas |
+| `#1053` | Subordinated historical index | N/A (coordination) | Task 013 docs | Body update + pointer to `#1258`; closeout deferred to ChatGPT |
 | `#1118` | Satisfied on main | PR `#1171` | Task 003 PR `#1536` | Comment + optional `status:complete` label normalization |
 | `#1119` | Satisfied on main | PR `#1174` | Task 004 PR `#1542` | Comment + optional label normalization |
 | `#1120` | Satisfied on main | PR `#1176` | Task 005 PR `#1551` | Comment + optional label normalization |
@@ -62,7 +62,7 @@ Per-surface runbooks published under `docs/how-to/website/`:
 
 ## Recommended disposition comments
 
-Post the following comments only when Atlas/Bill authorizes the disposition batch.
+Post the following comments only when ChatGPT/Bill authorizes the disposition batch.
 Adjust merge SHAs if replaying on a different branch snapshot.
 
 ### `#1053` — coordination umbrella
@@ -81,8 +81,8 @@ completed under #1258 (2026-06).
 - Disposition package: `docs/ops/reports/website-operations-admin-legacy-disposition-package.md`
 - Operator runbooks: `docs/how-to/website/admin-operations-overview.md`
 
-**Recommended follow-up (Atlas):** Update issue body to point at #1258; do not use
-this issue as an implementation queue head. Closeout timing is an Atlas/Bill decision.
+**Recommended follow-up (ChatGPT):** Update issue body to point at #1258; do not use
+this issue as an implementation queue head. Closeout timing is an ChatGPT/Bill decision.
 ```
 
 ### `#1118` — T40 Fan Club operational workflows
@@ -218,7 +218,7 @@ Audit page, stats, protected export, and report list/close hardened under Task 0
 Erroneous `status:failed` label (if present) is stale — implementation is on main.
 ```
 
-## Atlas batch execution checklist
+## ChatGPT batch execution checklist
 
 When authorized:
 

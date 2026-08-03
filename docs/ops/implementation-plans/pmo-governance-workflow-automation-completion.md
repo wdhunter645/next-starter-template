@@ -1,12 +1,12 @@
 ---
 Doc Type: Implementation Plan
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
 Owns: Cursor task sequence, child-project boundaries, validation model, file-area expectations, and closeout rules for PMO Governance / Workflow Automation Completion
 Does Not Own: Runtime implementation before task issues, workflow code before explicit task authorization, CI script changes before explicit task authorization, issue creation before launch authorization, merge authority, unauthorized issue mutation
 Status: construction-complete-component
 project: pmo-governance-workflow-automation-completion
-Owner: Atlas
+Owner: ChatGPT
 Execution Mode: cursor-continuous-reduced-gate-serial
 Source Issue: 1719
 Related Program Issue: 1719
@@ -17,7 +17,7 @@ Last Reviewed: 2026-07-16
 
 # PMO Governance / Workflow Automation Completion Implementation Plan
 
-> **Construction state (2026-07-16):** Program #1719 documentation construction on `component/pmo-governance-workflow-automation` is complete through Task #1727 (`docs/ops/reports/pmo-governance-workflow-automation-closeout-1727.md`). Task #1725 was previously complete and was not rerun. Cursor may not approve, merge to `main`, close, reopen, or relabel issues. Bill/Atlas acceptance and Bill/ChatGPT-approved promotion to `main` remain outstanding.
+> **Construction state (2026-07-16, resynchronized #2775):** Program #1719 documentation construction on `component/pmo-governance-workflow-automation` is complete through Task #1727 (`docs/ops/reports/pmo-governance-workflow-automation-closeout-1727.md`). Task #1725 was previously complete and was not rerun. Cursor may not approve, merge to `main`, close, reopen, or relabel issues. Bill/Atlas acceptance and Bill/ChatGPT-approved promotion to `main` remain outstanding; #2775 prepares a replacement candidate after the component branch fell behind current `main`.
 
 ## Purpose
 
@@ -58,12 +58,12 @@ At the end of this program:
 1. PMO July 2026 authority is internally consistent across operating model, registry, backlog, and execution contracts.
 2. Workflow automation design is documented as repository authority and gaps are classified before code/workflow changes.
 3. Cursor continuation, stop, review-handoff, and queue rules are explicit and current.
-4. PR readiness and batch-review controls preserve Bill/Atlas review and merge authority.
+4. PR readiness and batch-review controls preserve Bill/ChatGPT review and merge authority.
 5. Merge and issue mutation rules are explicit, auditable, and safe for project/program source issues.
 6. Queue/wave planning is reconciled against Program #1500 and converted only where still needed.
 7. Post-merge closeout evidence stabilization avoids rebuilding completed #1500 work.
 8. PMO backlog promotion rules consistently define when project drafts become programs, issues, and Cursor assignments.
-9. Cursor stops each task at GitHub `READY FOR REVIEW`; Atlas does not self-approve or self-merge.
+9. Cursor stops each task at GitHub `READY FOR REVIEW`; ChatGPT does not self-approve or self-merge.
 
 ## Source documents
 
@@ -101,7 +101,7 @@ Cursor must reconcile before building. Existing PMO docs, governance docs, workf
 | 005 | Issue mutation and closeout permission policy | Define when agents may or may not close, reopen, relabel, or otherwise mutate issues during PR closeout. | Merge and issue mutation policy | `docs/ops/pmo/**`, `docs/governance/**`, `docs/reference/pmo/**`, `docs/ops/reports/**` | Docs checks; mutation-permission matrix | 004 | 006 |
 | 006 | Queue/wave model and Program #1500 closeout reconciliation | Reconcile queue/wave planning and post-merge closeout evidence against completed Program #1500 and current closeout behavior. | Queue/Wave Model + Post-Merge Closeout Evidence Stabilization | `docs/reference/pmo/**`, `docs/ops/pmo/**`, `docs/ops/reports/**` | Docs checks; Program #1500 reconciliation table | 005 | 007 |
 | 007 | Workflow/CI implementation candidate scoping | Convert any accepted remaining automation gaps into bounded future implementation candidates, explicitly separating docs-only, workflow, and script-sensitive work. | Workflow automation implementation scoping | `docs/ops/pmo/**`, `docs/reference/pmo/**`, `docs/ops/reports/**`; read-only `.github/workflows/**`, `scripts/ci/**` | Docs checks; read-only workflow/script inventory | 006 | 008 |
-| 008 | Program closeout and launch-control package | Consolidate evidence, update PMO backlog/registry, identify deferred work, and prepare Bill/Atlas acceptance packet. | Whole program | `docs/ops/reports/**`, scoped `docs/ops/pmo/**`, scoped `docs/ops/implementation-plans/**` | Docs checks; closeout checklist | 001 through 007 | terminal |
+| 008 | Program closeout and launch-control package | Consolidate evidence, update PMO backlog/registry, identify deferred work, and prepare Bill/ChatGPT acceptance packet. | Whole program | `docs/ops/reports/**`, scoped `docs/ops/pmo/**`, scoped `docs/ops/implementation-plans/**` | Docs checks; closeout checklist | 001 through 007 | terminal |
 
 ## Dependency map
 
@@ -145,9 +145,9 @@ Protected review points for intermediate governance-doc gates on `#1723`/`#1724`
 - Cursor does not approve PRs.
 - Cursor does not merge PRs.
 - Cursor does not close, reopen, or relabel GitHub issues unless a source issue explicitly grants that authority.
-- Atlas does not self-approve Atlas-authored PRs.
+- ChatGPT does not self-approve ChatGPT-authored PRs.
 - Source issue closeout occurs only after merge verification and post-merge validator state are clean.
-- Program closeout requires Task 008 (#1727) evidence and explicit Bill/Atlas acceptance.
+- Program closeout requires Task 008 (#1727) evidence and explicit Bill/ChatGPT acceptance.
 
 ## Readiness conclusion
 

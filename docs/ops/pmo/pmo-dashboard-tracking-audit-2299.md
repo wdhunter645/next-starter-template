@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations Report
-Audience: Bill, Atlas, PMO operators
+Audience: Bill, ChatGPT, PMO operators
 Authority Level: Evidence / Audit
 Owns: PMO dashboard tracking reconciliation audit for issue #2299
 Does Not Own: Final priority authorization or issue closeout
@@ -53,9 +53,9 @@ Canonical operator documentation: `docs/how-to/pmo/pmo-dashboard.md`.
 
 | Priority # | Issue | Name | Owner / Agent | Notes |
 | ---: | ---: | --- | --- | --- |
-| 1 | #2286 | LGFC Content Pipeline Runtime Implementation | Atlas + Cursor | Current website build-out Priority #1 program |
-| 2 | #1719 | PMO Governance / Workflow Automation Completion | Atlas | Launch-gated; blocked until explicit task assignment |
-| 3 | #2299 | PMO Dashboard Tracking Reconciliation and Priority Repair | Atlas + Cursor | Current repair project; execution in progress |
+| 1 | #2286 | LGFC Content Pipeline Runtime Implementation | ChatGPT + Cursor | Current website build-out Priority #1 program |
+| 2 | #1719 | PMO Governance / Workflow Automation Completion | ChatGPT | Launch-gated; blocked until explicit task assignment |
+| 3 | #2299 | PMO Dashboard Tracking Reconciliation and Priority Repair | ChatGPT + Cursor | Current repair project; execution in progress |
 
 ## PMO pipeline (numeric priority)
 
@@ -104,7 +104,7 @@ Canonical operator documentation: `docs/how-to/pmo/pmo-dashboard.md`.
 | #1054 | Historical repository governance project; outside tracked inventory. |
 | #1335 | Historical Phase 1 wrap-up program; PMO July 2026 archive evidence. |
 
-## Atlas decisions (resolved)
+## ChatGPT decisions (resolved)
 
 1. **#1685** — Keep `Dashboard Lifecycle: completed`. Do not close GitHub issue in this PR.
 2. **#1738** — Pipeline Priority #20, `Paused (launch-gated)`.

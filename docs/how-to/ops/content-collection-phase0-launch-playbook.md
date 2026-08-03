@@ -26,7 +26,7 @@ Before starting any Phase 0 child issue:
 1. Read parent program #2359 and the assigned child issue (#2360–#2366).
 2. Read `docs/ops/ai/chatgpt-cursor-handoff-workflow.md` (do not rely on duplicated handoff text in issue bodies).
 3. Read `docs/ops/pmo/queue-watch-and-dispatch-protocol.md` for dispatcher obligations.
-4. Confirm intake source location: `_incoming/drive-drafts/content-collection/` on branch `atlas/drive-draft-intake-2367` (non-authoritative only).
+4. Confirm intake source location: `_incoming/drive-drafts/content-collection/` on branch `ChatGPT/drive-draft-intake-2367` (non-authoritative only).
 
 ### Step 2 — Execute the serial child chain
 

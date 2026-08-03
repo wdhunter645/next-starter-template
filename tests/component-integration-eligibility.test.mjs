@@ -41,6 +41,7 @@ function evaluate(overrides = {}, options = {}) {
     labels: options.labels || [],
     changedFiles: options.changedFiles || ['src/components/example.tsx'],
     headSha: options.headSha || profile.headSha || 'abc123',
+    implementationLogin: options.implementationLogin || '',
   });
 }
 
@@ -314,6 +315,23 @@ describe('component integration check/review truthfulness (#2536)', () => {
       },
     ], { headSha });
     expect(cleared).toEqual([]);
+  });
+
+  it('blocks component integration when the implementer supplies the approval', () => {
+    const result = evaluate({}, {
+      implementationLogin: 'codex',
+      reviews: [
+        {
+          state: 'APPROVED',
+          commit_id: 'abc123',
+          submitted_at: '2026-07-24T23:45:00Z',
+          user: { login: 'codex' },
+        },
+      ],
+    });
+
+    expect(result.eligible).toBe(false);
+    expect(result.blockedReasons.map((reason) => reason.code)).toContain('implementer-self-approval');
   });
 
   it('does not treat pending combined status as component hold', () => {

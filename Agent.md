@@ -5,8 +5,8 @@ Authority Level: Navigation
 Owns: Read order, authority routing, lane/profile identification, execution entry point
 Does Not Own: Role policy, execution rules, design authority, communication policy, delivery policy, or governance decisions
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2640, #2641
-Last Reviewed: 2026-07-19
+Related Issues: #2640, #2641, #2686, #2690
+Last Reviewed: 2026-07-21
 ---
 
 # Agent.md
@@ -116,13 +116,15 @@ Read the files that match the current task:
 | Task | Required authority |
 | --- | --- |
 | Role or approval question | `docs/governance/AGENT-TEAM.md`; `docs/reference/agents/implementation-authority-contract.md` |
+| Product, UX, route, page, or design decision | `docs/governance/PRODUCT-AND-DESIGN.md`; applicable controlled specifications under `docs/reference/design/**` |
 | PMO intake, sizing, Sandbox, or launch | `docs/governance/PMO-PORTFOLIO.md` |
 | Development, Promotion Candidate, Production, rollback | `docs/governance/DELIVERY-AND-RELEASE.md`; `docs/how-to/operations/run-work-through-promotion-profiles.md` |
+| Platform, environment, Cloudflare, D1, B2, binding, credential, or migration boundary | `docs/governance/PLATFORM-AND-ENVIRONMENT.md`; applicable controlled specifications under `docs/reference/platform/**` |
+| CI checks, validation evidence, promotion criteria, failure routing, or post-merge verification | `docs/governance/CI-AND-VERIFICATION.md`; applicable controlled references under `docs/reference/ci/**` |
 | Communication, routing, labels, hold/resume, reporting, closeout | `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`; `docs/reference/operations/administrative-control-lane-contract.md` |
 | Production health, incidents, runner host, recovery | `docs/governance/OPERATIONS-AND-RECOVERY.md` |
 | Runner/controller behavior | `docs/reference/ci/repository-runner-contract.md`; applicable routing contract/procedure |
 | PR work | `.agents/skills/lgfc-pr-governance/SKILL.md`; `.github/pull_request_template.md`; `docs/how-to/cursor/open-task-pr.md`; `docs/governance/PR_PROCESS.md`; `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md` |
-| Design | Applicable documents under `docs/reference/design/**` |
 | Model A/B execution | `docs/how-to/agents/run-model-a.md` or `docs/how-to/agents/run-model-b.md` |
 
 ## Communication routing
@@ -158,7 +160,7 @@ Administration & Communications spans all steps.
 
 ## Startup orientation
 
-When Product Authority says `run startup`, ChatGPT / Atlas performs orientation only and stops.
+When Product Authority says `run startup`, ChatGPT performs orientation only and stops.
 
 Startup does not authorize:
 
@@ -211,8 +213,11 @@ Routine bounded correction, deterministic administrative reconciliation, and non
 
 - Constitution: `docs/governance/REPOSITORY-AUTHORITY.md`
 - Roles: `docs/governance/AGENT-TEAM.md`
+- Product and Design: `docs/governance/PRODUCT-AND-DESIGN.md`
 - PMO: `docs/governance/PMO-PORTFOLIO.md`
 - Delivery: `docs/governance/DELIVERY-AND-RELEASE.md`
+- Platform and Environment: `docs/governance/PLATFORM-AND-ENVIRONMENT.md`
+- CI and Verification: `docs/governance/CI-AND-VERIFICATION.md`
 - Administration & Communications: `docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`
 - Day-2 Operations: `docs/governance/OPERATIONS-AND-RECOVERY.md`
 - Lane/profile reference: `docs/reference/operations/operating-lanes-and-promotion-profiles.md`

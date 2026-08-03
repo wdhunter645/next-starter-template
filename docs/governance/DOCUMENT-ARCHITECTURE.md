@@ -3,9 +3,10 @@ Doc Type: Governance
 Audience: Human + AI
 Authority Level: Canonical
 Owns: Document structure, ownership boundaries, path resolution rules
-Does Not Own: Implementation sequencing, tracker state, design authority
+Does Not Own: Implementation sequencing, tracker state, product/design decisions, platform decisions, or CI verification decisions
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Last Reviewed: 2026-07-13
+Related Issues: #2486, #2686, #2690
+Last Reviewed: 2026-07-21
 ---
 
 # DOCUMENT ARCHITECTURE (AUTHORITY)
@@ -25,15 +26,20 @@ Disposition map for Task 2:
 ## Folder Ownership Model
 
 ### 1. docs/reference/design/
-Purpose: Design authority (source of truth for product, UX, layout)
+Purpose: Controlled supporting specifications for product behavior, UX, layout, routes, and design facts.
+
+Canonical policy owner:
+- `docs/governance/PRODUCT-AND-DESIGN.md`
 
 Owns:
-- Site structure
-- Navigation
-- Page definitions
-- UX rules
+- Detailed site-structure facts
+- Navigation specifications
+- Page and route definitions
+- UX and visual-behavior specifications
 
 Does Not Own:
+- Product or design policy
+- Product Authority decisions
 - Operational procedures
 - CI/CD behavior
 - Implementation tracking
@@ -81,14 +87,16 @@ Do not add new binding policy under `docs/ops/ai/`.
 
 ### 3. docs/governance/
 
-Purpose: System-level authority, domain policy, and process enforcement
+Purpose: System-level authority, constitutional routing, domain policy, and process enforcement.
 
 Owns:
 - Repository constitution (`REPOSITORY-AUTHORITY.md`)
+- One canonical policy owner for each constitutional domain
 - PR process
-- CI/CD rules
 - Documentation standards
 - DOCUMENT-ARCHITECTURE.md (this file)
+
+The active domain-policy ownership table is maintained only in `REPOSITORY-AUTHORITY.md`. Supporting references and procedures must route to those owners rather than duplicate their policy.
 
 ---
 
@@ -111,6 +119,7 @@ Does Not Own:
 - Each domain must have ONE canonical policy owner (see `REPOSITORY-AUTHORITY.md`)
 - No duplicate authority files allowed
 - All references must point to the canonical file
+- Detailed `docs/reference/**` documents are supporting specifications and contracts, not co-owners of domain policy
 
 Interim example (legacy path until Task 4 migration):
 
@@ -157,6 +166,8 @@ All CI scripts must:
 3. Fail fast on missing files
 4. Follow this architecture document
 
+CI check classification, evidence requirements, failure routing, and verification ownership are governed by `docs/governance/CI-AND-VERIFICATION.md`.
+
 ---
 
 ## Enforcement Rules
@@ -184,10 +195,18 @@ Required actions when a duplicate is found:
 
 Canonical governance files (single source per topic):
 - Repository constitution: `/docs/governance/REPOSITORY-AUTHORITY.md`
+- Product and Design policy: `/docs/governance/PRODUCT-AND-DESIGN.md`
+- Platform and Environment policy: `/docs/governance/PLATFORM-AND-ENVIRONMENT.md`
+- CI and Verification policy: `/docs/governance/CI-AND-VERIFICATION.md`
+- PMO and Portfolio policy: `/docs/governance/PMO-PORTFOLIO.md`
+- Delivery and Release policy: `/docs/governance/DELIVERY-AND-RELEASE.md`
+- Agent Team policy: `/docs/governance/AGENT-TEAM.md`
+- Administration and Communications policy: `/docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md`
+- Operations and Recovery policy: `/docs/governance/OPERATIONS-AND-RECOVERY.md`
 - PR process: `/docs/governance/PR_PROCESS.md`
-- PR governance: `/docs/governance/PR_GOVERNANCE.md`
+- PR governance support: `/docs/governance/PR_GOVERNANCE.md`
 - Document architecture: `/docs/governance/DOCUMENT-ARCHITECTURE.md` (this file)
-- Design authority: `/docs/governance/standards/design-authority_MASTER.md`
+- Design authority enforcement pointer: `/docs/governance/standards/design-authority_MASTER.md`
 - Change control: `/docs/governance/standards/change-control_MASTER.md`
 
 ---

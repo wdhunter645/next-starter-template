@@ -1,7 +1,12 @@
 #!/usr/bin/env node
-import { mkdir, writeFile, cp, readFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  analyzeQueueLabels,
+  isPeerEngineeringPreparation,
+  isStandaloneOperationsIssue
+} from './queue-label-contract.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OWNER = process.env.GITHUB_REPOSITORY_OWNER || 'wdhunter645';
@@ -17,7 +22,6 @@ const TITLE_PREFIXES = [
   { pattern: /^PROGRAM:\s*/i, type: 'program' },
   { pattern: /^PROJECT:\s*/i, type: 'project' }
 ];
-
 const CHILD_PROJECT_PATTERN = /^PROJECT:\s*(\d+):(\d+)\s*\|\s*(.+)$/i;
 const LIFECYCLE_LABELS = new Set(['pmo:pipeline', 'pmo:active', 'pmo:closed']);
 const LIFECYCLE_FROM_LABEL = {
@@ -41,9 +45,6 @@ const STAGE_DISPLAY = {
   'pmo:stage:prep': 'Implementation preparation',
   'pmo:stage:ready-for-launch': 'Ready for launch'
 };
-const PRIORITY_NONE = 'pmo:priority:none';
-const PRIORITY_IDEA = 'pmo:priority:idea';
-const PRIORITY_NUMERIC = /^pmo:priority:(\d+)$/;
 const PARENT_REF_PATTERN = /^\s*(?:[-*]\s*)?(?:Parent(?:\s+(?:program|project|issue))?)\s*:\s*#?(\d+)\b/im;
 
 async function github(pathname) {
@@ -66,8 +67,7 @@ async function fetchIssuesForState(issueState) {
   let pathname = `/repos/${OWNER}/${REPO}/issues?state=${issueState}&per_page=100`;
   for (;;) {
     const { data: batch, headers } = await github(pathname);
-    const issues = batch.filter((issue) => !issue.pull_request);
-    all.push(...issues);
+    all.push(...batch.filter((issue) => !issue.pull_request));
     const nextPath = nextLinkPath(headers.get('link'));
     if (!nextPath) break;
     pathname = nextPath;
@@ -81,9 +81,7 @@ async function fetchIssues(state) {
     return fixture.filter((issue) => !issue.pull_request && (state === 'all' || issue.state === state));
   }
   if (state === 'all') {
-    const open = await fetchIssuesForState('open');
-    const closed = await fetchIssuesForState('closed');
-    return [...open, ...closed];
+    return [...await fetchIssuesForState('open'), ...await fetchIssuesForState('closed')];
   }
   return fetchIssuesForState(state);
 }
@@ -141,24 +139,19 @@ function cleanName(title) {
 }
 
 function displayName(issue) {
-  const child = parseChildProject(issue.title);
-  if (child) return child.displayTitle;
-  return cleanName(issue.title);
+  return parseChildProject(issue.title)?.displayTitle || cleanName(issue.title);
 }
 
 function parseParentReference(issue) {
-  const body = issue.body || '';
-  const match = body.match(PARENT_REF_PATTERN);
+  const match = (issue.body || '').match(PARENT_REF_PATTERN);
   if (match) return Number(match[1]);
-  const child = parseChildProject(issue.title);
-  if (child) return child.parentProgramIssue;
-  return null;
+  return parseChildProject(issue.title)?.parentProgramIssue || null;
 }
 
 function owner(issue) {
   return field(issue.body, 'Owner / Agent')
-    || labels(issue).find((l) => l.startsWith('owner:'))?.replace('owner:', '')
-    || issue.assignees?.map((a) => a.login).join(', ')
+    || labels(issue).find((label) => label.startsWith('owner:'))?.replace('owner:', '')
+    || issue.assignees?.map((assignee) => assignee.login).join(', ')
     || 'Pending Assignment';
 }
 
@@ -193,7 +186,6 @@ function analyzeLifecycle(issue) {
   const lifecycleLabels = issueLabels.filter((label) => LIFECYCLE_LABELS.has(label));
   const errors = [];
   const remediation = [];
-
   if (lifecycleLabels.length === 0) {
     errors.push('missing lifecycle label');
     remediation.push('Add exactly one of pmo:pipeline, pmo:active, or pmo:closed');
@@ -201,9 +193,7 @@ function analyzeLifecycle(issue) {
     errors.push(`conflicting lifecycle labels: ${lifecycleLabels.join(', ')}`);
     remediation.push('Keep exactly one lifecycle label');
   }
-
   const lifecycle = lifecycleLabels.length === 1 ? LIFECYCLE_FROM_LABEL[lifecycleLabels[0]] : null;
-
   if (issue.state === 'closed' && lifecycle !== 'closed') {
     errors.push('closed GitHub issue is not reconciled to pmo:closed');
     remediation.push('Add pmo:closed and remove other lifecycle labels');
@@ -212,62 +202,27 @@ function analyzeLifecycle(issue) {
     errors.push('open GitHub issue carries pmo:closed');
     remediation.push('Close the GitHub issue or replace pmo:closed with pmo:pipeline or pmo:active');
   }
-
   return { lifecycle, errors, remediation };
 }
 
-function analyzePriority(issue) {
-  const issueLabels = labels(issue);
-  const priorityLabels = issueLabels.filter((label) => label.startsWith('pmo:priority:'));
+function analyzeStage(issue, lifecycle, queueRole) {
+  const stageLabels = labels(issue).filter((label) => label.startsWith('pmo:stage:'));
   const errors = [];
   const remediation = [];
-
-  if (priorityLabels.includes(PRIORITY_NONE)) {
-    errors.push('prohibited priority label pmo:priority:none');
-    remediation.push('Replace pmo:priority:none with a numeric pmo:priority:<N> or pmo:priority:idea');
-  }
-
-  const accepted = priorityLabels.filter((label) => label === PRIORITY_IDEA || PRIORITY_NUMERIC.test(label));
-  if (accepted.length === 0 && !priorityLabels.includes(PRIORITY_NONE)) {
-    if (priorityLabels.length === 0) {
-      errors.push('missing priority label');
-      remediation.push('Add exactly one accepted priority label (pmo:priority:<N> or pmo:priority:idea)');
-    } else {
-      errors.push(`unsupported priority label(s): ${priorityLabels.join(', ')}`);
-      remediation.push('Use pmo:priority:<N> or pmo:priority:idea only');
+  if (queueRole === 'task') {
+    if (stageLabels.length) {
+      errors.push(`project child carries Pipeline stage label(s): ${stageLabels.join(', ')}`);
+      remediation.push('Remove Pipeline stage labels from project children');
     }
-  } else if (accepted.length > 1) {
-    errors.push(`conflicting priority labels: ${accepted.join(', ')}`);
-    remediation.push('Keep exactly one accepted priority label');
+    return { pipelineStageLabel: null, pipelineStageDisplay: null, stageOrder: null, errors, remediation };
   }
-
-  const priorityLabel = accepted.length === 1 ? accepted[0] : null;
-  let priorityDisplay = null;
-  if (priorityLabel === PRIORITY_IDEA) priorityDisplay = 'Idea';
-  else if (priorityLabel) {
-    const match = priorityLabel.match(PRIORITY_NUMERIC);
-    priorityDisplay = match ? match[1] : null;
-  }
-
-  return { priorityLabel, priorityDisplay, errors, remediation };
-}
-
-function analyzeStage(issue, lifecycle) {
-  const issueLabels = labels(issue);
-  const stageLabels = issueLabels.filter((label) => label.startsWith('pmo:stage:'));
-  const errors = [];
-  const remediation = [];
-
   if (lifecycle !== 'pipeline') {
-    return {
-      pipelineStageLabel: null,
-      pipelineStageDisplay: null,
-      stageOrder: null,
-      errors,
-      remediation
-    };
+    if (stageLabels.length) {
+      errors.push(`non-Pipeline issue carries stage label(s): ${stageLabels.join(', ')}`);
+      remediation.push('Remove Pipeline stage labels outside the Pipeline lifecycle');
+    }
+    return { pipelineStageLabel: null, pipelineStageDisplay: null, stageOrder: null, errors, remediation };
   }
-
   const accepted = stageLabels.filter((label) => STAGE_DISPLAY[label]);
   if (stageLabels.length === 0) {
     errors.push('missing pipeline-stage label');
@@ -276,7 +231,6 @@ function analyzeStage(issue, lifecycle) {
     errors.push(`invalid pipeline-stage label(s): ${stageLabels.join(', ')}`);
     remediation.push('Keep exactly one supported pmo:stage:* label');
   }
-
   const pipelineStageLabel = accepted.length === 1 && stageLabels.length === 1 ? accepted[0] : null;
   return {
     pipelineStageLabel,
@@ -292,9 +246,10 @@ function classifyTrackedIssue(issue, byNumber) {
   const remediation = [];
   const issueLabels = labels(issue);
   const type = titleType(issue.title);
-  const isTask = hasTaskLabel(issue);
-  const parentIssueNumber = parseParentReference(issue);
+  const explicitTask = hasTaskLabel(issue);
   const childMeta = parseChildProject(issue.title);
+  const parentIssueNumber = parseParentReference(issue);
+  let role = explicitTask ? 'task' : 'portfolio';
 
   if (!issue.number) {
     errors.push('missing issue identity');
@@ -305,21 +260,7 @@ function classifyTrackedIssue(issue, byNumber) {
     remediation.push('Ensure the GitHub issue URL is present in generated output');
   }
 
-  const life = analyzeLifecycle(issue);
-  errors.push(...life.errors);
-  remediation.push(...life.remediation);
-
-  const priority = analyzePriority(issue);
-  errors.push(...priority.errors);
-  remediation.push(...priority.remediation);
-
-  const stage = analyzeStage(issue, life.lifecycle);
-  errors.push(...stage.errors);
-  remediation.push(...stage.remediation);
-
-  let role = 'portfolio';
-  if (isTask) {
-    role = 'task';
+  if (explicitTask) {
     if (!parentIssueNumber) {
       errors.push('task is missing a valid parent reference');
       remediation.push('Add a Parent / Parent program / Parent project body field referencing #<parentIssue>');
@@ -339,6 +280,19 @@ function classifyTrackedIssue(issue, byNumber) {
     remediation.push('Use a supported portfolio title prefix, or mark genuine tasks with pmo:task and a valid parent');
   }
 
+  const life = analyzeLifecycle(issue);
+  errors.push(...life.errors);
+  remediation.push(...life.remediation);
+
+  const queueRole = explicitTask || childMeta ? 'task' : role;
+  const queue = analyzeQueueLabels({ labels: issueLabels, lifecycle: life.lifecycle, role: queueRole });
+  errors.push(...queue.errors);
+  remediation.push(...queue.remediation);
+
+  const stage = analyzeStage(issue, life.lifecycle, queueRole);
+  errors.push(...stage.errors);
+  remediation.push(...stage.remediation);
+
   const incomplete = errors.length > 0;
   return {
     role,
@@ -347,8 +301,9 @@ function classifyTrackedIssue(issue, byNumber) {
     parentIssueNumber,
     lifecycle: incomplete ? 'incomplete' : life.lifecycle,
     rawLifecycle: life.lifecycle,
-    priorityLabel: priority.priorityLabel,
-    priorityDisplay: priority.priorityDisplay,
+    teamLabel: queue.teamLabel,
+    priorityLabel: queue.priorityLabel,
+    priorityDisplay: queue.priorityDisplay,
     pipelineStageLabel: stage.pipelineStageLabel,
     pipelineStageDisplay: stage.pipelineStageDisplay,
     stageOrder: stage.stageOrder,
@@ -375,9 +330,7 @@ function buildTaskIndex(classifications) {
     if (!tasksByParent.has(parent)) tasksByParent.set(parent, []);
     tasksByParent.get(parent).push(entry);
   }
-  for (const tasks of tasksByParent.values()) {
-    tasks.sort((a, b) => a.issue.number - b.issue.number);
-  }
+  for (const tasks of tasksByParent.values()) tasks.sort((a, b) => a.issue.number - b.issue.number);
   return tasksByParent;
 }
 
@@ -387,15 +340,13 @@ function taskAccountingFor(parentNumber, tasksByParent) {
   const completedTaskIssueNumbers = tasks
     .filter((task) => task.rawLifecycle === 'closed')
     .map((task) => task.issue.number);
-  const taskCount = declaredTaskIssueNumbers.length;
-  const tasksCompleted = completedTaskIssueNumbers.length;
   return {
     parentIssueNumber: parentNumber,
     declaredTaskIssueNumbers,
     missingTaskIssueNumbers: [],
     completedTaskIssueNumbers,
-    taskCount,
-    tasksCompleted
+    taskCount: declaredTaskIssueNumbers.length,
+    tasksCompleted: completedTaskIssueNumbers.length
   };
 }
 
@@ -405,24 +356,6 @@ function buildRow(entry, tasksByParent) {
   const percentComplete = accounting.taskCount > 0
     ? Math.round((accounting.tasksCompleted / accounting.taskCount) * 100)
     : null;
-
-  if (accounting.tasksCompleted > accounting.taskCount) {
-    classification.dataQualityErrors.push('tasksCompleted exceeds taskCount');
-    classification.requiredRemediation.push('Repair linked pmo:task lifecycle labels so completed tasks cannot exceed total tasks');
-    classification.incomplete = true;
-    classification.lifecycle = 'incomplete';
-  }
-
-  const expectedPercent = accounting.taskCount > 0
-    ? Math.round((accounting.tasksCompleted / accounting.taskCount) * 100)
-    : null;
-  if (percentComplete !== expectedPercent) {
-    classification.dataQualityErrors.push('percentComplete does not match task accounting');
-    classification.requiredRemediation.push('Regenerate task accounting from linked pmo:task issues');
-    classification.incomplete = true;
-    classification.lifecycle = 'incomplete';
-  }
-
   return {
     type: classification.type,
     name: displayName(issue),
@@ -431,6 +364,7 @@ function buildRow(entry, tasksByParent) {
     issueUrl: issue.html_url,
     labels: classification.labels,
     lifecycle: classification.incomplete ? 'incomplete' : classification.lifecycle,
+    teamLabel: classification.teamLabel,
     priorityLabel: classification.priorityLabel,
     priorityDisplay: classification.incomplete
       ? (classification.priorityDisplay || 'Remediation required')
@@ -458,7 +392,7 @@ function buildRow(entry, tasksByParent) {
 }
 
 function prioritySortValue(row) {
-  if (row.priorityLabel === PRIORITY_IDEA) return Number.POSITIVE_INFINITY;
+  if (row.priorityLabel === 'eng:priority:idea') return Number.POSITIVE_INFINITY;
   const parsed = Number(row.priorityDisplay);
   return Number.isFinite(parsed) ? parsed : Number.POSITIVE_INFINITY - 1;
 }
@@ -496,20 +430,17 @@ function incompleteSort(a, b) {
 function assembleViews(entries) {
   const activeParentNumbers = new Set(
     entries
-      .filter((e) => !e.row.dataQualityErrors?.length && e.row.lifecycle === 'active' && e.row.type === 'program')
-      .map((e) => e.row.issueNumber)
+      .filter((entry) => !entry.row.dataQualityErrors?.length && entry.row.lifecycle === 'active' && entry.row.type === 'program')
+      .map((entry) => entry.row.issueNumber)
   );
   const completedParentNumbers = new Set(
     entries
-      .filter((e) => !e.row.dataQualityErrors?.length && e.row.lifecycle === 'closed' && e.row.type === 'program')
-      .map((e) => e.row.issueNumber)
+      .filter((entry) => !entry.row.dataQualityErrors?.length && entry.row.lifecycle === 'closed' && entry.row.type === 'program')
+      .map((entry) => entry.row.issueNumber)
   );
-
   const childrenByParent = new Map();
   for (const entry of entries) {
-    if (!entry.classification.childMeta) continue;
-    if (entry.row.lifecycle === 'incomplete') continue;
-    if (entry.classification.role !== 'portfolio') continue;
+    if (!entry.classification.childMeta || entry.row.lifecycle === 'incomplete' || entry.classification.role !== 'portfolio') continue;
     const parent = entry.classification.childMeta.parentProgramIssue;
     if (!childrenByParent.has(parent)) childrenByParent.set(parent, []);
     childrenByParent.get(parent).push(entry);
@@ -517,58 +448,31 @@ function assembleViews(entries) {
   for (const children of childrenByParent.values()) {
     children.sort((a, b) => a.classification.childMeta.sequence - b.classification.childMeta.sequence);
   }
-
   function attachChildren(parentEntry) {
     const children = childrenByParent.get(parentEntry.row.issueNumber) || [];
-    if (!children.length) return;
-    parentEntry.row.children = children.map((child) => child.row);
+    if (children.length) parentEntry.row.children = children.map((child) => child.row);
   }
-
-  function isNestedUnderActiveParent(entry) {
-    return entry.classification.childMeta
-      && activeParentNumbers.has(entry.classification.childMeta.parentProgramIssue);
-  }
-
-  function isNestedUnderCompletedParent(entry) {
-    return entry.classification.childMeta
-      && completedParentNumbers.has(entry.classification.childMeta.parentProgramIssue);
-  }
-
-  const views = {
-    activePrograms: [],
-    pmoPipeline: [],
-    completedPrograms: [],
-    incomplete: []
-  };
-
+  const views = { activePrograms: [], pmoPipeline: [], completedPrograms: [], incomplete: [] };
   for (const entry of entries) {
     if (entry.classification.role === 'task' && !entry.classification.incomplete) continue;
-
     if (entry.row.lifecycle === 'incomplete' || entry.classification.incomplete) {
       views.incomplete.push(entry.row);
       continue;
     }
-
+    const parent = entry.classification.childMeta?.parentProgramIssue;
     if (entry.row.lifecycle === 'active') {
-      if (entry.classification.childMeta && isNestedUnderActiveParent(entry)) continue;
+      if (parent && activeParentNumbers.has(parent)) continue;
       if (entry.row.type === 'program') attachChildren(entry);
       views.activePrograms.push(entry.row);
-      continue;
-    }
-
-    if (entry.row.lifecycle === 'pipeline') {
-      if (isNestedUnderActiveParent(entry)) continue;
+    } else if (entry.row.lifecycle === 'pipeline') {
+      if (parent && activeParentNumbers.has(parent)) continue;
       views.pmoPipeline.push(entry.row);
-      continue;
-    }
-
-    if (entry.row.lifecycle === 'closed') {
-      if (isNestedUnderActiveParent(entry) || isNestedUnderCompletedParent(entry)) continue;
+    } else if (entry.row.lifecycle === 'closed') {
+      if (parent && (activeParentNumbers.has(parent) || completedParentNumbers.has(parent))) continue;
       if (entry.row.type === 'program') attachChildren(entry);
       views.completedPrograms.push(entry.row);
     }
   }
-
   views.activePrograms.sort(activeSort);
   views.pmoPipeline.sort(pipelineSort);
   views.completedPrograms.sort(completedSort);
@@ -580,59 +484,46 @@ async function main() {
   const excluded = await loadExcludedIssueNumbers();
   const issues = await fetchIssues('all');
   const byNumber = new Map(issues.map((issue) => [issue.number, issue]));
-
   const classificationEntries = [];
   for (const issue of issues) {
     if (!isPmoTracked(issue) || excluded.has(issue.number)) continue;
-    const classification = classifyTrackedIssue(issue, byNumber);
-    classificationEntries.push({ issue, classification });
+    if (isStandaloneOperationsIssue(issue) || isPeerEngineeringPreparation(issue)) continue;
+    classificationEntries.push({ issue, classification: classifyTrackedIssue(issue, byNumber) });
   }
-
   const classificationByNumber = new Map(
     classificationEntries.map((entry) => [entry.issue.number, { ...entry.classification, issue: entry.issue }])
   );
   const tasksByParent = buildTaskIndex(classificationByNumber);
-
   const built = [];
   const taskAccounting = [];
   for (const entry of classificationEntries) {
     const row = buildRow(entry, tasksByParent);
-    built.push({
-      issue: entry.issue,
-      classification: entry.classification,
-      row
-    });
+    built.push({ issue: entry.issue, classification: entry.classification, row });
     if (entry.classification.role === 'portfolio' || entry.classification.incomplete) {
       taskAccounting.push(taskAccountingFor(entry.issue.number, tasksByParent));
     }
   }
-
-  // Ensure every parent that has linked tasks also has an accounting entry even if the parent is excluded from standalone emission later.
   for (const parentNumber of tasksByParent.keys()) {
     if (!taskAccounting.some((entry) => entry.parentIssueNumber === parentNumber)) {
       taskAccounting.push(taskAccountingFor(parentNumber, tasksByParent));
     }
   }
-
   const views = assembleViews(built);
   taskAccounting.sort((a, b) => a.parentIssueNumber - b.parentIssueNumber);
-
   const topLevelCount = Object.values(views).reduce((sum, view) => sum + view.length, 0);
   const nestedCount = Object.values(views).reduce(
-    (sum, view) => sum + view.reduce((n, row) => n + (row.children?.length || 0), 0),
+    (sum, view) => sum + view.reduce((count, row) => count + (row.children?.length || 0), 0),
     0
   );
-
   const data = {
     generatedAt: new Date().toISOString(),
     source: 'github-issues',
     repository: `${OWNER}/${REPO}`,
     trackingModel: 'pmo-label',
-    contractVersion: 'pmo-july-2026',
+    contractVersion: 'queue-label-registry-v1',
     views,
     taskAccounting
   };
-
   await mkdir(path.join(OUT_DIR, 'assets'), { recursive: true });
   await writeFile(path.join(OUT_DIR, 'dashboard-data.json'), `${JSON.stringify(data, null, 2)}\n`);
   await cp(path.join(__dirname, 'static/index.html'), path.join(OUT_DIR, 'index.html'));

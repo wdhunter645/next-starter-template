@@ -23,7 +23,7 @@ This report is an **audit artifact for #2360**. It does **not** promote Drive dr
 | --- | --- |
 | Parent program | #2359 |
 | Source issue | #2360 |
-| Intake branch | `atlas/drive-draft-intake-2367` |
+| Intake branch | `ChatGPT/drive-draft-intake-2367` |
 | Working branch | `cursor/2360-docs-audit-2e48` |
 | Intake folder | `_incoming/drive-drafts/content-collection/` |
 | Manifest | `_incoming/drive-drafts/content-collection/SOURCE-MANIFEST.md` |
@@ -244,7 +244,7 @@ ChatGPT reviewed the Phase 0 handoff on #2360 with status `disposition-approved-
 - No CI-001 / CI-002 tooling packages
 - No CC-001 / CC-002 as new parallel contracts
 - No issue-body packs as standalone docs
-- Scrub Codex language, legacy Atlas terminology, and merge/authorization drift from Runbook v2
+- Scrub Codex language, legacy ChatGPT terminology, and merge/authorization drift from Runbook v2
 
 **Remapped target paths (per ChatGPT C7):**
 

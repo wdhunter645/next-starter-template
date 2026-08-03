@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Authority
 Owns: Program #2040 readiness decision, content publication support boundaries, child-task sequence, approval-state requirements, and launch preconditions
 Does Not Own: Program #1738 source collection rules, Program #2039 club staging implementation, merge authority, production secrets, or public content approval decisions
@@ -87,7 +87,7 @@ Cursor implementation may begin only when:
 
 1. Program #1738 produces manual workflow evidence.
 2. Program #2039 provides or confirms the required admin staging surface for the relevant task.
-3. Bill/Atlas assign a specific Program #2040 child task issue.
+3. Bill/ChatGPT assign a specific Program #2040 child task issue.
 4. The assigned task identifies its own file-touch boundary.
 5. The PR body cites exactly one source issue.
 6. The task stops at `READY FOR REVIEW`.
@@ -98,4 +98,4 @@ Program #2040 may support publication operations, but public route exposure must
 
 ## Closeout requirement
 
-Program #2040 closeout requires terminal Task #2056 evidence, validation of publication-state controls, rollback/unpublish evidence, and explicit Bill/Atlas acceptance.
+Program #2040 closeout requires terminal Task #2056 evidence, validation of publication-state controls, rollback/unpublish evidence, and explicit Bill/ChatGPT acceptance.

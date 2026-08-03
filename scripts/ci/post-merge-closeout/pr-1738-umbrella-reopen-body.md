@@ -3,7 +3,7 @@
 
 ## QUEUE / DEPENDENCY MAP STATUS
 - Dependency-map result: not-applicable — Program #1738 umbrella reopen after Task 008 merge closeout
-- Next queue item: halt — await Bill/Atlas program acceptance
+- Next queue item: halt — await Bill/ChatGPT program acceptance
 - Continue/halt decision: halt
 
 ## PROGRESS + READINESS (MANDATORY)
@@ -26,7 +26,7 @@ All other files are out of scope
 
 ## CHANGE SUMMARY
 - Reopen Program #1738 umbrella after child task merge closeout replay.
-- Preserve program open pending Bill/Atlas acceptance of Task 008 handoff.
+- Preserve program open pending Bill/ChatGPT acceptance of Task 008 handoff.
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:

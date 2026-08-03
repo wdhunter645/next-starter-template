@@ -23,7 +23,7 @@ This document is a Program 3 portfolio project candidate. It does not launch imp
 
 Program 3 is a rotating portfolio planning/execution lane. The Club Home page design belongs in Program 3 because it is an approved portfolio-style project candidate that can build on Program 2 website/content infrastructure and Program 1 PMO execution controls.
 
-This project should not be placed in Program 5 unless Bill/Atlas decide it is not yet portfolio-ready.
+This project should not be placed in Program 5 unless Bill/ChatGPT decide it is not yet portfolio-ready.
 
 ## Existing production feature-link design authority
 

@@ -73,7 +73,7 @@ T40–T49 (`#1118`–`#1127`) are reconciled under `#1258`. See
 
 ## Recommended disposition comments (deferred)
 
-Atlas/Bill may authorize Task 008 to publish copy-paste disposition comments for
+ChatGPT/Bill may authorize Task 008 to publish copy-paste disposition comments for
 `#943`–`#947`, `#1013`–`#1017`, `#1108`–`#1111`, and a bounded disposition for
 `#1112` (partially satisfied with H-011 caveat). This planning pass does **not**
 execute that batch.

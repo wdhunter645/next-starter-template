@@ -1,5 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { evaluatePrPreflight } from '../scripts/ci/pr_preflight.mjs';
+import { parseImplementationActor } from '../scripts/ci/reviewer_lifecycle_gate.mjs';
 
 function metadataBody(overrides = {}, prClass = 'ci', allowedPaths = null) {
   const values = {
@@ -10,7 +13,7 @@ function metadataBody(overrides = {}, prClass = 'ci', allowedPaths = null) {
     deliveryModel: 'A',
     changeMode: 'project',
     targetEnvironment: 'production',
-    approvalProfile: 'chat-bill-production',
+    approvalProfile: 'work-bill-production',
     gateProfile: 'production-candidate',
     rollbackProfile: 'one-step',
     componentBranch: 'not-applicable',
@@ -181,7 +184,7 @@ describe('pr preflight profile routing', () => {
         metadata: {
           deliveryModel: 'B-promotion',
           targetEnvironment: 'production',
-          approvalProfile: 'chat-bill-production',
+          approvalProfile: 'work-bill-production',
           gateProfile: 'component-promotion',
           rollbackProfile: 'multi-step',
           componentBranch: 'component/delivery-system-v1',
@@ -313,5 +316,86 @@ describe('pr preflight evidence surfaces', () => {
 
     expect(result.reviewThreadResult.status).toBe('fail');
     expect(result.result).toBe('fail');
+  });
+
+  it('fails when the implementation identity approves its own PR', () => {
+    const result = runPreflight({}, {
+      pr: { author: { login: 'codex' } },
+      reviews: [{
+        user: { login: 'codex' },
+        state: 'APPROVED',
+        commit_id: 'head-sha',
+      }],
+    });
+
+    expect(result.reviewThreadResult.blockingReasons).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'implementer-self-approval' }),
+    ]));
+    expect(result.result).toBe('fail');
+  });
+
+  it('accepts Work approval when Work and the implementer share a GitHub login', () => {
+    const result = runPreflight({}, {
+      pr: {
+        author: { login: 'wdhunter645' },
+        implementationActor: 'codex',
+      },
+      reviews: [{
+        user: { login: 'wdhunter645' },
+        body: 'Reviewer actor: Work',
+        state: 'APPROVED',
+        commit_id: 'head-sha',
+      }],
+    });
+
+    expect(result.reviewThreadResult.blockingReasons).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'implementer-self-approval' }),
+    ]));
+    expect(result.result).toBe('pass');
+  });
+
+  it('rejects Codex approval attestation when actors share a GitHub login', () => {
+    const result = runPreflight({}, {
+      pr: {
+        author: { login: 'wdhunter645' },
+        implementationActor: 'codex',
+      },
+      reviews: [{
+        user: { login: 'wdhunter645' },
+        body: 'Reviewer actor: Codex\nDecision: APPROVED',
+        state: 'COMMENTED',
+        commit_id: 'head-sha',
+      }],
+    });
+
+    expect(result.reviewThreadResult.blockingReasons).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'implementer-self-approval' }),
+    ]));
+    expect(result.result).toBe('fail');
+  });
+
+});
+
+
+describe('reviewer lifecycle actor metadata parsing', () => {
+  it('reads the implementation actor from standard bulleted PR metadata', () => {
+    const body = '# PR Summary\n\n- Implementation agent: Codex\n- Independent reviewer: ChatGPT Work';
+
+    expect(parseImplementationActor(body)).toBe('Codex');
+  });
+
+  it('reads the implementation actor from unbulleted PR metadata', () => {
+    const body = '# PR Summary\n\nImplementation agent: Codex\nIndependent reviewer: ChatGPT Work';
+
+    expect(parseImplementationActor(body)).toBe('Codex');
+  });
+
+  it('uses the canonical regex metacharacter escape class', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'scripts/ci/reviewer_lifecycle_gate.mjs'),
+      'utf8',
+    );
+
+    expect(source).toContain("field.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')");
   });
 });

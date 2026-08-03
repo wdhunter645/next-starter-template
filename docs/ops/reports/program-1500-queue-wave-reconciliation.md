@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Bill, Atlas, Cursor, LGFC maintainers, and implementation agents
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, and implementation agents
 Authority Level: Controlled
 Owns: Program #1500 closeout reconciliation against Priority #3 queue/wave planning, post-merge closeout evidence inventory, queue/wave lane status, and ownership boundaries after Program #1500 closure
 Does Not Own: Runtime workflow implementation, GitHub issue mutation, merge authority, Program #1500 reopening, or automatic Cursor execution authorization beyond the assigned source issue
@@ -26,7 +26,7 @@ closeout surface on `main`.
    Program #1500. Future CI maintenance requires a new source issue.
 3. **This document does not authorize automatic Cursor execution.** Cursor may
    act only on an explicitly assigned, open source issue with a defined file-touch
-   allowlist and Bill/Atlas execution authorization where required.
+   allowlist and Bill/ChatGPT execution authorization where required.
 4. **This report is documentation-only.** It does not change workflows, CI
    scripts, issue labels, or issue state.
 
@@ -58,7 +58,7 @@ Primary evidence chain:
 | **1. Shift closeout contract validation left** — PR metadata, allowlist, placeholders, and reviewer dispositions checked before merge | Task 001 (#1544); PR #1552 merged; Bill sign-off 2026-06-11 | `gate-post-merge-readiness.yml` and `scripts/ci/post_merge_readiness_gate.mjs` enforce pre-merge closeout-readiness contract | Validator exports must stay aligned when PR template or gate parsers change | **Closed.** Pre-merge contract owned by CI maintenance via future scoped issues, not #1500 |
 | **2. Consolidate post-merge closeout ownership** — single automatic owner for merged PRs to `main` | Task 002 (#1545); PR #1567 merged | `.github/workflows/post-merge-closeout.yml` is the sole automatic closeout owner; support workflows have bounded roles | Manual/backfill paths (`post-merge-pr-body-closeout.yml`) must not become competing automatic owners | **Closed.** Automatic ownership model is as-built truth; changes require new CI source issue |
 | **3. Improve failure-path label hygiene** — failed closeout must not leave ambiguous active/complete labels | Task 003 (#1546); closeout scripts and docs updated | Validation failure stops closeout; terminal label reconciliation documented in closeout protocol | Operators must still verify label state on exception paths | **Closed.** Label hygiene for closeout paths delivered; broader PMO label automation deferred |
-| **4. Stabilize remediation manifest cleanup and batch handling** | Task 004 (#1547); PR #1647 evidence | Manifest/backfill behavior documented; bounded batch closeout in closeout protocol | Batch closeout still requires explicit Atlas/Bill authorization | **Closed.** Manifest hygiene delivered; batch policy remains operator-governed |
+| **4. Stabilize remediation manifest cleanup and batch handling** | Task 004 (#1547); PR #1647 evidence | Manifest/backfill behavior documented; bounded batch closeout in closeout protocol | Batch closeout still requires explicit ChatGPT/Bill authorization | **Closed.** Manifest hygiene delivered; batch policy remains operator-governed |
 | **5. Reconcile CI/orchestration docs and deprecated workflows** | Task 005 (#1548); PR #1660; doc package #1674 | Guardrails map, workflow inventory excerpt, post-merge surface, as-built reconciliation, and closeout protocol aligned | Full mechanical workflow inventory rewrite remains deferred CI maintenance | **Closed.** Closeout documentation surface reconciled; inventory expansion is separate work |
 | **Umbrella/program issue protection** — prevent accidental closure of program umbrellas | Governance policy in closeout protocol and PR template; #1699 umbrella closeout guard context | Source-issue selection and PR-body/operator policy; no runtime classifier | Runtime umbrella/program classification **not** implemented by #1500 | **Deferred to future CI hardening** (#1726 candidate scoping), not incomplete #1500 scope |
 
@@ -90,17 +90,17 @@ Support paths (bounded, not automatic owners):
 | **Completed lanes** | Program #1259 Phase 4 (Website QA Tasks 001–009) | **Complete on `main`** | Child issue open pending #1255 terminal closeout |
 | **Completed lanes** | #1448 rebaseline | **Closed complete** | No active halt checkpoint |
 | **Completed lanes** | Queue/wave execution-mode documentation | **Published** | Mode A (one-task handoff) and Mode B (launched-program queue) in dependency-map reference |
-| **Active follow-on lanes** | Program #1255 terminal closeout | **Active — inspection pending** | Awaits Atlas/Bill authorization; see `docs/ops/reports/program-1255-closeout-readiness.md` |
+| **Active follow-on lanes** | Program #1255 terminal closeout | **Active — inspection pending** | Awaits ChatGPT/Bill authorization; see `docs/ops/reports/program-1255-closeout-readiness.md` |
 | **Active follow-on lanes** | Priority #3 #1719 Task 006 (#1725) | **Active — this reconciliation** | Docs-only; no workflow rebuild |
 | **Blocked lanes** | Priority #3 Tasks 001–005 (#1720–#1724) | **Open — not yet merged** | Serial predecessors per implementation-plan dependency map; halt until each task PR merges |
 | **Blocked lanes** | Priority #3 Task 007 (#1726) | **Blocked** | Halt until Task 006 (#1725) merges per dependency map |
 | **Blocked lanes** | Priority #3 Task 008 (#1727) | **Blocked** | Terminal closeout; requires Tasks 001–007 evidence |
 | **Blocked lanes** | Priority #1 #1685 (Website Completion) | **Parked** | Launch-control ready; blocked until explicit reprioritization |
 | **Blocked lanes** | Priority #2 #1700 (Fundraiser Operations) | **Queued** | Behind #1255/#1259 and parked Priority #1 |
-| **Blocked lanes** | Priority #3 full program launch (#1720 entry) | **Queued** | Program #1719 remains launch-control ready; global queue behind active #1255 work unless Bill/Atlas reprioritize |
+| **Blocked lanes** | Priority #3 full program launch (#1720 entry) | **Queued** | Program #1719 remains launch-control ready; global queue behind active #1255 work unless Bill/ChatGPT reprioritize |
 | **Blocked lanes** | Wave/queue label automation | **Planning only** | Labels/run IDs are concepts until Task 007+ explicitly scopes implementation candidates |
 | **Next authorized task boundary** | After #1725 merge | **#1726** — Workflow/CI implementation candidate scoping | Read-only workflow/script inventory; docs-only unless a future issue authorizes YAML/script edits |
-| **Next authorized task boundary** | Program #1255 | **Atlas/Bill terminal inspection** | Close #1259 then #1255 when authorized — separate from #1719 chain |
+| **Next authorized task boundary** | Program #1255 | **ChatGPT/Bill terminal inspection** | Close #1259 then #1255 when authorized — separate from #1719 chain |
 | **Next authorized task boundary** | CI maintenance from #1500 deferred register | **New source issue required** | Full inventory rewrite, branch protection UI, legacy workflow retirement, runtime umbrella classifier |
 
 ### Priority #3 dependency map (reference)

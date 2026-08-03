@@ -107,7 +107,7 @@ All other files are out of scope.
 - Defines the five required outcomes and deterministic outcome precedence.
 - Lists repository-only evidence inputs and fail-closed escalation boundaries.
 - Documents example fixtures for all required outcomes.
-- Preserves the invariant that self-healing cannot bypass PR governance or Bill/Atlas merge authorization.
+- Preserves the invariant that self-healing cannot bypass PR governance or Bill/ChatGPT merge authorization.
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
@@ -194,7 +194,7 @@ Reviewer items (required format for gate parsing):
 - [x] Classifier safety model is documented.
 - [x] Safe vs unsafe decisions are deterministic.
 - [x] Documented examples exist for `safe_auto_fix`, `cursor_remediation_required`, `operator_authorization_required`, `intentionally_deferred`, and `no_action`.
-- [x] Invariant documented: self-healing cannot bypass PR governance or Bill/Atlas merge authorization.
+- [x] Invariant documented: self-healing cannot bypass PR governance or Bill/ChatGPT merge authorization.
 - [x] Task 002 behavior is not implemented in this PR.
 
 ## REQUIRED PRE-REVIEW SELF-CHECK

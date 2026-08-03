@@ -19,8 +19,8 @@ Last Reviewed: 2026-06-05
 4. Inspect only the files needed for the task.
 5. Edit only files inside the allowlist.
 6. Run the required validation commands.
-7. Prepare a review packet for Atlas.
-8. Open a PR only after Atlas or Bill authorizes PR creation.
+7. Prepare a review packet for ChatGPT.
+8. Open a PR only after ChatGPT or Bill authorizes PR creation.
 
 ## Stop Conditions
 

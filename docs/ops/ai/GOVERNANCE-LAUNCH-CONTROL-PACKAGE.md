@@ -1,9 +1,9 @@
 ---
 Doc Type: Operational Rules
-Audience: Bill, Atlas, Cursor, Codex, LGFC maintainers, implementation agents, and governance reviewers
+Audience: Bill, ChatGPT, Cursor, Codex, LGFC maintainers, implementation agents, and governance reviewers
 Authority Level: Operational Authority
 Owns: Governance program launch-control package, program-prep workflow, master/child issue structure, Cursor pre-implementation checkpoint, authorization gates, stop points, verification and rollback doctrine for governance closeout continuation after Program #1500 Task 001
-Does Not Own: Runtime implementation, workflow YAML, CI script execution, branch protection UI configuration, issue creation before Bill/Atlas authorization, merge authority, Program #1500 Task 001 gate code (already merged in PR #1552)
+Does Not Own: Runtime implementation, workflow YAML, CI script execution, branch protection UI configuration, issue creation before Bill/ChatGPT authorization, merge authority, Program #1500 Task 001 gate code (already merged in PR #1552)
 Canonical Reference: /docs/ops/trackers/PROGRAM-1500-CLOSEOUT-STABILIZATION-IMPLEMENTATION-QUEUE.md
 Related Issues: #1755, #1500, #1544, #1545, #1546, #1547, #1548
 Last Reviewed: 2026-06-17
@@ -11,7 +11,7 @@ Last Reviewed: 2026-06-17
 
 # Governance Launch-Control Package
 
-> This package is **launch-control ready for review only**. It does not authorize Cursor implementation, child issue creation, workflow edits, or branch protection changes until Bill/Atlas explicitly authorize the next phase.
+> This package is **launch-control ready for review only**. It does not authorize Cursor implementation, child issue creation, workflow edits, or branch protection changes until Bill/ChatGPT explicitly authorize the next phase.
 
 ## Purpose
 
@@ -23,7 +23,7 @@ The package defines:
 - what **launch-control ready** means for governance program continuation;
 - the program-prep workflow, master issue structure, and child issue queue for Program #1500 Tasks 002–005;
 - Cursor review/comment checkpoints before any implementation agent starts;
-- Bill/Atlas authorization gates and continuous execution stop points;
+- Bill/ChatGPT authorization gates and continuous execution stop points;
 - verification, rollback, non-goals, risks, and closeout criteria.
 
 Companion draft automation concepts live in `docs/reference/governance/governance-launch-control-reference-implementation.md`. That reference document is **not implemented** by this documentation package.
@@ -44,7 +44,7 @@ This document does not authorize implementation, create GitHub issues, modify wo
 
 ## Intended final state
 
-After Bill/Atlas accept this package and explicitly authorize launch:
+After Bill/ChatGPT accept this package and explicitly authorize launch:
 
 1. Cursor reviews the package and reference implementation and posts a pre-implementation comment checkpoint on the authorized master issue.
 2. Child implementation issues are created or assigned one at a time from the Program #1500 queue.
@@ -78,7 +78,7 @@ This package does **not** reopen, amend, or extend PR #1552. It packages the **r
 No Task 002+ implementation may start until:
 
 1. Task 001 merge and post-merge closeout are verified on `main`.
-2. Bill/Atlas explicitly assign the next child issue.
+2. Bill/ChatGPT explicitly assign the next child issue.
 3. Cursor completes the pre-implementation review checkpoint defined below.
 
 ---
@@ -93,14 +93,14 @@ A governance program package is **launch-control ready** when all of the followi
 | Predecessor completion is recorded | Task 001 / #1544 / PR #1552 merged and closeout verified |
 | Master issue structure is defined | See [Master issue structure](#master-issue-structure) |
 | Child issue templates and allowlists exist | Queue tracker child issue specifications for Tasks 002–005 |
-| Stop gates and authorization points are explicit | See [Bill/Atlas authorization gates](#billatlas-authorization-gates) and [Continuous execution stop points](#continuous-execution-stop-points) |
+| Stop gates and authorization points are explicit | See [Bill/ChatGPT authorization gates](#billatlas-authorization-gates) and [Continuous execution stop points](#continuous-execution-stop-points) |
 | Verification and rollback plans exist | See [Verification plan](#verification-plan) and [Rollback plan](#rollback-plan) |
 | Cursor pre-implementation checkpoint is defined | See [Cursor pre-implementation review/comment checkpoint](#cursor-pre-implementation-reviewcomment-checkpoint) |
 | Draft automation concepts are separated from implementation | Reference implementation doc marked draft/future only |
 | Non-goals and risks are recorded | See [Non-goals](#non-goals) and [Risk register](#risk-register) |
 | No mixed intent in the packaging PR | Issue #1755 docs-only allowlist satisfied |
 
-**Launch-control ready ≠ executable.** Launch-control ready means Bill/Atlas may review the package, Cursor may comment on feasibility, and child issues may be authorized. It does **not** authorize implementation by itself.
+**Launch-control ready ≠ executable.** Launch-control ready means Bill/ChatGPT may review the package, Cursor may comment on feasibility, and child issues may be authorized. It does **not** authorize implementation by itself.
 
 ---
 
@@ -117,9 +117,9 @@ Phase 1 — Package preparation (this issue #1755)
 Phase 2 — Cursor pre-implementation review (required before code)
   Cursor reads package + reference + queue tracker
   → Cursor posts checkpoint comment on authorized issue
-  → STOP until Bill/Atlas accept checkpoint
+  → STOP until Bill/ChatGPT accept checkpoint
 
-Phase 3 — Launch authorization (Bill/Atlas only)
+Phase 3 — Launch authorization (Bill/ChatGPT only)
   Explicit assignment on next child issue (#1545 first)
   → Optional child issue creation if not already present
   → One task → one issue → one PR
@@ -133,7 +133,7 @@ Phase 4 — Serial implementation (Tasks 002–005)
 Phase 5 — Program closeout (Task 005 terminal)
   Docs reconciliation + deprecated workflow headers
   → Queue halt at terminal task
-  → Bill/Atlas program sign-off
+  → Bill/ChatGPT program sign-off
 ```
 
 **Agent routing**
@@ -165,11 +165,11 @@ Phase 5 — Program closeout (Task 005 terminal)
 | Issue | `#1755` — Program prep: Governance launch-control package after Program #1500 Task 001 |
 | Type | Documentation packaging; not an implementation task |
 | Closes after merge | Yes — one-off prep issue |
-| Creates child issues | No — deferred to Bill/Atlas authorization |
+| Creates child issues | No — deferred to Bill/ChatGPT authorization |
 
 ### Required master-issue body sections (for future governance programs)
 
-When Bill/Atlas authorize a new governance master issue, the body must include:
+When Bill/ChatGPT authorize a new governance master issue, the body must include:
 
 1. **Objective** — single program outcome.
 2. **Background** — predecessor completion and problem statement.
@@ -222,7 +222,7 @@ Each child issue authorized for implementation must contain:
 ### Child issue creation policy
 
 - Do **not** create new child issues from this package.
-- Reuse existing `#1545`–`#1548` unless Bill/Atlas authorize replacement issues.
+- Reuse existing `#1545`–`#1548` unless Bill/ChatGPT authorize replacement issues.
 - One implementation PR per child issue only.
 - Successor tasks remain **halted** until predecessor merge and post-merge closeout verify.
 
@@ -264,7 +264,7 @@ Cursor posts a single checkpoint comment on the authorized issue:
 
 | Outcome | Action |
 | --- | --- |
-| `PROCEED` + Bill/Atlas assignment | Implementation may start on that child issue only |
+| `PROCEED` + Bill/ChatGPT assignment | Implementation may start on that child issue only |
 | `HALT` | Record blockers; no implementation until resolved |
 | Missing checkpoint | Implementation agents must stop |
 
@@ -272,17 +272,17 @@ Cursor must **not** open implementation PRs during the checkpoint phase.
 
 ---
 
-## Bill/Atlas authorization gates
+## Bill/ChatGPT authorization gates
 
 | Gate | Owner | Trigger | Pass condition |
 | --- | --- | --- | --- |
-| G1 — Package merge | Bill/Atlas | PR for #1755 ready for review | Docs package complete; verification green |
-| G2 — Launch-control acceptance | Bill/Atlas | After #1755 merge | Explicit comment that package is accepted for queue use |
-| G3 — Task assignment | Bill/Atlas | Before Task 002+ implementation | Assignment comment on child issue `#1545` (or authorized successor) |
-| G4 — Cursor checkpoint acceptance | Bill/Atlas | After Cursor checkpoint comment | Bill/Atlas acknowledge checkpoint; no blockers |
-| G5 — Protected-surface merge | Bill/Atlas + trusted reviewers | PR touches `.github/workflows/**` or `scripts/ci/**` | Required gates green; reviewer dispositions complete |
+| G1 — Package merge | Bill/ChatGPT | PR for #1755 ready for review | Docs package complete; verification green |
+| G2 — Launch-control acceptance | Bill/ChatGPT | After #1755 merge | Explicit comment that package is accepted for queue use |
+| G3 — Task assignment | Bill/ChatGPT | Before Task 002+ implementation | Assignment comment on child issue `#1545` (or authorized successor) |
+| G4 — Cursor checkpoint acceptance | Bill/ChatGPT | After Cursor checkpoint comment | Bill/ChatGPT acknowledge checkpoint; no blockers |
+| G5 — Protected-surface merge | Bill/ChatGPT + trusted reviewers | PR touches `.github/workflows/**` or `scripts/ci/**` | Required gates green; reviewer dispositions complete |
 | G6 — Branch protection update | Bill (operator) | After Task 001 merge if not already done | `post-merge-readiness` in required checks on `main` |
-| G7 — Queue advance | Bill/Atlas | After each task post-merge closeout | Explicit or queue-default advance to next child |
+| G7 — Queue advance | Bill/ChatGPT | After each task post-merge closeout | Explicit or queue-default advance to next child |
 
 No agent may bypass G3 or G4.
 
@@ -297,7 +297,7 @@ Agents must **STOP** immediately when:
 | S1 | No primary source issue or allowlist for the current task |
 | S2 | Predecessor task not merged and closeout-verified |
 | S3 | Cursor pre-implementation checkpoint missing or `HALT` |
-| S4 | Bill/Atlas assignment missing on the child issue |
+| S4 | Bill/ChatGPT assignment missing on the child issue |
 | S5 | Changed file outside task allowlist |
 | S6 | Mixed intent in one PR |
 | S7 | Attempt to modify closed #1544 or reopen PR #1552 as active work |
@@ -305,9 +305,9 @@ Agents must **STOP** immediately when:
 | S9 | Branch protection UI change attempted by agent |
 | S10 | Implementation started from reference implementation pseudocode without authorized issue |
 | S11 | Successor task started before predecessor post-merge closeout |
-| S12 | Authority conflict between queue tracker and issue body — escalate to Bill/Atlas |
+| S12 | Authority conflict between queue tracker and issue body — escalate to Bill/ChatGPT |
 
-**Resume rule:** Only Bill/Atlas may authorize resume after S3, S4, or S12.
+**Resume rule:** Only Bill/ChatGPT may authorize resume after S3, S4, or S12.
 
 ---
 
@@ -366,7 +366,7 @@ If pre-merge gate must be removed: revert `gate-post-merge-readiness.yml`, `post
 
 - Reopening, amending, or re-implementing PR #1552 or Task 001 deliverables.
 - Implementing pseudocode from the reference implementation document.
-- Creating child implementation issues without Bill/Atlas authorization.
+- Creating child implementation issues without Bill/ChatGPT authorization.
 - Launching Cursor or Codex on Tasks 002–005 from this documentation PR.
 - Modifying branch protection, GitHub settings, or required check configuration.
 - Expanding scope to Program #1255 website files, Priority #2 fundraiser program, or Priority #3 PMO governance program.
@@ -409,15 +409,15 @@ If pre-merge gate must be removed: revert `gate-post-merge-readiness.yml`, `post
 
 ### Program #1500 queue (after package acceptance — not #1755 scope)
 
-- [ ] Bill/Atlas accept launch-control package (G2).
+- [ ] Bill/ChatGPT accept launch-control package (G2).
 - [ ] Operator confirms `post-merge-readiness` on branch protection (G6) if not already done.
 - [ ] Cursor checkpoint completed on `#1545` before Task 002 implementation.
 - [ ] Tasks 002–005 executed serially with per-task closeout.
 - [ ] Task 005 terminal docs reconciliation merged.
-- [ ] Bill/Atlas program sign-off recorded on `#1500` or successor tracking issue.
+- [ ] Bill/ChatGPT program sign-off recorded on `#1500` or successor tracking issue.
 
 ---
 
 ## Final
 
-This package completes governance program preparation documentation after Program #1500 Task 001. Implementation remains blocked until Bill/Atlas authorize the next child issue and Cursor completes the pre-implementation checkpoint.
+This package completes governance program preparation documentation after Program #1500 Task 001. Implementation remains blocked until Bill/ChatGPT authorize the next child issue and Cursor completes the pre-implementation checkpoint.

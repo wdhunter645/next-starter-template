@@ -1,0 +1,1148 @@
+{
+  "sourceIssue": 2727,
+  "parentProject": 2702,
+  "generatedBy": "cursor-read-only-inventory",
+  "liveMutation": false,
+  "activeParents": [
+    {
+      "number": 2683,
+      "title": "OPS: Daily completed-work postmortem and assignment-conformance review",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2683",
+      "labels": [
+        "governance",
+        "pmo",
+        "agent:ChatGPT",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active"
+      ],
+      "missing": [
+        "team:pmo"
+      ],
+      "proposed": {
+        "team": "team:pmo",
+        "priority": "pmo:priority:1"
+      },
+      "quarantine": [],
+      "ready": false,
+      "autoTeamOnlyCandidate": "pmo:priority:1"
+    },
+    {
+      "number": 2682,
+      "title": "OPS: Daily PMO design factory and Cursor enrichment pipeline",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2682",
+      "labels": [
+        "governance",
+        "pmo",
+        "agent:ChatGPT",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active"
+      ],
+      "missing": [
+        "team:pmo"
+      ],
+      "proposed": {
+        "team": "team:pmo",
+        "priority": "pmo:priority:1"
+      },
+      "quarantine": [],
+      "ready": false,
+      "autoTeamOnlyCandidate": "pmo:priority:1"
+    },
+    {
+      "number": 2681,
+      "title": "TASK: Cursor Local Bridge recurring authentication and capacity preflight",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2681",
+      "labels": [
+        "ci",
+        "pmo",
+        "agent:ChatGPT",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active"
+      ],
+      "missing": [
+        "team:pmo"
+      ],
+      "proposed": {
+        "team": "team:pmo",
+        "priority": "pmo:priority:1"
+      },
+      "quarantine": [],
+      "ready": false,
+      "autoTeamOnlyCandidate": "pmo:priority:1"
+    },
+    {
+      "number": 2679,
+      "title": "OPS: Workflow transition SLO and daily 5 PM performance report",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2679",
+      "labels": [
+        "governance",
+        "ci",
+        "pmo",
+        "agent:ChatGPT",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active"
+      ],
+      "missing": [
+        "team:pmo"
+      ],
+      "proposed": {
+        "team": "team:pmo",
+        "priority": "pmo:priority:1"
+      },
+      "quarantine": [],
+      "ready": false,
+      "autoTeamOnlyCandidate": "pmo:priority:1"
+    },
+    {
+      "number": 2610,
+      "title": "PROJECT: PMO Dashboard Single-Authority Redesign and Production Recovery",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2610",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active"
+      ],
+      "missing": [
+        "team:pmo"
+      ],
+      "proposed": {
+        "team": "team:pmo",
+        "priority": "pmo:priority:1"
+      },
+      "quarantine": [],
+      "ready": false,
+      "autoTeamOnlyCandidate": "pmo:priority:1"
+    },
+    {
+      "number": 2546,
+      "title": "PROJECT: PMO Project-to-Cursor Autonomous Delivery Alignment",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2546",
+      "labels": [
+        "governance",
+        "documentation",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:priority:1",
+        "pmo:active",
+        "status:needs-human"
+      ],
+      "missing": [
+        "team:pmo"
+      ],
+      "proposed": {
+        "team": "team:pmo",
+        "priority": "pmo:priority:1"
+      },
+      "quarantine": [],
+      "ready": false,
+      "autoTeamOnlyCandidate": "pmo:priority:1"
+    },
+    {
+      "number": 2294,
+      "title": "PROJECT: Agent Issue Polling and Handoff Routing",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2294",
+      "labels": [
+        "governance",
+        "documentation",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:priority:1",
+        "pmo:active",
+        "status:needs-human"
+      ],
+      "missing": [
+        "team:pmo"
+      ],
+      "proposed": {
+        "team": "team:pmo",
+        "priority": "pmo:priority:1"
+      },
+      "quarantine": [],
+      "ready": false,
+      "autoTeamOnlyCandidate": "pmo:priority:1"
+    },
+    {
+      "number": 1719,
+      "title": "PROGRAM: PMO Governance / Workflow Automation Completion",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/1719",
+      "labels": [
+        "governance",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:priority:1",
+        "pmo:active",
+        "status:needs-human"
+      ],
+      "missing": [
+        "team:pmo"
+      ],
+      "proposed": {
+        "team": "team:pmo",
+        "priority": "pmo:priority:1"
+      },
+      "quarantine": [],
+      "ready": false,
+      "autoTeamOnlyCandidate": "pmo:priority:1"
+    }
+  ],
+  "pipelineParents": [
+    {
+      "number": 2680,
+      "title": "PROJECT: End-to-end workflow health observability and idle-time dashboard",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2680",
+      "labels": [
+        "ci",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:priority:1",
+        "pmo:stage:definition"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:definition"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:1",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2678,
+      "title": "PROJECT: Cumulative lane closeout evidence and bounded autonomy model",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2678",
+      "labels": [
+        "governance",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:priority:1",
+        "pmo:stage:definition"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:definition"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:1",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2677,
+      "title": "PROJECT: Deterministic Cursor handoff controller and continuous queue advancement",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2677",
+      "labels": [
+        "governance",
+        "ci",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:priority:1",
+        "pmo:stage:definition"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:definition"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:1",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2643,
+      "title": "FOLLOW-ON: #2639 administrative closeout and runtime automation hardening",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2643",
+      "labels": [
+        "status:queued",
+        "governance",
+        "ci",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:1"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*",
+        "pmo:stage:*"
+      ],
+      "proposed": {
+        "team": "team:engineering"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:1",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority",
+        "missing_pipeline_stage_no_inference"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2615,
+      "title": "PROJECT: Issue contract validation and label-triggered draft PR creation",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2615",
+      "labels": [
+        "status:blocked",
+        "program:planning",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:priority:1",
+        "pmo:stage:definition"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:definition"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:1",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2528,
+      "title": "STRATEGY REVIEW: Governance model audit and code-to-production control alignment",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2528",
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:idea",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2463,
+      "title": "PROJECT: Club Newspaper Phase 0 \u2014 Design Authority and Implementation Readiness",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2463",
+      "labels": [
+        "governance",
+        "documentation",
+        "design",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:priority:3",
+        "pmo:stage:definition"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:definition"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:3",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2448,
+      "title": "STRATEGY REVIEW: Testing foundation gap and quality-scaling impact",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2448",
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:idea",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2447,
+      "title": "STRATEGY REVIEW: Automated testing foundation gap and growth risk",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2447",
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:idea",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2445,
+      "title": "STRATEGY REVIEW: NoSQL schema-governance gap and relational-growth constraints",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2445",
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:idea",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2443,
+      "title": "STRATEGY REVIEW: Minimal UI foundation and component-system growth constraints",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2443",
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:idea",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2442,
+      "title": "STRATEGY REVIEW: OAuth provider gap and identity-growth impact",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2442",
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:idea",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2441,
+      "title": "STRATEGY REVIEW: Firebase data-layer lock-in and future platform portability",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2441",
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:idea",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2342,
+      "title": "STRATEGY REVIEW: Local Cursor Program Queue Pickup and Child-Task Execution Design",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2342",
+      "labels": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:23"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:23",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2312,
+      "title": "STRATEGY: LGFC content acquisition storage policy and free-tier risk controls",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2312",
+      "labels": [
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:22"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:22",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2292,
+      "title": "STRATEGY: AI-Assisted Tagging for LGFC Digital Content Assets",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2292",
+      "labels": [
+        "strategy",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:2",
+        "pmo:stage:definition"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:definition"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:2",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2291,
+      "title": "STRATEGY: LGFC SEO Strategy and PMO Activation Control",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2291",
+      "labels": [
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:3",
+        "pmo:stage:definition"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:definition"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:3",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2273,
+      "title": "PROGRAM: LGFC Content Pipeline Reconciliation and Candidate Model",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2273",
+      "labels": [
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:planning",
+        "pmo:priority:18"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:planning"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:18",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2270,
+      "title": "STRATEGY REVIEW: LGFC Content Discovery, Review, Approval, and Publication Pipeline",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2270",
+      "labels": [
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:19",
+        "pmo:stage:discovery"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:discovery"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:19",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2093,
+      "title": "PROGRAM CANDIDATE: 2027 Launch Calendar and Go/No-Go Plan",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2093",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:10"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:10",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2085,
+      "title": "PROGRAM CANDIDATE: Admin Page and Tools Design Readiness",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2085",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:6"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:6",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2084,
+      "title": "PROGRAM CANDIDATE: Annual Lou Gehrig Day Operations Package",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2084",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:9"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:9",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2083,
+      "title": "PROGRAM CANDIDATE: Store and Merchandise Operations",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2083",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:13"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:13",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2082,
+      "title": "PROGRAM CANDIDATE: LGFC Store Strategy",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2082",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:12"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:12",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2081,
+      "title": "PROGRAM CANDIDATE: LGFC Monetization Strategy",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2081",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:11"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:11",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2079,
+      "title": "PROGRAM CANDIDATE: Community Engagement Cadence",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2079",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:14"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:14",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2078,
+      "title": "PROGRAM CANDIDATE: Adam Wilson Award and Recognition System",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2078",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:15"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:15",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2077,
+      "title": "PROGRAM CANDIDATE: Partner and Friends of the Fan Club Operations",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2077",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:16"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:16",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2076,
+      "title": "PROGRAM CANDIDATE: Cost Analysis and Growth Heat Map",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2076",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:17"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:17",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2075,
+      "title": "PROGRAM CANDIDATE: LGFC Social Media Strategy",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2075",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:7"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:7",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2074,
+      "title": "PROGRAM CANDIDATE: Member Communications and Newsletter Operations",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2074",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "pmo:priority:8"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:intake"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:8",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2073,
+      "title": "PROGRAM: Gehrig Content Collection Phase 2 / Advanced Research and Media Archive Acquisition",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2073",
+      "labels": [
+        "change-ops",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:planning",
+        "pmo:priority:5"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:planning"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:5",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 2040,
+      "title": "PROGRAM: Website Automatic Content Publication Capability",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/2040",
+      "labels": [
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:planning",
+        "pmo:priority:4"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:planning"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:4",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 1738,
+      "title": "PROGRAM: Lou Gehrig Content Collection / Research Pipeline Expansion",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/1738",
+      "labels": [
+        "governance",
+        "status:failed",
+        "status:post-merge-verify",
+        "status:active",
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:20",
+        "pmo:stage:planning"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*"
+      ],
+      "proposed": {
+        "team": "team:engineering",
+        "stage": "pmo:stage:planning"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:20",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    },
+    {
+      "number": 1700,
+      "title": "PROGRAM: Fundraiser / Charity Campaign Operations Buildout",
+      "url": "https://github.com/wdhunter645/next-starter-template/issues/1700",
+      "labels": [
+        "docs-only",
+        "agent:cursor",
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "status:in-progress",
+        "pmo:priority:21"
+      ],
+      "missing": [
+        "team:engineering",
+        "eng:priority:*",
+        "pmo:stage:*"
+      ],
+      "proposed": {
+        "team": "team:engineering"
+      },
+      "quarantine": [
+        "pipeline_has_pmo_priority:pmo:priority:21",
+        "needs_explicit_eng_priority_mapping_from_legacy_pmo_priority",
+        "missing_pipeline_stage_no_inference"
+      ],
+      "ready": false,
+      "requiresProductAuthorityPriorityMapping": true
+    }
+  ],
+  "summary": {
+    "activeCount": 8,
+    "pipelineCount": 35,
+    "activeReady": 0,
+    "pipelineReady": 0,
+    "activeQuarantine": 8,
+    "pipelineQuarantine": 35,
+    "activeAutoTeamOnlyCandidates": 8,
+    "pipelineRequiresPriorityDecision": 35
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "repository": "wdhunter645/next-starter-template",
+  "workspacePathEnv": "LGFC_CURSOR_BRIDGE_WORKSPACE",
+  "defaultWorkspaceHint": "next-starter-template/next-starter-template",
+  "queueDir": "queue",
+  "consumedDir": "consumed",
+  "claimPath": "claim.json",
+  "inFlightPath": "in-flight.json",
+  "heartbeatPath": "heartbeat.json",
+  "runtimeMetaPath": "runtime-meta.json",
+  "alertsLog": "alerts.log",
+  "bridgeLog": "bridge.log",
+  "claimTtlSeconds": 7200,
+  "launchStartupTimeoutSeconds": 60,
+  "launchExecutionTimeoutSeconds": 7200,
+  "launchHeartbeatIntervalSeconds": 5,
+  "launchRetryBaseSeconds": 30,
+  "launchRetryMaxSeconds": 900,
+  "reconcileEnabled": true,
+  "reconcileIntervalSeconds": 900,
+  "reconcileIssueLimit": 40,
+  "requiredLabels": [
+    "agent:cursor",
+    "handoff:ready"
+  ],
+  "fallbackCommentPrefix": "CURSOR BRIDGE FALLBACK: unclaimed",
+  "cliBinaryCandidates": [
+    "agent",
+    "cursor"
+  ],
+  "cliLaunchMode": "print",
+  "prohibitYolo": true,
+  "prohibitCloudHandoff": true,
+  "watchdog": {
+    "bridgeUnit": "lgfc-cursor-bridge.service",
+    "statePath": "watchdog-state.json",
+    "heartbeatStaleSeconds": 90,
+    "minDiskMb": 256,
+    "maxRestartAttempts": 3,
+    "restartWindowSeconds": 1800,
+    "localAlertDebounceSeconds": 900,
+    "githubFaultEnabled": true,
+    "githubFaultDebounceSeconds": 3600,
+    "opsFaultIssueNumber": null
+  },
+  "preflight": {
+    "enforce": true,
+    "resultPath": "preflight-result.json",
+    "alertStatePath": "preflight-alert-state.json",
+    "retrySeconds": 60,
+    "skipBridgeUnitOnStartup": true,
+    "cursorCapacitySignal": "unknown"
+  },
+  "maintenance": {
+    "identityPath": "package-identity.json",
+    "resultPath": "maintenance-result.json",
+    "alertStatePath": "maintenance-alert-state.json",
+    "watchdogTimerUnit": "lgfc-cursor-bridge-watchdog.timer",
+    "buildWorkflow": "cursor-bridge-build.yml",
+    "opsFaultIssueNumber": null
+  }
+}

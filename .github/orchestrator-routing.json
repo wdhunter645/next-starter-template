@@ -1,53 +1,78 @@
 {
-  "version": 2,
+  "version": 3,
   "defaultConcurrency": "serial",
   "concurrencyPolicy": {
     "mode": "serial",
     "reason": "Serial execution is the LGFC safety default while orchestration is being proven. Parallel lanes may be added later by explicit design change."
   },
+  "queueAwareDispatch": {
+    "enabled": true,
+    "registry": ".github/queue-label-registry.json",
+    "decisionModule": "scripts/orchestrator/queue-routing.mjs",
+    "selector": "scripts/orchestrator/select-next-queue-work.mjs",
+    "precedence": [
+      "numbered_operations",
+      "pmo_active_executable_children",
+      "engineering_pipeline_preparation",
+      "operations_monitoring_hold_interval_only"
+    ],
+    "rules": [
+      "task-type and named-agent defaults never override queue ownership or priority namespace",
+      "collaboration metadata never transfers ownership, priority, execution, approval, or Production authority",
+      "ambiguous, cross-namespace, claimed, consumed, stale, or unread evidence fails closed"
+    ]
+  },
   "taskTypes": {
     "repository": {
-      "defaultAgent": "codex",
-      "allowedAgents": ["codex", "cursor", "copilot", "atlas"],
-      "priorityOrder": ["codex", "cursor", "copilot", "atlas"],
-      "prIntents": ["infra", "platform", "change-ops", "codex"]
+      "defaultAgent": "cursor",
+      "allowedAgents": ["cursor", "ChatGPT", "codex", "copilot"],
+      "priorityOrder": ["cursor", "ChatGPT"],
+      "prIntents": ["infra", "platform", "change-ops"],
+      "quarantinedAgents": ["codex", "copilot"],
+      "note": "Codex/Copilot remain allowed only for explicit remapping/quarantine decisions; they are not active defaults."
     },
     "website": {
       "defaultAgent": "cursor",
-      "allowedAgents": ["cursor", "codex", "copilot", "atlas"],
-      "priorityOrder": ["cursor", "codex", "copilot", "atlas"],
-      "prIntents": ["feature", "codex"]
+      "allowedAgents": ["cursor", "ChatGPT", "codex", "copilot"],
+      "priorityOrder": ["cursor", "ChatGPT"],
+      "prIntents": ["feature"],
+      "quarantinedAgents": ["codex", "copilot"]
     },
     "governance": {
-      "defaultAgent": "copilot",
-      "allowedAgents": ["copilot", "atlas", "codex", "cursor"],
-      "priorityOrder": ["copilot", "atlas", "codex", "cursor"],
-      "prIntents": ["infra", "change-ops"]
+      "defaultAgent": "ChatGPT",
+      "allowedAgents": ["ChatGPT", "cursor", "codex", "copilot"],
+      "priorityOrder": ["ChatGPT", "cursor"],
+      "prIntents": ["infra", "change-ops"],
+      "quarantinedAgents": ["codex", "copilot"]
     },
     "docs": {
-      "defaultAgent": "atlas",
-      "allowedAgents": ["atlas", "copilot", "codex", "cursor"],
-      "priorityOrder": ["atlas", "copilot", "codex", "cursor"],
-      "prIntents": ["docs-only"]
+      "defaultAgent": "ChatGPT",
+      "allowedAgents": ["ChatGPT", "cursor", "codex", "copilot"],
+      "priorityOrder": ["ChatGPT", "cursor"],
+      "prIntents": ["docs-only"],
+      "quarantinedAgents": ["codex", "copilot"]
     },
     "recovery": {
-      "defaultAgent": "atlas",
-      "allowedAgents": ["atlas", "copilot", "codex", "cursor"],
-      "priorityOrder": ["atlas", "copilot", "codex", "cursor"],
-      "prIntents": ["recovery"]
+      "defaultAgent": "ChatGPT",
+      "allowedAgents": ["ChatGPT", "cursor", "codex", "copilot"],
+      "priorityOrder": ["ChatGPT", "cursor"],
+      "prIntents": ["recovery"],
+      "quarantinedAgents": ["codex", "copilot"]
     },
     "ci": {
       "defaultAgent": "cursor",
-      "allowedAgents": ["cursor", "codex", "copilot", "atlas"],
-      "priorityOrder": ["cursor", "codex", "copilot", "atlas"],
-      "prIntents": ["infra", "change-ops"]
+      "allowedAgents": ["cursor", "ChatGPT", "codex", "copilot"],
+      "priorityOrder": ["cursor", "ChatGPT"],
+      "prIntents": ["infra", "change-ops"],
+      "quarantinedAgents": ["codex", "copilot"]
     }
   },
   "labelDerivation": {
     "taskTypeLabelPrefix": "type:",
     "agentLabelPrefix": "agent:",
     "baseLabels": ["orchestrator"],
-    "deriveTaskAndAgentLabels": true
+    "deriveTaskAndAgentLabels": true,
+    "queueOwnershipAuthority": ".github/queue-label-registry.json"
   },
   "stateSource": ".github/orchestrator-labels.json"
 }

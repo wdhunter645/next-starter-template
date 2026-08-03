@@ -1,0 +1,97 @@
+name: Cursor Bridge Watch
+
+# Periodic / path-triggered Bridge health + repository-to-host drift classification (#2814).
+# Delivery-only wake workflow remains separate and does not own rebuild logic.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'config/cursor-bridge/**'
+      - 'scripts/cursor-bridge/**'
+      - '.github/workflows/cursor-bridge-watch.yml'
+      - '.github/workflows/cursor-bridge-build.yml'
+
+permissions:
+  contents: read
+  actions: write
+  issues: write
+
+concurrency:
+  group: cursor-bridge-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    if: github.repository == 'wdhunter645/next-starter-template'
+    runs-on: [self-hosted, linux, x64, lgfc-repo-runner]
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main for package comparison
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Run Bridge Watch
+        env:
+          LGFC_BRIDGE_SOURCE_COMMIT: ${{ github.sha }}
+          LGFC_BRIDGE_WATCH_DISPATCH: '1'
+        run: |
+          HOME_DIR="${LGFC_CURSOR_BRIDGE_HOME:-$HOME/lgfc-cursor-bridge}"
+          export LGFC_CURSOR_BRIDGE_HOME="$HOME_DIR"
+          export LGFC_BRIDGE_SOURCE_COMMIT="${GITHUB_SHA}"
+          WATCH_SCRIPT="$GITHUB_WORKSPACE/scripts/cursor-bridge/bridge-watch.mjs"
+          if [ ! -f "$WATCH_SCRIPT" ]; then
+            WATCH_SCRIPT="$HOME_DIR/scripts/bridge-watch.mjs"
+          fi
+          test -f "$WATCH_SCRIPT"
+          RESULT_FILE=/tmp/lgfc-bridge-watch-result.json
+          set +e
+          node "$WATCH_SCRIPT" check > "$RESULT_FILE"
+          WATCH_RC=$?
+          set -e
+          # Always run secret scan + result validation; never treat crash/empty as healthy.
+          if grep -qE 'CURSOR_API_KEY=|ghp_[A-Za-z0-9]+|github_pat_' "$RESULT_FILE" 2>/dev/null; then
+            echo "secret-bearing output refused" >&2
+            exit 1
+          fi
+          export WATCH_RC
+          export RESULT_FILE
+          # Inline node (not a Python heredoc): JS is indentation-insensitive,
+          # so the validator can live inside this YAML block scalar safely.
+          node -e '
+            const fs = require("fs");
+            const raw = fs.readFileSync(process.env.RESULT_FILE, "utf8").trim();
+            const rc = parseInt(process.env.WATCH_RC || "1", 10);
+            if (!raw) {
+              console.error("classification=failed_empty_result");
+              process.exit(1);
+            }
+            let data;
+            try {
+              data = JSON.parse(raw);
+            } catch (err) {
+              console.error("classification=failed_invalid_json:" + err.message);
+              process.exit(1);
+            }
+            const classification = String(data.classification || "unknown");
+            console.log("classification=" + classification);
+            if (["healthy", "healthy_quiet"].includes(classification) && rc !== 0) {
+              console.error("non-zero exit cannot be classified healthy");
+              process.exit(1);
+            }
+            const nonHealthyAllowed = [
+              "rebuild_required",
+              "rebuild_deferred",
+              "manual_review_required",
+              "failed",
+            ];
+            if (rc !== 0 && !nonHealthyAllowed.includes(classification)) {
+              console.error("unexpected classification with non-zero exit: " + classification);
+              process.exit(1);
+            }
+          '

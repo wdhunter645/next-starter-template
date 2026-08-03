@@ -92,18 +92,20 @@ export default function Footer() {
           style={{
             flex: '1 1 260px',
             minWidth: 220,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
-            gap: 8,
+            display: 'grid',
+            gridTemplateColumns: 'auto auto',
+            justifyContent: 'end',
+            alignItems: 'center',
+            columnGap: 14,
+            rowGap: 8,
             fontSize: 12,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/terms">Terms</Link>
-          </div>
-          <Link href="/contact">Contact</Link>
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/terms">Terms</Link>
+          <Link href="/contact" style={{ gridColumn: '1 / -1', justifySelf: 'end' }}>
+            Contact
+          </Link>
         </nav>
       </div>
     </footer>

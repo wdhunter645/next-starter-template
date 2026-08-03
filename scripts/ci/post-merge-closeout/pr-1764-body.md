@@ -16,7 +16,7 @@
 ## QUEUE / DEPENDENCY MAP STATUS (REQUIRED FOR LAUNCHED-PROGRAM QUEUE TASKS)
 - Dependency-map result: not-applicable — one-off documentation packaging issue; Program #1500 queue context is reference-only
 - Next queue item: not-applicable — no queue execution from this PR
-- Continue/halt decision: not-applicable — docs-only program prep complete; Program #1500 Tasks 002–005 remain halted until Bill/Atlas authorize
+- Continue/halt decision: not-applicable — docs-only program prep complete; Program #1500 Tasks 002–005 remain halted until Bill/ChatGPT authorize
 
 ## PROGRESS + READINESS (MANDATORY)
 - Phase: Governance program preparation (post–Program #1500 Task 001)
@@ -74,7 +74,7 @@ All other files are out of scope
 - [x] No application code, config, or runtime behavior modified
 
 ## CHANGE SUMMARY
-- Added `docs/ops/ai/GOVERNANCE-LAUNCH-CONTROL-PACKAGE.md` — launch-control-ready governance program preparation package covering relationship to closed PR #1552 / Issue #1544, workflow, master/child issue structure, Cursor checkpoint, Bill/Atlas gates, stop points, verification, rollback, non-goals, risks, and closeout checklist.
+- Added `docs/ops/ai/GOVERNANCE-LAUNCH-CONTROL-PACKAGE.md` — launch-control-ready governance program preparation package covering relationship to closed PR #1552 / Issue #1544, workflow, master/child issue structure, Cursor checkpoint, Bill/ChatGPT gates, stop points, verification, rollback, non-goals, risks, and closeout checklist.
 - Added `docs/reference/governance/governance-launch-control-reference-implementation.md` — draft/reference implementation with pseudocode for five proposed validators, future file paths, test strategy, acceptance criteria, and edge cases; explicitly not implemented in this PR.
 
 ## BUILD / TEST / VERIFICATION

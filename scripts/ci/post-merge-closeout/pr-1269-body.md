@@ -35,7 +35,7 @@ All other files are out of scope
 
 ## CHANGE SUMMARY
 - Add `docs/ops/ai/SHARED-AGENT-RULES.md` as the categorized shared agent law index (10 sections + tool routing table).
-- Refocus `CHATGPT-RULES.md` on Atlas control-plane behavior; cross-link shared law instead of duplicating it.
+- Refocus `CHATGPT-RULES.md` on ChatGPT control-plane behavior; cross-link shared law instead of duplicating it.
 - Add `docs/ops/ai/CODEX-RULES.md`; strengthen Cursor git/push/merge boundaries in `CURSOR-RULES.md`.
 - Update `Agent.md`, `CORE-RULES.md`, cross-agent governance docs, and `DOCUMENT-ARCHITECTURE.md` for consistent read order and cross-links.
 

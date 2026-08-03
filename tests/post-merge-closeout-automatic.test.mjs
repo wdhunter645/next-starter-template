@@ -447,7 +447,7 @@ describe('closeout fail-safe remediation evidence', () => {
 		expect(body).toContain('- Merge SHA: abc123');
 		expect(body).toContain('- Blocking future PRs: yes');
 		expect(body).toContain('- Linked remediation issue: none recorded');
-		expect(body).toContain('- Requested owner/action: Atlas/Bill review');
+		expect(body).toContain('- Requested owner/action: ChatGPT/Bill review');
 		expect(body).toContain('ZIP History Audit (Full History)');
 		expect(body).toContain('run 28957717158');
 		expect(body).toContain('Job 12345: audit (failure); failed steps: Scan full git history for ZIPs (failure)');

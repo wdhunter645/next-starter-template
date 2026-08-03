@@ -28,7 +28,7 @@ describe('orchestrator issue creation queue model', () => {
 		const tasks = [
 			{ type: 'repository', agent: 'codex' },
 			{ type: 'website', agent: 'cursor' },
-			{ type: 'docs', agent: 'atlas' },
+			{ type: 'docs', agent: 'ChatGPT' },
 		];
 
 		const labels = tasks.map((task, index) =>
@@ -116,7 +116,7 @@ describe('orchestrator queue advancement', () => {
 		const tasks = [
 			{ type: 'repository', agent: 'codex' },
 			{ type: 'website', agent: 'cursor' },
-			{ type: 'docs', agent: 'atlas' },
+			{ type: 'docs', agent: 'ChatGPT' },
 		];
 		const producedStatuses = tasks.map((task, index) =>
 			createIssues
