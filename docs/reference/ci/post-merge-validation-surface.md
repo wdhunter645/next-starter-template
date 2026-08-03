@@ -2,14 +2,18 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Current post-merge validation, source-issue closeout, evidence, and remediation surface
-Does Not Own: Pre-merge required checks, branch protection settings, or production runtime monitoring
-Canonical Reference: /docs/governance/PR_PROCESS.md
-Related Issues: #1197, #1500, #2175, #2208, #2380, #2469, #2591
-Last Reviewed: 2026-07-17
+Owns: Current post-merge validation, source-issue closeout, evidence, and remediation surface as a supporting specification
+Does Not Own: CI and Verification Domain Policy; pre-merge required checks; branch protection settings; production runtime monitoring
+Canonical Reference: /docs/governance/CI-AND-VERIFICATION.md
+Related Issues: #2689, #1197, #1500, #2175, #2208, #2380, #2469, #2591
+Last Reviewed: 2026-07-21
 ---
 
 # LGFC Post-Merge Validation Surface
+
+This document is the **supporting post-merge validation surface** under the CI and Verification Domain Policy (`docs/governance/CI-AND-VERIFICATION.md`).
+
+It is **not** a Domain Policy co-owner. Post-merge ownership conflicts resolve through `docs/governance/CI-AND-VERIFICATION.md`. PR lifecycle procedure remains in `docs/governance/PR_PROCESS.md`.
 
 ## Purpose
 
@@ -99,7 +103,7 @@ After merge, the same section omissions are historical hygiene evidence only:
 - `missing_required_section` and legacy `missing_advisory_section` may be recorded in closeout evidence with advisory severity.
 - Those codes alone must not fail closeout, create a new Ops remediation issue, or preserve an exception.
 - Mixed results that also contain implementation, required-workflow, source-linkage, DIATAXIS, security, production, or actionable reviewer defects still create or update an exception.
-- Self-healing unsafe classification evaluates structured failure evidence (`failure_code` and `## Detected failure condition` rows). Generated boilerplate such as `Queue advancement status` or `Required Atlas/Bill decision` must not independently escalate to `unsafe_operator_review_required`.
+- Self-healing unsafe classification evaluates structured failure evidence (`failure_code` and `## Detected failure condition` rows). Generated boilerplate such as `Queue advancement status` or `Required ChatGPT/Bill decision` must not independently escalate to `unsafe_operator_review_required`.
 
 This issue does not promote `pr-hygiene` to a required branch-protection check.
 

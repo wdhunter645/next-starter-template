@@ -1,0 +1,164 @@
+name: Repository Runner Health
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type RUNNER_HEALTH to run the trusted repository-runner check
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repository-runner-health
+  cancel-in-progress: false
+
+jobs:
+  health:
+    if: >-
+      github.repository == 'wdhunter645/next-starter-template' &&
+      github.actor == 'wdhunter645' &&
+      github.ref == 'refs/heads/main' &&
+      inputs.confirmation == 'RUNNER_HEALTH'
+    runs-on: [self-hosted, linux, x64, lgfc-repo-runner]
+    timeout-minutes: 10
+    steps:
+      - name: Confirm trusted invocation
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REPOSITORY: ${{ github.repository }}
+          REF_NAME: ${{ github.ref }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          test "$EVENT_NAME" = "workflow_dispatch"
+          test "$REPOSITORY" = "wdhunter645/next-starter-template"
+          test "$REF_NAME" = "refs/heads/main"
+          test "$ACTOR" = "wdhunter645"
+
+      - name: Checkout trusted main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+          clean: true
+          persist-credentials: false
+
+      - name: Validate repository runner contract
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+
+          const path = 'config/github-actions/repository-runner.json';
+          const config = JSON.parse(fs.readFileSync(path, 'utf8'));
+          const requiredLabels = ['self-hosted', 'linux', 'x64', 'lgfc-repo-runner'];
+          const security = config.security ?? {};
+          const denyFlags = [
+            'allowForkPullRequests',
+            'allowPullRequestEvents',
+            'allowPullRequestTargetEvents',
+            'allowWorkflowRunEvents',
+            'allowPushEvents',
+            'allowScheduledEvents',
+            'allowRepositorySecrets',
+            'allowProductionCredentials',
+            'allowDeployments',
+            'allowPersistentGitCredentials',
+            'executeIssueOrCommentContent',
+          ];
+
+          if (config.schemaVersion !== 1) throw new Error('Unsupported runner config schema');
+          if (config.repository !== process.env.GITHUB_REPOSITORY) {
+            throw new Error(`Runner config repository mismatch: ${config.repository}`);
+          }
+          if (config.scope !== 'repository') throw new Error('Runner must remain repository-scoped');
+          if (!security.publicRepository) throw new Error('Public-repository risk flag missing');
+          if (!Array.isArray(security.trustedEvents) ||
+              security.trustedEvents.length !== 1 ||
+              security.trustedEvents[0] !== 'workflow_dispatch') {
+            throw new Error('Health trusted events must remain exactly workflow_dispatch');
+          }
+          if (!Array.isArray(security.trustedRefs) ||
+              security.trustedRefs.length !== 1 ||
+              security.trustedRefs[0] !== 'refs/heads/main') {
+            throw new Error('Trusted refs must be exactly refs/heads/main');
+          }
+          if (!Array.isArray(security.trustedActors) ||
+              security.trustedActors.length !== 1 ||
+              security.trustedActors[0] !== 'wdhunter645') {
+            throw new Error('Trusted actors must be exactly wdhunter645');
+          }
+          for (const flag of denyFlags) {
+            if (security[flag] !== false) {
+              throw new Error(`${flag} must remain false`);
+            }
+          }
+          if (config.rollout?.mutationMode !== 'disabled') {
+            throw new Error('Rollout mutationMode must remain disabled');
+          }
+          const allowedInitialUse = new Set([
+            'manual-health-and-observe-only',
+            'manual-health-and-wake-delivery-only',
+          ]);
+          if (!allowedInitialUse.has(config.rollout?.initialUse)) {
+            throw new Error('Rollout initialUse is not an approved health/wake-delivery value');
+          }
+          const wake = config.wakeDelivery;
+          if (wake) {
+            if (wake.enabled !== true) throw new Error('wakeDelivery.enabled must be true when present');
+            if (wake.mayLaunchCursor !== false) throw new Error('wakeDelivery must not launch Cursor');
+            if (wake.mayHoldApiKeys !== false) throw new Error('wakeDelivery must not hold API keys');
+            if (wake.mayClaimSerialLane !== false) throw new Error('wakeDelivery must not claim the serial lane');
+            if (wake.workflow !== '.github/workflows/cursor-local-wake.yml') {
+              throw new Error('wakeDelivery.workflow path mismatch');
+            }
+          }
+          for (const label of requiredLabels) {
+            if (!config.runner?.labels?.includes(label)) {
+              throw new Error(`Required runner label missing: ${label}`);
+            }
+          }
+
+          console.log(JSON.stringify({
+            ok: true,
+            runnerName: config.runner.name,
+            labels: config.runner.labels,
+            rollout: config.rollout,
+          }, null, 2));
+          NODE
+
+      - name: Report host capability
+        run: |
+          echo "runner_name=$RUNNER_NAME"
+          echo "runner_os=$RUNNER_OS"
+          echo "runner_arch=$RUNNER_ARCH"
+          # Avoid uname -a hostname disclosure in public logs.
+          uname -srm
+          awk -F= '/^(ID|VERSION_ID|PRETTY_NAME)=/ { print }' /etc/os-release
+          node --version
+          npm --version
+          git --version
+          df -h .
+          free -h
+
+      - name: Write health summary
+        if: always()
+        env:
+          REPOSITORY: ${{ github.repository }}
+          REF_NAME: ${{ github.ref }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          {
+            echo "## Repository Runner Health"
+            echo
+            echo "- Repository: ${REPOSITORY:-unknown}"
+            echo "- Ref: ${REF_NAME:-unknown}"
+            echo "- Actor: ${ACTOR:-unknown}"
+            echo "- Runner: ${RUNNER_NAME:-unknown}"
+            echo "- OS/architecture: ${RUNNER_OS:-unknown}/${RUNNER_ARCH:-unknown}"
+            echo "- Mode: manual health only"
+            echo "- Pull-request execution: prohibited"
+            echo "- Repository secrets: prohibited"
+            echo "- Production credentials and deployments: prohibited"
+          } >> "$GITHUB_STEP_SUMMARY"

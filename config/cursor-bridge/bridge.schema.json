@@ -1,0 +1,236 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wdhunter645/next-starter-template/config/cursor-bridge/bridge.schema.json",
+  "title": "LGFC Cursor Local Bridge configuration",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "repository",
+    "queueDir",
+    "consumedDir",
+    "claimPath",
+    "inFlightPath",
+    "claimTtlSeconds",
+    "launchStartupTimeoutSeconds",
+    "launchExecutionTimeoutSeconds",
+    "launchHeartbeatIntervalSeconds",
+    "launchRetryBaseSeconds",
+    "launchRetryMaxSeconds",
+    "reconcileIntervalSeconds",
+    "requiredLabels"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 3
+    },
+    "workspacePathEnv": {
+      "type": "string"
+    },
+    "defaultWorkspaceHint": {
+      "type": "string"
+    },
+    "queueDir": {
+      "type": "string"
+    },
+    "consumedDir": {
+      "type": "string"
+    },
+    "claimPath": {
+      "type": "string"
+    },
+    "inFlightPath": {
+      "type": "string"
+    },
+    "heartbeatPath": {
+      "type": "string"
+    },
+    "runtimeMetaPath": {
+      "type": "string"
+    },
+    "alertsLog": {
+      "type": "string"
+    },
+    "bridgeLog": {
+      "type": "string"
+    },
+    "claimTtlSeconds": {
+      "type": "integer",
+      "minimum": 60
+    },
+    "launchStartupTimeoutSeconds": {
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 600
+    },
+    "launchExecutionTimeoutSeconds": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 43200
+    },
+    "launchHeartbeatIntervalSeconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60
+    },
+    "launchRetryBaseSeconds": {
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 3600
+    },
+    "launchRetryMaxSeconds": {
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 21600
+    },
+    "reconcileEnabled": {
+      "type": "boolean"
+    },
+    "reconcileIntervalSeconds": {
+      "type": "integer",
+      "minimum": 60
+    },
+    "reconcileIssueLimit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "requiredLabels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "fallbackCommentPrefix": {
+      "type": "string"
+    },
+    "cliBinaryCandidates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cliLaunchMode": {
+      "type": "string"
+    },
+    "prohibitYolo": {
+      "type": "boolean"
+    },
+    "prohibitCloudHandoff": {
+      "type": "boolean"
+    },
+    "watchdog": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "bridgeUnit": {
+          "type": "string"
+        },
+        "runnerUnit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "statePath": {
+          "type": "string"
+        },
+        "heartbeatStaleSeconds": {
+          "type": "integer",
+          "minimum": 15
+        },
+        "minDiskMb": {
+          "type": "integer",
+          "minimum": 64
+        },
+        "maxRestartAttempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "restartWindowSeconds": {
+          "type": "integer",
+          "minimum": 60
+        },
+        "localAlertDebounceSeconds": {
+          "type": "integer",
+          "minimum": 60
+        },
+        "githubFaultEnabled": {
+          "type": "boolean"
+        },
+        "githubFaultDebounceSeconds": {
+          "type": "integer",
+          "minimum": 60
+        },
+        "opsFaultIssueNumber": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "preflight": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enforce": {
+          "type": "boolean"
+        },
+        "resultPath": {
+          "type": "string"
+        },
+        "alertStatePath": {
+          "type": "string"
+        },
+        "retrySeconds": {
+          "type": "integer",
+          "minimum": 5
+        },
+        "skipBridgeUnitOnStartup": {
+          "type": "boolean"
+        },
+        "cursorCapacitySignal": {
+          "type": [
+            "string",
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "maintenance": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "identityPath": {
+          "type": "string"
+        },
+        "resultPath": {
+          "type": "string"
+        },
+        "alertStatePath": {
+          "type": "string"
+        },
+        "watchdogTimerUnit": {
+          "type": "string"
+        },
+        "buildWorkflow": {
+          "type": "string"
+        },
+        "opsFaultIssueNumber": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

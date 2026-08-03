@@ -6,7 +6,7 @@ Owns: Issue #1247 documentation update plan for trusted reviewer evidence redesi
 Does Not Own: Runtime workflow implementation, branch protection settings, third-party reviewer behavior
 Status: ready
 Project: trusted-reviewer-evidence-design-update
-Owner: Atlas
+Owner: ChatGPT
 Execution Mode: documentation
 Source Issue: 1247
 Related Program Issue: 1058

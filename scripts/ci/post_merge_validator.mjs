@@ -1046,7 +1046,7 @@ export function buildResult({
 		remediation_required: remediationRequired,
 		terminal_label_result: terminalLabelResult,
 		queue_advancement_status: remediationRequired || status === 'fail' || reviewerDispositionFailures.length > 0
-			? 'stopped; reviewer exception or remediation issue requires Atlas/Bill review'
+			? 'stopped; reviewer exception or remediation issue requires ChatGPT/Bill review'
 			: 'no queue action; Program 1 launch, Program 2 mutation, and child issue creation remain stopped',
 		sync_action: syncAction,
 		self_healing_safe: selfHealingSafe === null ? linkageRepairApplied && !remediationRequired : selfHealingSafe,

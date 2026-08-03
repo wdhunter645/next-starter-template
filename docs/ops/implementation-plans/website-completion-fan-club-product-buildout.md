@@ -1,12 +1,12 @@
 ---
 Doc Type: Implementation Plan
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Plan
 Owns: Cursor task sequence, child-project boundaries, validation model, file-area expectations, and closeout rules for Website Completion / Fan Club Product Buildout
 Does Not Own: Runtime implementation before task issues, issue creation before launch authorization, merge authority, vendor configuration, fundraiser program implementation
 Status: planning-ready
 Project: website-completion-fan-club-product-buildout
-Owner: Atlas
+Owner: ChatGPT
 Execution Mode: cursor-after-launch-authorization
 Source Issue: 1678
 Related Program Issue: pending-program-issue-after-launch
@@ -17,7 +17,7 @@ Last Reviewed: 2026-06-16
 
 # Website Completion / Fan Club Product Buildout Implementation Plan
 
-> This program is BLOCKED from execution until Atlas/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/Atlas explicitly launch it.
+> This program is BLOCKED from execution until ChatGPT/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until Bill/ChatGPT explicitly launch it.
 
 ## Purpose
 
@@ -46,7 +46,7 @@ This plan does not authorize this documentation PR to change application code, w
 - Existing content/admin/backend work exists and must be reconciled before any build task adds new deltas.
 - The legacy `program-3-club-home-page-design.md` file contains useful Fan Club home design evidence but is not PMO July 2026 launch authority.
 - Content collection strategy is merged into the content management strategy for this program.
-- Cursor is the intended implementation agent after Bill/Atlas launch authorization.
+- Cursor is the intended implementation agent after Bill/ChatGPT launch authorization.
 
 ## Intended final state
 
@@ -57,7 +57,7 @@ At the end of this program:
 3. Backend services, D1 queries, B2/media associations, and public/member APIs are reconciled and extended only where documented gaps require changes.
 4. Content collection, source/credit review, editorial approval, and publication handoff are documented and implemented as one content-management workflow.
 5. Website design gaps are fixed, explicitly deferred, or converted into bounded follow-up issues.
-6. Cursor stops each task at GitHub `READY FOR REVIEW`; Atlas does not self-approve or self-merge.
+6. Cursor stops each task at GitHub `READY FOR REVIEW`; ChatGPT does not self-approve or self-merge.
 
 ## Source documents
 
@@ -97,7 +97,7 @@ Cursor must reconcile before building. Existing schema, APIs, components, routes
 
 | Task | Predecessor | Successor | Stage-before-merge | Halt condition | Resume condition |
 | --- | --- | --- | --- | --- | --- |
-| 001 | launch authorization | 002 | yes | Launch not authorized | Bill/Atlas launch source issue exists |
+| 001 | launch authorization | 002 | yes | Launch not authorized | Bill/ChatGPT launch source issue exists |
 | 002 | 001 | 003 | yes | As-built gap table missing | Task 001 merged |
 | 003 | 001 and 002 | 004 | yes | Backend/data gaps unknown | Task 002 merged or gaps accepted |
 | 004 | 001 and 002 | 005 | yes | Content/collection boundary unresolved | Task 004 docs merged |
@@ -125,7 +125,7 @@ Expected validation categories:
 
 ## Launch gate
 
-This plan becomes executable only when Bill/Atlas create or update a program issue with explicit launch authorization.
+This plan becomes executable only when Bill/ChatGPT create or update a program issue with explicit launch authorization.
 
 Launch authorization must identify program issue number, first task source issue, Cursor as implementation agent, issue-creation authority, task sequencing mode, and Cursor stop condition.
 
@@ -136,9 +136,9 @@ Default stop condition: GitHub `READY FOR REVIEW`.
 - Cursor does not approve PRs.
 - Cursor does not merge PRs.
 - Cursor does not close, reopen, or relabel GitHub issues unless a source issue explicitly grants that authority.
-- Atlas does not self-approve Atlas-authored PRs.
+- ChatGPT does not self-approve ChatGPT-authored PRs.
 - Source issue closeout occurs only after merge verification and post-merge validator state are clean.
-- Program closeout requires Task 009 evidence and explicit Bill/Atlas acceptance.
+- Program closeout requires Task 009 evidence and explicit Bill/ChatGPT acceptance.
 
 ## Readiness conclusion
 
@@ -146,4 +146,4 @@ This implementation plan is sufficient for Cursor task issue creation after expl
 
 Status: `planning-ready`.
 
-Execution: blocked until Bill/Atlas launch the program.
+Execution: blocked until Bill/ChatGPT launch the program.

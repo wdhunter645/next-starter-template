@@ -26,7 +26,7 @@ This task is **PMO reconciliation documentation only**.
 - No build or implementation issues are created
 - No GitHub issues are closed or relabeled
 - No application code, workflow YAML, D1/B2, or runtime configuration changes
-- Disposition comments and label cleanup are **deferred** to Atlas/Bill-approved follow-up
+- Disposition comments and label cleanup are **deferred** to ChatGPT/Bill-approved follow-up
 
 ## Assessment Baseline
 
@@ -167,7 +167,7 @@ Classification key:
 | **Retained** | Keep open under named parent (`#1255`, `#1256`, `#1258`, `#1259`, or `#1053`) |
 | **Subordinated** | Legacy `#1053` T-task retained for history; planning authority moves to `#1255` child |
 | **Superseded (planning)** | Serial `#1053` queue superseded by `#1255` phased child projects for new work |
-| **Later closeout** | Duplicate/obsolete **candidate** after Atlas disposition comment — **not closed here** |
+| **Later closeout** | Duplicate/obsolete **candidate** after ChatGPT disposition comment — **not closed here** |
 | **Gap** | Real remaining work requiring future child issue under `#1256` / `#1258` / `#1259` |
 
 Summary counts (website orchestrator issues reviewed):
@@ -192,7 +192,7 @@ implementation plan is approved — **not from this task**.
 | Content inventory implementation decomposition | Plan Phase 2 under `#1256`; avoid duplicating merged schema/API/admin from T43/T45 | **`#1256`** |
 | Ops admin hardening and workflow completion review | T40–T49 merges exist; operational polish, B2/media edge cases, and admin UX may remain | **`#1258`** (after `#1256`) |
 | Production QA, route validation, scheduled launch-readiness CI | H-011; `#1259` scope; T50 merged but CI scheduling gap remains | **`#1259`** |
-| Issue/label lifecycle normalization | A-011 / H-006; 24+ open `type:website` issues with stale lifecycle labels | **`#1255` Phase 0 follow-up** (comments/labels — Atlas authorized) |
+| Issue/label lifecycle normalization | A-011 / H-006; 24+ open `type:website` issues with stale lifecycle labels | **`#1255` Phase 0 follow-up** (comments/labels — ChatGPT authorized) |
 
 ## 9. Next Authorized Website Child Project
 
@@ -214,9 +214,9 @@ program-owner pause.
 - No build or implementation issues created
 - No GitHub issues closed or relabeled
 - No application code, workflows, D1, or runtime changes
-- No bulk closeout of satisfied T-task issues (deferred to Atlas/Bill disposition batch)
+- No bulk closeout of satisfied T-task issues (deferred to ChatGPT/Bill disposition batch)
 
-## 11. Recommended Follow-Up (Atlas / Bill — Out of Scope for `#1394`)
+## 11. Recommended Follow-Up (ChatGPT / Bill — Out of Scope for `#1394`)
 
 1. Post disposition comments on satisfied T-task issues linking merge PRs (A-011 batch).
 2. Normalize conflicting lifecycle labels (`status:failed` + `status:complete`, etc.).

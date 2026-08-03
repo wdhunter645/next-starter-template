@@ -13,7 +13,7 @@ Last Reviewed: 2026-06-11
 
 ## Preconditions
 
-- Atlas or Bill approved PR creation, or Bill/Atlas provided an explicit PR-opening
+- ChatGPT or Bill approved PR creation, or Bill/ChatGPT provided an explicit PR-opening
   instruction or approved PR template.
 - Local diff matches the reviewed packet (when a packet was required).
 - Changed files are inside the source issue allowlist.
@@ -51,7 +51,7 @@ The PR body must explicitly include:
 - **Scope disclosures** — docs-only, no workflow/runtime changes, known out-of-scope
   validation failures, etc.
 - **Post-merge issue disposition** — when applicable: comment-only, close after
-  merge, or defer to Atlas; state that GitHub issue closeout occurs after merge
+  merge, or defer to ChatGPT; state that GitHub issue closeout occurs after merge
   unless specifically authorized
 - **Queue / dependency-map status** (launched-program queue tasks) —
   dependency-map result (`pass` / `fail` / `not-applicable`), next queue item
@@ -88,7 +88,7 @@ Stop and report instead of opening a PR when:
 - mandatory governance fields cannot be completed honestly;
 - validation fails on a touched file;
 - issue closure or relabeling is required before merge;
-- Atlas has not reviewed the packet and Bill/Atlas has not authorized direct PR
+- ChatGPT has not reviewed the packet and Bill/ChatGPT has not authorized direct PR
   creation.
 
 ## After Opening

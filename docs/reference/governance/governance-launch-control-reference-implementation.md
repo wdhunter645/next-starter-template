@@ -1,6 +1,6 @@
 ---
 Doc Type: Reference
-Audience: Bill, Atlas, Cursor, Codex, LGFC maintainers, and CI/governance implementers
+Audience: Bill, ChatGPT, Cursor, Codex, LGFC maintainers, and CI/governance implementers
 Authority Level: Controlled
 Owns: Draft governance launch-control automation concepts, pseudocode contracts, future file-path map, test strategy, acceptance criteria, and edge-case register for optional post-package implementation
 Does Not Own: Shipped CI scripts, workflow YAML, tests, branch protection settings, or executable enforcement logic
@@ -31,12 +31,12 @@ This reference does not own live enforcement, merge gates, issue mutation, or br
 
 ## Intended final state
 
-If Bill/Atlas authorize a future implementation issue, repository-owned validators may:
+If Bill/ChatGPT authorize a future implementation issue, repository-owned validators may:
 
 1. Verify launch-control documentation package completeness before queue advance.
 2. Verify child issue bodies contain required governance fields.
 3. Verify Cursor pre-implementation checkpoint comments before protected-surface work.
-4. Verify Bill/Atlas authorization markers on issues.
+4. Verify Bill/ChatGPT authorization markers on issues.
 5. Reuse or extend PR body readiness checks without duplicating `post_merge_validator.mjs` rules.
 
 Until that authorization exists, this document remains non-executable reference material.
@@ -52,7 +52,7 @@ The proposed package contains five logical validators and one orchestrator:
 | Launch-control package validator | Confirms required launch-control docs exist and contain mandatory sections |
 | Issue package validator | Confirms a child issue body matches queue/task contract |
 | Cursor review checkpoint validator | Confirms checkpoint comment format on authorized issue |
-| Stop-gate authorization validator | Confirms Bill/Atlas authorization signals before implementation |
+| Stop-gate authorization validator | Confirms Bill/ChatGPT authorization signals before implementation |
 | PR body readiness validator | Confirms PR body closeout contract (may delegate to existing gate exports) |
 | Launch-control orchestrator (optional) | Runs validators in sequence for local preflight or CI advisory |
 
@@ -84,7 +84,7 @@ A validator scans issue comments for the `## Cursor pre-implementation checkpoin
 
 ### Concept D — Authorization marker detection
 
-A validator looks for Bill/Atlas assignment phrases in issue comments or labels (for example explicit assignment on `#1545`). Agents cannot self-authorize.
+A validator looks for Bill/ChatGPT assignment phrases in issue comments or labels (for example explicit assignment on `#1545`). Agents cannot self-authorize.
 
 ### Concept E — PR readiness delegation
 
@@ -112,7 +112,7 @@ const REQUIRED_PACKAGE_SECTIONS = [
   'Master issue structure',
   'Child issue structure',
   'Cursor pre-implementation review/comment checkpoint',
-  'Bill/Atlas authorization gates',
+  'Bill/ChatGPT authorization gates',
   'Continuous execution stop points',
   'Verification plan',
   'Rollback plan',
@@ -263,7 +263,7 @@ export function validateCursorReviewCheckpoint({ issueComments }) {
 // DRAFT / FUTURE — NOT IMPLEMENTED
 // Proposed path: scripts/ci/governance_stop_gate_authorization_validator.mjs
 
-const AUTHORIZED_ACTORS = ['wdhunter645', 'Bill', 'Atlas']; // configurable allowlist
+const AUTHORIZED_ACTORS = ['wdhunter645', 'Bill', 'ChatGPT']; // configurable allowlist
 
 const ASSIGNMENT_PATTERNS = [
   /assign(?:ed|ment)?\s+(?:to\s+)?(?:Cursor|Codex)/i,
@@ -397,7 +397,7 @@ All paths below are **draft/future** unless a separate authorized implementation
 | `scripts/ci/governance_launch_control_package_validator.mjs` | **DRAFT / FUTURE** | Package section completeness |
 | `scripts/ci/governance_issue_package_validator.mjs` | **DRAFT / FUTURE** | Child issue body contract |
 | `scripts/ci/governance_cursor_review_checkpoint_validator.mjs` | **DRAFT / FUTURE** | Checkpoint comment parser |
-| `scripts/ci/governance_stop_gate_authorization_validator.mjs` | **DRAFT / FUTURE** | Bill/Atlas authorization detection |
+| `scripts/ci/governance_stop_gate_authorization_validator.mjs` | **DRAFT / FUTURE** | Bill/ChatGPT authorization detection |
 | `scripts/ci/governance_pr_body_readiness_validator.mjs` | **DRAFT / FUTURE** | PR body readiness wrapper |
 | `scripts/ci/governance_launch_control_orchestrator.mjs` | **DRAFT / FUTURE** | Sequenced preflight runner |
 | `tests/governance-launch-control-validators.test.mjs` | **DRAFT / FUTURE** | Unit tests for validators |
@@ -496,7 +496,7 @@ A future authorized implementation issue may be closed when:
 - Pseudocode is for Cursor pre-implementation review and future issue scoping only.
 - Shipped behavior for PR body readiness remains `post_merge_readiness_gate.mjs` from Task 001.
 
-Do not merge pseudocode from this reference into `main` without a separate source issue, exact file allowlist, and Bill/Atlas authorization.
+Do not merge pseudocode from this reference into `main` without a separate source issue, exact file allowlist, and Bill/ChatGPT authorization.
 
 ---
 

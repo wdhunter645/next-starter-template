@@ -73,7 +73,7 @@ Confirm:
 | `none` | standard review |
 | `donor_member` | apply Fan Club privacy rules |
 | `living_person` | verify consent or defer |
-| `minors` | escalate to Bill/Atlas; default reject for public |
+| `minors` | escalate to Bill/ChatGPT; default reject for public |
 | `sensitive` | redact or `private_internal_only` |
 
 Set `privacy_review_status` accordingly.

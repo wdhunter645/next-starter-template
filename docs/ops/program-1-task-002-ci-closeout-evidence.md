@@ -3,7 +3,7 @@ Doc Type: Operations
 Audience: Human + AI
 Authority Level: Operational Authority
 Owns: Program 1 Task 002 CI closeout evidence and recommended GitHub issue disposition comments
-Does Not Own: GitHub issue state changes (Atlas approval required before closing issues)
+Does Not Own: GitHub issue state changes (ChatGPT approval required before closing issues)
 Canonical Reference: /docs/reference/ci/lgfc-ci-as-built-reconciliation.md
 Related Issues: #1335, #1340, #1058, #1075
 Last Reviewed: 2026-06-04
@@ -14,7 +14,7 @@ Last Reviewed: 2026-06-04
 ## Purpose
 
 Record CI as-built closeout evidence for Program 1 Task 002 (`#1340`) and provide
-recommended GitHub issue comments for Atlas-approved closeout actions.
+recommended GitHub issue comments for ChatGPT-approved closeout actions.
 
 ## Scope
 
@@ -66,7 +66,7 @@ Program 2 CI maintenance continues under `#1058` via phase-2 plan **Tasks 002–
 
 Post-merge closeout batch evidence: PRs `#1271`, `#1294`, `#1312` (batch remediation).
 
-## Recommended Closeout Comments (Atlas approval required)
+## Recommended Closeout Comments (ChatGPT approval required)
 
 ### `#1075` — verify if closed without evidence comment
 

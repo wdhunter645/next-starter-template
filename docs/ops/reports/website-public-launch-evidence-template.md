@@ -16,7 +16,7 @@ Last Reviewed: 2026-07-01
 
 ## Purpose
 
-Capture Bill/Atlas launch sign-off evidence for Program #2039.
+Capture Bill/ChatGPT launch sign-off evidence for Program #2039.
 
 ## Scope
 
@@ -40,4 +40,4 @@ Complete evidence package supports Task #2048 program validation.
 | Smoke test result | pass / fail |
 | Rollback required | yes / no |
 | Open exceptions | |
-| Bill/Atlas sign-off | |
+| Bill/ChatGPT sign-off | |

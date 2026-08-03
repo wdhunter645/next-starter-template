@@ -40,7 +40,7 @@ Define the source, credit, citation, provenance, rights, privacy, publication-re
 | Metadata schema | `docs/reference/website/lou-gehrig-content-metadata-schema.md` | Required candidate fields |
 | Provenance how-to | `docs/how-to/website/lou-gehrig-source-provenance-review.md` | Operator workflow |
 | #2286 pipeline | `functions/_lib/content-pipeline-publication-prep.ts`, `content-pipeline-candidate-admin.ts` | Publication-prep and review surfaces |
-| Intake draft | `_incoming/.../CC-002 … Draft.docx` on `atlas/drive-draft-intake-2367` | Non-authority |
+| Intake draft | `_incoming/.../CC-002 … Draft.docx` on `ChatGPT/drive-draft-intake-2367` | Non-authority |
 
 **ChatGPT disposition (#2360):** CC-002 is `merge_into_existing`. Prefer updates to existing Lou Gehrig provenance/rights docs unless ChatGPT freezes supersession.
 

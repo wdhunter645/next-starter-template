@@ -101,7 +101,7 @@ Assignment rules:
 
 - one primary owner per active queue item;
 - reassignment requires a queue note;
-- Bill/Atlas may override priority for launch-critical content;
+- Bill/ChatGPT may override priority for launch-critical content;
 - no item may skip provenance or rights review for public-copy promotion.
 
 ## Defer behavior

@@ -2,16 +2,18 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: LGFC merge-protection required check surface, consolidated deterministic blockers, branch-protection naming alignment
-Does Not Own: GitHub branch protection settings UI, reviewer lifecycle policy, PR hygiene policy, OPS runtime workflows
-Canonical Reference: /docs/governance/PR_PROCESS.md
-Related issues: #2175, #2184, #2208, #2228
-Last Reviewed: 2026-07-04
+Owns: LGFC merge-protection required check surface, consolidated deterministic blockers, and branch-protection naming alignment as a supporting specification
+Does Not Own: CI and Verification Domain Policy; GitHub branch protection settings UI; reviewer lifecycle policy; PR hygiene policy; OPS runtime workflows
+Canonical Reference: /docs/governance/CI-AND-VERIFICATION.md
+Related Issues: #2689, #2175, #2184, #2208, #2228
+Last Reviewed: 2026-07-21
 ---
 
 # LGFC Merge Protection Surface
 
-This controlled reference supports `/docs/governance/PR_PROCESS.md` by documenting the expected required-check surface for `main` after #2228 closeout.
+This document is the **supporting merge-protection surface** under the CI and Verification Domain Policy (`docs/governance/CI-AND-VERIFICATION.md`).
+
+It documents the expected required-check surface for `main` after #2228 closeout. It is **not** a Domain Policy co-owner. Conflicts with domain policy resolve through `docs/governance/CI-AND-VERIFICATION.md`. PR lifecycle procedure remains in `docs/governance/PR_PROCESS.md`.
 
 ## Required checks
 
@@ -61,7 +63,7 @@ OPS runtime, post-merge closeout, and metrics workflows are not merge-protection
 
 ## Live GitHub verification (operator)
 
-Bill/Atlas must confirm live branch protection on `main` matches this reference. Repo-owned docs cannot mutate GitHub settings.
+Bill/ChatGPT must confirm live branch protection on `main` matches this reference. Repo-owned docs cannot mutate GitHub settings.
 
 Operator steps:
 

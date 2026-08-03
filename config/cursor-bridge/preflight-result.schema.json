@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wdhunter645/next-starter-template/config/cursor-bridge/preflight-result.schema.json",
+  "title": "LGFC Cursor Local Bridge preflight result",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "checkVersion",
+    "result",
+    "ready",
+    "timestamp",
+    "invocationReason",
+    "checks",
+    "remediationClass",
+    "alert"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "checkVersion": { "type": "integer", "minimum": 1 },
+    "result": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "runner_unavailable",
+        "bridge_unavailable",
+        "github_not_authenticated",
+        "cursor_not_authenticated",
+        "cursor_capacity_unavailable",
+        "workspace_unavailable",
+        "queue_unavailable",
+        "stale_claim",
+        "configuration_invalid",
+        "unknown_failure"
+      ]
+    },
+    "ready": { "type": "boolean" },
+    "enforce": { "type": "boolean" },
+    "enforcementDisabled": { "type": "boolean" },
+    "allowClaim": { "type": "boolean" },
+    "timestamp": { "type": "string", "minLength": 1 },
+    "invocationReason": {
+      "type": "string",
+      "enum": ["startup", "periodic", "preclaim", "postfailure", "recovery", "manual"]
+    },
+    "host": { "type": "string" },
+    "checks": { "type": "array" },
+    "remediationClass": { "type": "string" },
+    "nextRetryAt": { "type": ["string", "null"] },
+    "alert": { "type": "object" }
+  }
+}

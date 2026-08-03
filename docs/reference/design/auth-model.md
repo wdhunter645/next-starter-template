@@ -2,15 +2,18 @@
 Doc Type: Reference
 Audience: Human + AI
 Authority Level: Controlled
-Owns: Canonical authentication and redirect behavior definitions
-Does Not Own: Join/Login UI composition; FanClub content layout; admin feature requirements
+Owns: Authentication and redirect behavior definitions as a supporting specification
+Does Not Own: Product and Design Domain Policy; Join/Login UI composition; FanClub content layout; admin feature requirements
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-06-03
+Related Issues: #2687
+Last Reviewed: 2026-07-21
 ---
 
 # Authentication Model (Canonical Auth Source)
 
-This file is the **single owner/source of truth** for authentication/session behavior and auth-related redirects.
+This file is the **canonical supporting specification** for authentication/session behavior and auth-related redirects under the Product and Design Domain Policy.
+
+It is not a Domain Policy co-owner. Domain-policy conflicts resolve through `docs/governance/PRODUCT-AND-DESIGN.md`.
 
 Canonical auth reference: /docs/reference/design/auth-model.md
 
@@ -54,9 +57,9 @@ LGFC Day 1 member access uses a **cookie-backed server session model** with **Cl
 
 ## Governance / Enforcement
 
-Subordinate docs must reference this file for auth behavior and must not redefine or conflict with it.
+Subordinate docs must reference this file for auth behavior and must not redefine or conflict with it within the auth topic.
 
-If any subordinate doc conflicts with this file, **this file wins**.
+If subordinate design docs conflict on auth behavior, prefer this file, then resolve any remaining conflict through `docs/governance/PRODUCT-AND-DESIGN.md`.
 
 Any file that mentions authentication/session/redirect behavior must include:
 

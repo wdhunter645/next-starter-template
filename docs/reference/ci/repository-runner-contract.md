@@ -5,17 +5,17 @@ Authority Level: Project Contract
 Owns: Repository-scoped self-hosted runner identity, labels, trusted invocation policy, rollout state, and control-plane placement for Project #2294
 Does Not Own: Host registration, project launch, workflow migration, deployment, production authorization, or the meaning of lane decisions
 Canonical Reference: /config/github-actions/repository-runner.json
-Related Issues: #2294, #2554, #2593, #2640, #2641
-Last Reviewed: 2026-07-19
+Related Issues: #2294, #2554, #2593, #2640, #2641, #2667
+Last Reviewed: 2026-07-20
 ---
 
 # LGFC Repository Runner Contract
 
 ## Purpose
 
-Define the repository-side contract for the Chromebook Linux GitHub Actions runner before host registration.
+Define the repository-side contract for the Chromebook Linux GitHub Actions runner.
 
-Because the repository is public, the bootstrap runner is repository-scoped, read-only, and manual-only. It must not accept pull-request, fork, push, schedule, deployment, or secret-bearing work.
+Because the repository is public, the runner is repository-scoped and must not accept pull-request, fork, push, schedule, deployment, or secret-bearing work. Permitted jobs are manual health and **wake-packet delivery** for Cursor Local Bridge. The runner must not launch Cursor or hold Cursor API keys.
 
 ## Scope
 
@@ -58,7 +58,9 @@ Split responsibility:
 
 - `config/github-actions/repository-runner.json`
 - `.github/workflows/repository-runner-health.yml`
+- `.github/workflows/cursor-local-wake.yml`
 - `docs/how-to/ci/configure-lgfc-repository-runner.md`
+- `docs/reference/ci/cursor-local-bridge-contract.md`
 - `docs/reference/operations/operating-lanes-and-promotion-profiles.md`
 
 ## Identity
@@ -89,19 +91,32 @@ The initial health workflow is valid only when:
 - permissions remain `contents: read`;
 - checkout credentials are not persisted.
 
-## Initial rollout state
+## Rollout state
 
 ```text
-repository-configured-host-not-registered
+host-registered-wake-delivery-enabled
 ```
 
 Permitted use:
 
 ```text
-manual health and observe-only validation
+manual health + wake-packet delivery only
 ```
 
-Existing workflows must remain on their current runners until the host is registered, the health workflow passes, Project #2294 reaches the applicable Go boundary, and the applicable role authorizes a specific workflow migration.
+### Wake delivery (not Cursor launch)
+
+`wakeDelivery` in `config/github-actions/repository-runner.json` authorizes `.github/workflows/cursor-local-wake.yml` to write host packets only when:
+
+- repository is `wdhunter645/next-starter-template`;
+- event is gated `issues`/`issue_comment`/`workflow_dispatch` per workflow `if:`;
+- labels include the required Cursor handoff pair when applicable;
+- `mayLaunchCursor`, `mayHoldApiKeys`, and `mayClaimSerialLane` remain false.
+
+Cursor Local Bridge revalidates live Issue eligibility before any CLI launch. See `docs/reference/ci/cursor-local-bridge-contract.md`.
+
+Health heartbeat, watchdog restart, and missed-handoff reconciliation are **Bridge-local** concerns. The runner remains transport only and must not own Cursor credentials, serial claims, or agent launch. Recovery packets are written only by the Bridge into the same host queue the wake workflow uses.
+
+Existing product workflows must remain on their current runners until Project #2294 authorizes a specific migration.
 
 ## Promotion conditions
 

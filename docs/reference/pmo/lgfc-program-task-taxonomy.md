@@ -13,18 +13,18 @@ Last Reviewed: 2026-06-05
 
 ## Purpose
 
-Define common task classes so Cursor and Atlas use the same execution language.
+Define common task classes so Cursor and ChatGPT use the same execution language.
 
 ## Task Classes
 
 | Type | Meaning | Typical agent | Output |
 |---|---|---|---|
-| governance | Rules, queue, authority, PMO structure | Atlas | docs and issue protocol |
+| governance | Rules, queue, authority, PMO structure | ChatGPT | docs and issue protocol |
 | ci | CI documentation, workflow inventory, evidence | Cursor | docs PR, no runtime unless authorized |
 | website | shipped-site reconciliation and product docs | Cursor | docs PR or bounded app PR |
 | docs | DIATAXIS mapping and documentation health | Cursor | docs PR |
 | ops | monitoring, runtime surface, operational evidence | Cursor | docs/report PR |
-| review | synthesis and launch-gate decision | Atlas | report and issue comments |
+| review | synthesis and launch-gate decision | ChatGPT | report and issue comments |
 
 ## Task Shape
 

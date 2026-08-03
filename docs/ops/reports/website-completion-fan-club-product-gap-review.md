@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Controlled
 Owns: Task 001 as-built gap table for Website Completion / Fan Club Product Buildout
 Does Not Own: Application code changes, runtime architecture decisions, D1 migrations, issue closure, labels, or merge approval

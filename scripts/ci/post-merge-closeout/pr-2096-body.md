@@ -3,7 +3,7 @@
 
 ## QUEUE / DEPENDENCY MAP STATUS
 - Dependency-map result: pass — post-merge closeout remediation for Program #2039 Task 002
-- Next queue item: #2043 after #2042 closeout and Bill/Atlas authorization
+- Next queue item: #2043 after #2042 closeout and Bill/ChatGPT authorization
 - Continue/halt decision: continue after post-merge verification
 
 ## PROGRESS + READINESS (MANDATORY)
@@ -41,7 +41,7 @@ All other files are out of scope
 - Reconcile public launch copy on homepage, About, Contact, FAQ, Ask, Events, Join/Login, Search, and Fan Club masthead surfaces.
 - Clarify public-vs-member boundaries, moderator-reviewed FAQ language, and no live on-site fundraiser campaign claims.
 - Remove implementation-facing D1 wording from the homepage discussions teaser.
-- Add Task #2042 copy reconciliation report with unresolved Bill/Atlas content decisions.
+- Add Task #2042 copy reconciliation report with unresolved Bill/ChatGPT content decisions.
 
 **Out of scope (explicit):** #2043 `/admin/clubstaging`, #2044 media fallback, #2045 fundraiser functionality, #2046 SEO/analytics/sitemap/social cards, #2047 launch controls, and #2040 automation.
 

@@ -1,6 +1,6 @@
 ---
 Doc Type: Implementation Plan
-Audience: Bill, Atlas, Cursor, admin implementers, and LGFC maintainers
+Audience: Bill, ChatGPT, Cursor, admin implementers, and LGFC maintainers
 Authority Level: Controlled
 Owns: Admin review queue and publication-prep implementation sequence for post-#2273 work
 Does Not Own: Runtime code, migrations, issue closure for #1738/#2073/#2040, or merge approval
@@ -100,7 +100,7 @@ metadata but public routes remain inventory-gated.
 
 | Issue | Recommendation after #2273 |
 | --- | --- |
-| **#1738** | Remain paused. Reusable docs absorbed into #2270/#2273 model. Reopen only if Bill/Atlas launch a merged "content collection operations" program that explicitly supersedes #2273 storage/admin child issues. |
+| **#1738** | Remain paused. Reusable docs absorbed into #2270/#2273 model. Reopen only if Bill/ChatGPT launch a merged "content collection operations" program that explicitly supersedes #2273 storage/admin child issues. |
 | **#2073** | Remain paused as future advanced media/archive acquisition layer. Trigger after manual seed pilot and Phase D media upload are stable. |
 | **#2040** | Remain paused as publication automation layer. Trigger after admin review queues (this plan) are implemented and publication prep is proven manual-first. |
 
@@ -108,7 +108,7 @@ metadata but public routes remain inventory-gated.
 
 ## Launch authorization
 
-Implementation child issues require Bill/Atlas launch authorization per LGFC
+Implementation child issues require Bill/ChatGPT launch authorization per LGFC
 operating model. This plan is ready for child issue creation, not autonomous execution.
 
 ## Acceptance checklist

@@ -248,7 +248,7 @@ tagged/filtered view of `photos`, not a standalone table.
 | Approved story-media association fields are not implemented. | needs schema delta | No migration defines a story-media link table; `content_inventory.media` JSON is used instead. |
 | Approval into inventory embeds queue `media_url` JSON instead of linking to a `photos` row. | needs API/data-access delta | `functions/api/admin/editorial/review.ts:125-126`, `140-166` |
 | `media_assets` admin is parallel to, not integrated with, `photos` or `content_inventory`. | needs admin/editor UI delta | `migrations/0010_media_assets.sql`; `src/app/admin/media-assets/page.tsx` |
-| Photo approval/moderation state is unresolved. | blocked / unclear and requiring Atlas/Bill decision | `functions/api/fanclub/photos.ts:34-36` treats current rows as already approved; approved docs require source/credit review but do not choose a photo approval schema. |
+| Photo approval/moderation state is unresolved. | blocked / unclear and requiring ChatGPT/Bill decision | `functions/api/fanclub/photos.ts:34-36` treats current rows as already approved; approved docs require source/credit review but do not choose a photo approval schema. |
 
 ## 7. Admin/editor workflow comparison
 
@@ -291,8 +291,8 @@ status, canonical preference, source/credit completeness, and exclusion rules.
 | Fan Club library attribution | Maps `credit_line`/`source_name` into author-like display, but UI copy still says "library entries". | needs documentation correction | `functions/api/fanclub/library.ts:60-68`; `src/app/fanclub/library/page.tsx:81-87` |
 | Homepage spotlight | Reads CMS content block config, not `content_inventory` with `homepage_spotlight`. | needs public rendering delta | `src/components/home/CampaignSpotlightSlot.tsx:25-37` |
 | Homepage milestones | Reads dedicated `milestones` table and joins `photos`, not inventory `event_date`/`event_year` records. | needs public rendering delta | `functions/api/milestones/list.ts:33-44`; `src/components/MilestonesSection.tsx:57-67` |
-| Homepage discussions | Reads dedicated member-only `discussions`, not inventory records eligible for `homepage_discussions`. | blocked / unclear and requiring Atlas/Bill decision | `functions/api/discussions/list.ts:18-21`; `src/components/RecentDiscussionsTeaser.tsx:60-83` |
-| Public archive/library route | No public `/archive` route was found; archive-like browsing is member-gated under Fan Club library/photo/memorabilia. | blocked / unclear and requiring Atlas/Bill decision | Canonical public routes in `docs/reference/design/LGFC-Production-Design-and-Standards.md` do not list `/archive`; placement docs include `archive`. |
+| Homepage discussions | Reads dedicated member-only `discussions`, not inventory records eligible for `homepage_discussions`. | blocked / unclear and requiring ChatGPT/Bill decision | `functions/api/discussions/list.ts:18-21`; `src/components/RecentDiscussionsTeaser.tsx:60-83` |
+| Public archive/library route | No public `/archive` route was found; archive-like browsing is member-gated under Fan Club library/photo/memorabilia. | blocked / unclear and requiring ChatGPT/Bill decision | Canonical public routes in `docs/reference/design/LGFC-Production-Design-and-Standards.md` do not list `/archive`; placement docs include `archive`. |
 | Related content | No inventory-related-content API/component exists; memorabilia uses a legacy text-match snippet from `library_entries`. | needs public rendering delta | `functions/api/fanclub/memorabilia.ts:77-98` |
 | Public exclusion rules | Current inventory read path filters `status = 'published'`; queue is not read publicly. | already satisfied | `functions/api/fanclub/library.ts:38-39`; no public `submission_queue` reads found. |
 | Archived inventory | `archived` exists, but no archive-approved inventory reader exists. | needs public rendering delta | `migrations/0035_editorial_archive.sql:22`; no route/API found for `archive` allowed section. |
@@ -342,7 +342,7 @@ for review and debugging.
 | `last_featured` is not updated by publish or a rotation process. | needs editorial rotation delta | `functions/api/admin/editorial/publish.ts:48-55` updates only `status`, `updated_at`, and `published_at`. |
 | Homepage feature surfaces do not consume `homepage_spotlight`, `homepage_discussions`, or `homepage_milestones` inventory eligibility. | needs editorial rotation delta | `src/app/page.tsx:30-93`; `CampaignSpotlightSlot`, `MilestonesSection`, and `RecentDiscussionsTeaser` use other data sources. |
 | Weekly Matchup has its own active matchup selection and is not inventory editorial rotation. | already satisfied | `src/app/page.tsx:32-36`; weekly matchup behavior is separate from inventory docs. |
-| Whether milestones/discussions should migrate fully into inventory or remain parallel canonical tables is not settled by runtime code. | blocked / unclear and requiring Atlas/Bill decision | `functions/api/milestones/list.ts:33-44`; `functions/api/discussions/list.ts:18-21`; placement docs identify inventory eligibility for those surfaces. |
+| Whether milestones/discussions should migrate fully into inventory or remain parallel canonical tables is not settled by runtime code. | blocked / unclear and requiring ChatGPT/Bill decision | `functions/api/milestones/list.ts:33-44`; `functions/api/discussions/list.ts:18-21`; placement docs identify inventory eligibility for those surfaces. |
 
 ## 11. `library_entries` compatibility assessment
 
@@ -377,7 +377,7 @@ Current state:
 | Member search still indexes legacy `library_entries` rather than `content_inventory`. | needs search delta | `functions/api/search.ts:178-197` |
 | Memorabilia related content uses legacy `library_entries` text matching rather than story relationships. | needs public rendering delta | `functions/api/fanclub/memorabilia.ts:77-98` |
 | No backfill or migration path from `library_entries` to `content_inventory` exists. | needs operational validation | No migration/script found for `library_entries` to `content_inventory` conversion. |
-| The intended compatibility policy needs an Atlas/Bill decision before runtime switch-over. | blocked / unclear and requiring Atlas/Bill decision | Design requires no silent orphaning; current code is split across old and new read paths. |
+| The intended compatibility policy needs an ChatGPT/Bill decision before runtime switch-over. | blocked / unclear and requiring ChatGPT/Bill decision | Design requires no silent orphaning; current code is split across old and new read paths. |
 
 Compatibility risk level: **high**. The next implementation sequence should not
 move additional public/member reads to `content_inventory` until the legacy data
@@ -401,7 +401,7 @@ deprecation with owner approval.
 | G-011 | Member text submission exists. | already satisfied | Preserve in Task 003 |
 | G-012 | Member/media submission path is missing beyond text and optional API-level `media_url`. | needs admin/editor UI delta | Task 004 or Task 005 |
 | G-013 | Memorabilia remains a filtered `photos` view. | already satisfied | Preserve in Task 004 |
-| G-014 | Photo approval/moderation state is unresolved. | blocked / unclear and requiring Atlas/Bill decision | Task 004 |
+| G-014 | Photo approval/moderation state is unresolved. | blocked / unclear and requiring ChatGPT/Bill decision | Task 004 |
 | G-015 | Admin review and publish spine exists. | already satisfied | Preserve in Task 005 |
 | G-016 | Admin UI hardcodes `allowed_sections: ['library']`. | needs admin/editor UI delta | Task 005 |
 | G-017 | Admin UI lacks direct story creation/editing, canonical/alternate controls, merge, media association, and rotation controls. | needs admin/editor UI delta | Task 005 |
@@ -410,8 +410,8 @@ deprecation with owner approval.
 | G-020 | Fan Club library copy still describes "library entries" while reading inventory. | needs documentation correction | Task 006 or content/UI copy correction |
 | G-021 | Homepage spotlight is CMS-driven, not inventory-driven. | needs public rendering delta | Task 006 |
 | G-022 | Homepage milestones read the `milestones` table, not inventory event records. | needs public rendering delta | Task 006 |
-| G-023 | Homepage discussions read `discussions`; whether inventory should provide prompts is unresolved. | blocked / unclear and requiring Atlas/Bill decision | Task 006 |
-| G-024 | No public archive route was found, while docs include `archive` as a section key. | blocked / unclear and requiring Atlas/Bill decision | Task 006 |
+| G-023 | Homepage discussions read `discussions`; whether inventory should provide prompts is unresolved. | blocked / unclear and requiring ChatGPT/Bill decision | Task 006 |
+| G-024 | No public archive route was found, while docs include `archive` as a section key. | blocked / unclear and requiring ChatGPT/Bill decision | Task 006 |
 | G-025 | Related-content modules are not implemented. | needs public rendering delta | Task 006 |
 | G-026 | Public search exists but does not query `content_inventory`. | needs search delta | Task 007 - Search and Discovery Delta |
 | G-027 | Search still indexes `library_entries` for members. | needs search delta | Task 007 with compatibility decision |
@@ -421,13 +421,13 @@ deprecation with owner approval.
 | G-031 | `last_featured` is not written by publication or rotation behavior. | needs editorial rotation delta | Task 008 |
 | G-032 | Library ordering uses priority but no event proximity, group diversity, weight, recent-feature penalty, or canonical preference. | needs editorial rotation delta | Task 008 |
 | G-033 | `library_entries` lacks backfill, fallback, or migration path into `content_inventory`. | needs operational validation | Task 002/006/007 prerequisite decision |
-| G-034 | Policy for deprecating, dual-reading, or backfilling `library_entries` is unresolved. | blocked / unclear and requiring Atlas/Bill decision | Atlas/Bill decision before Tasks 006-007 |
-| G-035 | Older content-inventory reference docs conflict with the approved website model. | needs documentation correction | Documentation correction issue only if Atlas/Bill authorizes it |
+| G-034 | Policy for deprecating, dual-reading, or backfilling `library_entries` is unresolved. | blocked / unclear and requiring ChatGPT/Bill decision | ChatGPT/Bill decision before Tasks 006-007 |
+| G-035 | Older content-inventory reference docs conflict with the approved website model. | needs documentation correction | Documentation correction issue only if ChatGPT/Bill authorizes it |
 
 ## 13. Recommended next child issue sequence
 
 No child implementation issues are created by this report. The sequence below is
-recommended for Atlas/Bill review and future issue creation only.
+recommended for ChatGPT/Bill review and future issue creation only.
 
 1. **Decision checkpoint: `library_entries` compatibility path**
    - Choose one of: backfill, fallback/dual-read, or documented deprecation.

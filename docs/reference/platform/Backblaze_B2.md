@@ -1,17 +1,22 @@
 ---
 Doc Type: Reference
 Audience: Human + AI
-Authority Level: Canonical Platform Specification
-Owns: Cloudflare, D1, B2, platform constraints, platform operational rules
-Does Not Own: UI design specifics; PR process; incident response playbooks
-Canonical Reference: /docs/reference/platform/CLOUDFLARE.md
-Last Reviewed: 2026-07-15
+Authority Level: Controlled
+Owns: Backblaze B2 resource inventory and B2↔D1 sync facts as a supporting specification
+Does Not Own: Platform and Environment Domain Policy; UI design specifics; PR process; incident response playbooks
+Canonical Reference: /docs/governance/PLATFORM-AND-ENVIRONMENT.md
+Related Issues: #2688
+Last Reviewed: 2026-07-21
 ---
 
 # Backblaze B2 — Resource Inventory (LGFC)
 
+This document is the **supporting Backblaze B2 resource inventory** under the Platform and Environment Domain Policy (`docs/governance/PLATFORM-AND-ENVIRONMENT.md`).
+
 Purpose: Design/resource inventory for Backblaze B2 as used by the LGFC site.  
 No operational status notes. No secrets. No app keys.
+
+This file is **not** a Domain Policy co-owner. Domain-policy conflicts resolve through `docs/governance/PLATFORM-AND-ENVIRONMENT.md`.
 
 ---
 
@@ -82,7 +87,7 @@ Other media tables may exist depending on phase (catalog + metadata), but the cu
 
 The B2 bucket may contain objects that are not approved for public club surfaces. D1 indexes every synced object; **club-use eligibility is a separate curation flag** on the `photos` row.
 
-Canonical values (Atlas model):
+Canonical values (ChatGPT model):
 
 | Value | Meaning | Matchup / homepage use |
 | --- | --- | --- |

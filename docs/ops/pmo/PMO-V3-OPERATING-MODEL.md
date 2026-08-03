@@ -68,7 +68,7 @@ This document becomes the controlling PMO authority for new planning and impleme
 - Documentation references use issue-number format:
   `Program #<issue-number> — <program name>`.
 - GitHub issue titles use `Program: <name>` when possible. The issue number is
-  already part of GitHub; do not duplicate it in the title unless Bill/Atlas
+  already part of GitHub; do not duplicate it in the title unless Bill/ChatGPT
   require a specific naming exception.
 
 ## Current program issues
@@ -87,7 +87,7 @@ This document becomes the controlling PMO authority for new planning and impleme
 | --- | --- |
 | Historical label | Program 1 |
 | Status | Completed planning/control artifact (`status:complete`, issue closed) |
-| Execution rule | issue #1411 is not an open blocked program. Any future execution work must be represented by a current open source issue before launch. New PMO automation execution remains blocked until Program #1255 is completed and signed off and Atlas/Bill explicitly launch the next cycle. |
+| Execution rule | issue #1411 is not an open blocked program. Any future execution work must be represented by a current open source issue before launch. New PMO automation execution remains blocked until Program #1255 is completed and signed off and ChatGPT/Bill explicitly launch the next cycle. |
 
 ### Legacy #1379
 
@@ -108,7 +108,7 @@ This document becomes the controlling PMO authority for new planning and impleme
 | Project | A bounded workstream under a program. |
 | Task issue | A single executable unit under a project/program, normally one source issue and one PR. |
 | PR | One scoped change set tied to exactly one source issue unless an approved exception says otherwise. |
-| Launch gate | Explicit Bill/Atlas/controller authorization that a program or task sequence may execute. |
+| Launch gate | Explicit Bill/ChatGPT/controller authorization that a program or task sequence may execute. |
 | Closeout | Post-merge verification and authorized source issue disposition. |
 
 ## Program lifecycle status nomenclature
@@ -229,7 +229,7 @@ PMO meeting issue
 
 A PMO Backlog item may move toward executable work only after these gates are satisfied:
 
-1. Bill or the owner approves the item for promotion review during a PMO meeting or explicit Bill/Atlas review.
+1. Bill or the owner approves the item for promotion review during a PMO meeting or explicit Bill/ChatGPT review.
 2. The item is documented as a project candidate.
 3. Missing design, scope, constraints, and expected outcomes are clarified.
 4. Repository documentation becomes the source of truth.
@@ -253,7 +253,7 @@ Agents must not treat a closed historical planning issue as active durable autho
 | Actor | May do | May not do without explicit authorization |
 | --- | --- | --- |
 | Bill | Approve strategy, launch gates, merges, protected actions, destructive issue actions, prioritization. | N/A. |
-| Atlas | Define PMO authority, review governance, prepare issue/PR instructions, perform explicitly authorized issue closeout. | Mutate issues or repo state when the user asked only for a prompt or analysis. |
+| ChatGPT | Define PMO authority, review governance, prepare issue/PR instructions, perform explicitly authorized issue closeout. | Mutate issues or repo state when the user asked only for a prompt or analysis. |
 | Cursor | Implement bounded tasks, update PR bodies, run validation, stop at READY FOR REVIEW. | Merge, close issues, relabel, advance queues, create child issues, mutate issue state, or expand scope. |
 | Controller / automation | Run explicitly defined checks and authorized closeout steps. | Infer authority from merge state, labels, queue order, or prior discussion. |
 
@@ -288,7 +288,7 @@ A program issue is launch-ready only when:
 - authority boundaries are explicit;
 - validation and closeout expectations are defined;
 - PMO Backlog dependencies, if any, have been promoted into program authority;
-- Atlas/Bill explicitly authorize launch.
+- ChatGPT/Bill explicitly authorize launch.
 
 ## Historical PMO v2 transition note
 

@@ -51,7 +51,7 @@ Search engines and social preview crawlers receive consistent metadata for core 
 
 | Item | Repo behavior | Operator action |
 | --- | --- | --- |
-| Google Analytics | Loads only when `NEXT_PUBLIC_GA_ID` is set at build time | Bill/Atlas set Cloudflare Pages env var |
+| Google Analytics | Loads only when `NEXT_PUBLIC_GA_ID` is set at build time | Bill/ChatGPT set Cloudflare Pages env var |
 | Search Console verification | Not embedded in repo | Operator-owned DNS/HTML verification |
 | Secrets | No hardcoded GA IDs in source | Use environment configuration only |
 

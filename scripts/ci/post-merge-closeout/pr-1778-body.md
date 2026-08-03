@@ -11,7 +11,7 @@
 
 ## QUEUE / DEPENDENCY MAP STATUS
 - Dependency-map result: pass
-- Next queue item: halt — Program #1255 terminal closeout awaits Atlas/Bill authorization after inspection
+- Next queue item: halt — Program #1255 terminal closeout awaits ChatGPT/Bill authorization after inspection
 - Continue/halt decision: halt — closeout prep documentation only
 
 ## PROGRESS + READINESS (MANDATORY)
@@ -68,7 +68,7 @@ All other files are out of scope
 - [x] Documentation and scoped contract tests only; no runtime behavior modified
 
 ## CHANGE SUMMARY
-- Publish `program-1255-closeout-readiness.md` — Atlas/Bill inspection checklist and authorized close sequence.
+- Publish `program-1255-closeout-readiness.md` — ChatGPT/Bill inspection checklist and authorized close sequence.
 - Update final QA handoff and program registry for Task 008 complete and operator hygiene complete (`#1123`, `#1258`).
 - Normalize closeout readiness table header (`issue` lowercase) per Gemini review.
 - Remove `active_tasklist.md` and queue-map edits from diff to resolve mixed-intent drift failure.
@@ -123,13 +123,13 @@ Pre-merge closeout prediction: pass
 Source issue state before merge: open
 Expected post-merge source issue action: no-op — do NOT close #1255
 Reviewer disposition parseability: pass
-Queue continuation after closeout: halt — await Atlas/Bill terminal authorization
+Queue continuation after closeout: halt — await ChatGPT/Bill terminal authorization
 
 ## POST-MERGE CLOSEOUT CHECKLIST
 - [ ] PR merged state verified
 - [ ] Merge commit recorded
 - [ ] Source issue `#1255` state inspected after merge — must remain OPEN
-- [ ] Do NOT close `#1255` — closeout prep docs only; terminal closeout requires Atlas/Bill authorization
+- [ ] Do NOT close `#1255` — closeout prep docs only; terminal closeout requires ChatGPT/Bill authorization
 
 ## ACCEPTANCE CRITERIA
 - [x] Closeout readiness packet published with inspection checklist
@@ -148,8 +148,8 @@ Queue continuation after closeout: halt — await Atlas/Bill terminal authorizat
 - [x] Intent label correct and singular (`infra`)
 - [x] Status is READY FOR REVIEW
 
-## ATLAS MERGE AUTHORIZATION REQUEST
-Remediation complete on head `9bd122f86d07239fc2117ad9af6f91bb3b767138`. All governance gates green. Gemini thread resolved on GitHub. Requesting Atlas/Bill merge authorization.
+## ChatGPT MERGE AUTHORIZATION REQUEST
+Remediation complete on head `9bd122f86d07239fc2117ad9af6f91bb3b767138`. All governance gates green. Gemini thread resolved on GitHub. Requesting ChatGPT/Bill merge authorization.
 <!-- CURSOR_AGENT_PR_BODY_END -->
 
 ## POST-MERGE ISSUE DISPOSITION

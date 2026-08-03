@@ -38,7 +38,7 @@ Support docs govern **how** tasks are assigned, labeled, queued, and halted. Fou
 
 ## Current known truth
 
-- Intake `.docx` files remain non-authoritative under `_incoming/` on `atlas/drive-draft-intake-2367`.
+- Intake `.docx` files remain non-authoritative under `_incoming/` on `ChatGPT/drive-draft-intake-2367`.
 - Rejected target root `docs/ops/programs/content-collection/` — remapped to `docs/ops/implementation-plans/content-collection/support/` per #2360 C7.
 - Cursor assignment prompts supplement `docs/templates/agent-assignment-template.md`; they do not replace it.
 - Label addendum defers to PMO July 2026 — not parallel label authority.

@@ -1,6 +1,6 @@
 ---
 Doc Type: Report
-Audience: Bill, Atlas, LGFC maintainers
+Audience: Bill, ChatGPT, LGFC maintainers
 Authority Level: Program Evidence
 Owns: Program #1738 validation, operator handoff, and #2040 readiness recommendation
 Does Not Own: #2040 execution, program issue closure, or merge authority
@@ -81,9 +81,9 @@ Rationale:
 - Documentation pipeline for manual workflow is complete pending PR merge.
 - Operator trials must populate `lou-gehrig-content-manual-workflow-evidence.md`
   before #2040 Task #2049 evidence review.
-- No runtime automation should begin until Bill/Atlas accept handoff after trials.
+- No runtime automation should begin until Bill/ChatGPT accept handoff after trials.
 
-Bill/Atlas final decision: _(pending review)_
+Bill/ChatGPT final decision: _(pending review)_
 
 ## Operator handoff checklist
 
@@ -92,16 +92,16 @@ Bill/Atlas final decision: _(pending review)_
 - [ ] Evidence report trial tables populated
 - [ ] Rejection reason patterns documented
 - [ ] Pain points recorded
-- [ ] Bill/Atlas accept #2040 launch or defer
+- [ ] Bill/ChatGPT accept #2040 launch or defer
 
 ## Program closeout note
 
 Program issue #1738 remains **open** as PROGRAM umbrella. Do not close #1738
-unless Bill/Atlas explicitly authorize program closeout after Task 008 acceptance.
+unless Bill/ChatGPT explicitly authorize program closeout after Task 008 acceptance.
 
 ## Acceptance checklist
 
 - [x] Evidence package consolidated
 - [x] Deferred tasks listed
 - [x] Operator handoff checklist provided
-- [x] Program closeout recommendation ready for Bill/Atlas review
+- [x] Program closeout recommendation ready for Bill/ChatGPT review

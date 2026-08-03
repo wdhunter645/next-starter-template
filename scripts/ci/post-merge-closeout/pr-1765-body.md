@@ -89,12 +89,12 @@ All other files are out of scope
 
 ## CHANGE SUMMARY
 - Created `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md` as the canonical LGFC AI team roles, modes, authority boundaries, and workflow document.
-- Updated `Agent.md` to route the mandatory documentation chain through the new operating model and summarize Bill/Atlas/Cursor/Codex roles.
+- Updated `Agent.md` to route the mandatory documentation chain through the new operating model and summarize Bill/ChatGPT/Cursor/Codex roles.
 - Updated `SHARED-AGENT-RULES.md` to declare Cursor as sole LGFC implementation executor and Codex as inactive/out.
-- Updated `CHATGPT-RULES.md` so Atlas owns design packages, documentation PRs, program/child issues, launch-control packages, draft/reference code, and gate review with Bill.
+- Updated `CHATGPT-RULES.md` so ChatGPT owns design packages, documentation PRs, program/child issues, launch-control packages, draft/reference code, and gate review with Bill.
 - Updated `CURSOR-RULES.md` so Cursor is implementation authority with mandatory pre-implementation package review and verification stop points.
 - Updated `CODEX-RULES.md` so Codex must not receive LGFC implementation assignments unless future Bill-approved governance reauthorizes it.
-- Updated `docs/templates/agent-assignment-template.md` with launch-control fields: documentation package, draft/reference code, verification plan, rollback plan, Cursor review checkpoint, and Bill/Atlas stop-gate authorization.
+- Updated `docs/templates/agent-assignment-template.md` with launch-control fields: documentation package, draft/reference code, verification plan, rollback plan, Cursor review checkpoint, and Bill/ChatGPT stop-gate authorization.
 
 ## BUILD / TEST / VERIFICATION
 - Commands run:
@@ -175,12 +175,12 @@ Reviewer items:
 - [ ] Source issue closed manually when automation does not close it after validator pass
 
 ## ACCEPTANCE CRITERIA
-- [x] Repository docs name Bill, Atlas, Cursor, and Codex roles exactly.
+- [x] Repository docs name Bill, ChatGPT, Cursor, and Codex roles exactly.
 - [x] Cursor is documented as the sole implementation executor.
 - [x] Codex is documented as inactive/out for implementation work.
-- [x] Atlas is documented as design, documentation PR, program issue, child issue, work-package, and gate-review authority.
+- [x] ChatGPT is documented as design, documentation PR, program issue, child issue, work-package, and gate-review authority.
 - [x] Cursor pre-implementation review/comment is required before implementation when an issue package is newly authored.
-- [x] Continuous execution stop points and Bill/Atlas continuation authorization are documented.
+- [x] Continuous execution stop points and Bill/ChatGPT continuation authorization are documented.
 - [x] Agent assignment template requires launch-control-ready documentation and draft/reference code package content.
 - [x] Required source issue exists, is open, is same-repository, and is not a PR.
 - [x] All required document headers present when docs are changed.

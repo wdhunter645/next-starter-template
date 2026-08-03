@@ -2,7 +2,7 @@
 Doc Type: How-To
 Audience: Human + AI
 Authority Level: Operational
-Owns: Repeatable PR gate-clean execution workflow for Cursor and Atlas
+Owns: Repeatable PR gate-clean execution workflow for Cursor and ChatGPT
 Does Not Own: Canonical PR-process policy or CI implementation design
 Canonical Reference: /docs/governance/PR_PROCESS.md
 Supporting References:
@@ -32,7 +32,7 @@ Do **not** use the PR body as a lifecycle database. The following legacy pattern
 
 Reviewer lifecycle state lives in **GitHub reviews and review threads**. Merge readiness lives in **required checks, labels, and operator decision**.
 
-## Required execution sequence
+## Procedure
 
 ### 1. Confirm source issue
 

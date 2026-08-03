@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations Report
-Audience: Bill, Atlas, Cursor, LGFC maintainers, implementation agents, and reviewers
+Audience: Bill, ChatGPT, Cursor, LGFC maintainers, implementation agents, and reviewers
 Authority Level: Operational Evidence
 Owns: Post-merge closeout decision record for remediation issue #2061
 Does Not Own: Program #2039 implementation launch, source issue closure, public launch execution, or runtime behavior
@@ -13,7 +13,7 @@ Last Reviewed: 2026-06-29
 
 ## Purpose
 
-Record the Atlas/Bill remediation decision for post-merge closeout exception #2061.
+Record the ChatGPT/Bill remediation decision for post-merge closeout exception #2061.
 
 ## Scope
 
@@ -32,7 +32,7 @@ This report covers only the closeout/accounting remediation for #2061 after PR #
 ## Current known truth
 
 - PR #2057 merged Program #2039 documentation authority.
-- Program #2039 is a program controller and must remain open until its terminal task chain is complete and Bill/Atlas accept program closeout.
+- Program #2039 is a program controller and must remain open until its terminal task chain is complete and Bill/ChatGPT accept program closeout.
 - #2061 does not identify a DIATAXIS content failure.
 - #2061 does not identify a metadata failure.
 - #2061 does not identify an implementation evidence failure.
@@ -40,7 +40,7 @@ This report covers only the closeout/accounting remediation for #2061 after PR #
 
 ## Remediation decision
 
-Atlas/Bill decision:
+ChatGPT/Bill decision:
 
 1. Accept the merged Program #2039 documentation from PR #2057.
 2. Do not revert merge SHA `ac02263c0e7e82516d830ecb11958e031b0afe9f`.
@@ -54,7 +54,7 @@ After this remediation report merges:
 
 - Close #2061 as completed.
 - Remove stale failure labels from #2039, including `status:failed` if present.
-- Preserve #2039 open with `documentation` and `program:planning` labels unless Bill/Atlas define a more specific program status label.
+- Preserve #2039 open with `documentation` and `program:planning` labels unless Bill/ChatGPT define a more specific program status label.
 
 ## Closeout conclusion
 

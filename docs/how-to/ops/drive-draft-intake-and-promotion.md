@@ -24,7 +24,7 @@ Intake is **outside** the normal issue/PR authority path until drafts are enrich
 | Field | Value |
 | --- | --- |
 | Folder | `_incoming/drive-drafts/content-collection/` |
-| Branch | `atlas/drive-draft-intake-2367` |
+| Branch | `ChatGPT/drive-draft-intake-2367` |
 | Manifest | `_incoming/drive-drafts/content-collection/SOURCE-MANIFEST.md` |
 | Parent program | #2359 |
 
@@ -42,7 +42,7 @@ Contents are **non-authoritative** until promoted through PR into `docs/how-to/`
 
 | Branch | Role |
 | --- | --- |
-| `atlas/drive-draft-intake-2367` | Source-material staging; may retain intake folder + ZIP |
+| `ChatGPT/drive-draft-intake-2367` | Source-material staging; may retain intake folder + ZIP |
 | `cursor/<issue>-<task>-2e48` | Implementation/docs PR branches from `main` |
 | `main` | Authoritative promoted docs only |
 

@@ -26,7 +26,7 @@ This report covers homepage `SocialWall` timeout/error fallback behavior and pla
 
 - Homepage `SocialWall` still uses the existing Elfsight widget (`elfsight-app-805f3c5c-67cd-4edf-bde6-2d5978e386a8`).
 - Widget load failures or timeouts now render repo-owned fallback links for Facebook, Instagram, X/Twitter, and Pinterest.
-- Fallback links point to platform-origin URLs; operator-owned official profile URLs remain a Bill/Atlas content decision.
+- Fallback links point to platform-origin URLs; operator-owned official profile URLs remain a Bill/ChatGPT content decision.
 
 ## Platform handling
 
@@ -49,4 +49,4 @@ Homepage visitors always see either a working Elfsight social wall or a repo-own
 
 ## Operator follow-up
 
-Bill/Atlas may replace generic platform home links with verified official Lou Gehrig Fan Club profile URLs when those accounts are confirmed.
+Bill/ChatGPT may replace generic platform home links with verified official Lou Gehrig Fan Club profile URLs when those accounts are confirmed.

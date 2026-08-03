@@ -6,7 +6,7 @@ Owns: Program 1 — Phase 1 Wrap-Up orchestration (PMO setup, as-built surfaces,
 Does Not Own: Program 2 implementation, website product features, CI maintenance Tasks 002–005 in issue-1075-ci-phase2-closeout-rollout.md, production secrets, or branch protection UI changes
 Status: production-ready
 Project: program-1-phase1-wrapup-rollout
-Owner: Atlas
+Owner: ChatGPT
 Execution Mode: orchestrated
 Source Issue: 1335
 Related Program Issue: 1335
@@ -100,7 +100,7 @@ via cross-reference comment on the phase-2 plan issue or closeout evidence doc.
 ## Task 001 — PMO Registry and Critical Path Setup
 
 Type: governance
-Agent: atlas
+Agent: ChatGPT
 Priority: 1
 Depends On: none
 Allowed Files:
@@ -237,7 +237,7 @@ Rollback:
 ## Task 006 — Operational Health Review
 
 Type: docs
-Agent: atlas
+Agent: ChatGPT
 Priority: 6
 Depends On: Task 002, Task 003, Task 004, Task 005
 Allowed Files:
@@ -259,7 +259,7 @@ Rollback:
 ## Task 007 — Automation Backlog Classification
 
 Type: governance
-Agent: atlas
+Agent: ChatGPT
 Priority: 7
 Depends On: Task 006
 Allowed Files:
@@ -280,7 +280,7 @@ Rollback:
 ## Task 008 — Program 2 Launch Gate
 
 Type: governance
-Agent: atlas
+Agent: ChatGPT
 Priority: 8
 Depends On: Task 007
 Allowed Files:

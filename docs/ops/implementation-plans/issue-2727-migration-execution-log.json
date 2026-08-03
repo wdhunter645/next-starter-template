@@ -1,0 +1,881 @@
+{
+  "sourceIssue": 2727,
+  "parentProject": 2702,
+  "executedAt": "2026-07-22T11:08:57Z",
+  "executedBy": "wdhunter645",
+  "productAuthorityGo": "Bill relay ChatGPT reopen+complete dashboard remediation; matching eng priority mapping authorized for contract priorities only",
+  "createdLabels": [
+    "team:engineering",
+    "ops:priority:1",
+    "ops:priority:2",
+    "ops:priority:3",
+    "ops:priority:4",
+    "ops:monitoring",
+    "ops:hold",
+    "eng:priority:1",
+    "eng:priority:2",
+    "eng:priority:3",
+    "eng:priority:4",
+    "eng:priority:idea"
+  ],
+  "applied": [
+    {
+      "number": 2683,
+      "batch": "active_auto_team",
+      "add": [
+        "team:pmo"
+      ],
+      "remove": [],
+      "before": [
+        "agent:ChatGPT",
+        "governance",
+        "pmo",
+        "pmo:active",
+        "pmo:priority:1",
+        "status:in-progress"
+      ],
+      "status": "applied",
+      "after": [
+        "governance",
+        "pmo",
+        "agent:ChatGPT",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active",
+        "team:pmo"
+      ]
+    },
+    {
+      "number": 2682,
+      "batch": "active_auto_team",
+      "add": [
+        "team:pmo"
+      ],
+      "remove": [],
+      "before": [
+        "agent:ChatGPT",
+        "governance",
+        "pmo",
+        "pmo:active",
+        "pmo:priority:1",
+        "status:in-progress"
+      ],
+      "status": "applied",
+      "after": [
+        "governance",
+        "pmo",
+        "agent:ChatGPT",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active",
+        "team:pmo"
+      ]
+    },
+    {
+      "number": 2681,
+      "batch": "active_auto_team",
+      "add": [
+        "team:pmo"
+      ],
+      "remove": [],
+      "before": [
+        "agent:ChatGPT",
+        "ci",
+        "pmo",
+        "pmo:active",
+        "pmo:priority:1",
+        "status:in-progress"
+      ],
+      "status": "applied",
+      "after": [
+        "ci",
+        "pmo",
+        "agent:ChatGPT",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active",
+        "team:pmo"
+      ]
+    },
+    {
+      "number": 2679,
+      "batch": "active_auto_team",
+      "add": [
+        "team:pmo"
+      ],
+      "remove": [],
+      "before": [
+        "agent:ChatGPT",
+        "ci",
+        "governance",
+        "pmo",
+        "pmo:active",
+        "pmo:priority:1",
+        "status:in-progress"
+      ],
+      "status": "applied",
+      "after": [
+        "governance",
+        "ci",
+        "pmo",
+        "agent:ChatGPT",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active",
+        "team:pmo"
+      ]
+    },
+    {
+      "number": 2610,
+      "batch": "active_auto_team",
+      "add": [
+        "team:pmo"
+      ],
+      "remove": [],
+      "before": [
+        "change-ops",
+        "pmo",
+        "pmo:active",
+        "pmo:priority:1",
+        "status:in-progress"
+      ],
+      "status": "applied",
+      "after": [
+        "change-ops",
+        "pmo",
+        "status:in-progress",
+        "pmo:priority:1",
+        "pmo:active",
+        "team:pmo"
+      ]
+    },
+    {
+      "number": 2546,
+      "batch": "active_auto_team",
+      "add": [
+        "team:pmo"
+      ],
+      "remove": [],
+      "before": [
+        "agent:ChatGPT",
+        "documentation",
+        "governance",
+        "pmo",
+        "pmo:active",
+        "pmo:priority:1",
+        "status:needs-human"
+      ],
+      "status": "applied",
+      "after": [
+        "governance",
+        "documentation",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:priority:1",
+        "pmo:active",
+        "status:needs-human",
+        "team:pmo"
+      ]
+    },
+    {
+      "number": 2294,
+      "batch": "active_auto_team",
+      "add": [
+        "team:pmo"
+      ],
+      "remove": [],
+      "before": [
+        "agent:ChatGPT",
+        "documentation",
+        "governance",
+        "pmo",
+        "pmo:active",
+        "pmo:priority:1",
+        "status:needs-human"
+      ],
+      "status": "applied",
+      "after": [
+        "governance",
+        "documentation",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:priority:1",
+        "pmo:active",
+        "status:needs-human",
+        "team:pmo"
+      ]
+    },
+    {
+      "number": 1719,
+      "batch": "active_auto_team",
+      "add": [
+        "team:pmo"
+      ],
+      "remove": [],
+      "before": [
+        "agent:ChatGPT",
+        "governance",
+        "pmo",
+        "pmo:active",
+        "pmo:priority:1",
+        "status:needs-human"
+      ],
+      "status": "applied",
+      "after": [
+        "governance",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:priority:1",
+        "pmo:active",
+        "status:needs-human",
+        "team:pmo"
+      ]
+    },
+    {
+      "number": 2680,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:1"
+      ],
+      "remove": [
+        "pmo:priority:1"
+      ],
+      "before": [
+        "agent:ChatGPT",
+        "ci",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:1",
+        "pmo:stage:definition"
+      ],
+      "mappedFrom": "pmo:priority:1",
+      "mappedTo": "eng:priority:1",
+      "stage": "pmo:stage:definition",
+      "status": "applied",
+      "after": [
+        "ci",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:stage:definition",
+        "team:engineering",
+        "eng:priority:1"
+      ]
+    },
+    {
+      "number": 2678,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:1"
+      ],
+      "remove": [
+        "pmo:priority:1"
+      ],
+      "before": [
+        "agent:ChatGPT",
+        "governance",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:1",
+        "pmo:stage:definition"
+      ],
+      "mappedFrom": "pmo:priority:1",
+      "mappedTo": "eng:priority:1",
+      "stage": "pmo:stage:definition",
+      "status": "applied",
+      "after": [
+        "governance",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:stage:definition",
+        "team:engineering",
+        "eng:priority:1"
+      ]
+    },
+    {
+      "number": 2677,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:1"
+      ],
+      "remove": [
+        "pmo:priority:1"
+      ],
+      "before": [
+        "agent:ChatGPT",
+        "ci",
+        "governance",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:1",
+        "pmo:stage:definition"
+      ],
+      "mappedFrom": "pmo:priority:1",
+      "mappedTo": "eng:priority:1",
+      "stage": "pmo:stage:definition",
+      "status": "applied",
+      "after": [
+        "governance",
+        "ci",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:stage:definition",
+        "team:engineering",
+        "eng:priority:1"
+      ]
+    },
+    {
+      "number": 2615,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:1"
+      ],
+      "remove": [
+        "pmo:priority:1"
+      ],
+      "before": [
+        "agent:ChatGPT",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:1",
+        "pmo:stage:definition",
+        "program:planning",
+        "status:blocked"
+      ],
+      "mappedFrom": "pmo:priority:1",
+      "mappedTo": "eng:priority:1",
+      "stage": "pmo:stage:definition",
+      "status": "applied",
+      "after": [
+        "status:blocked",
+        "program:planning",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:stage:definition",
+        "team:engineering",
+        "eng:priority:1"
+      ]
+    },
+    {
+      "number": 2528,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:idea"
+      ],
+      "remove": [
+        "pmo:priority:idea"
+      ],
+      "before": [
+        "governance",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake",
+        "program:planning"
+      ],
+      "mappedFrom": "pmo:priority:idea",
+      "mappedTo": "eng:priority:idea",
+      "stage": "pmo:stage:intake",
+      "status": "applied",
+      "after": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "team:engineering",
+        "eng:priority:idea"
+      ]
+    },
+    {
+      "number": 2463,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:3"
+      ],
+      "remove": [
+        "pmo:priority:3"
+      ],
+      "before": [
+        "agent:ChatGPT",
+        "design",
+        "documentation",
+        "governance",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:3",
+        "pmo:stage:definition"
+      ],
+      "mappedFrom": "pmo:priority:3",
+      "mappedTo": "eng:priority:3",
+      "stage": "pmo:stage:definition",
+      "status": "applied",
+      "after": [
+        "governance",
+        "documentation",
+        "design",
+        "pmo",
+        "agent:ChatGPT",
+        "pmo:pipeline",
+        "pmo:stage:definition",
+        "team:engineering",
+        "eng:priority:3"
+      ]
+    },
+    {
+      "number": 2448,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:idea"
+      ],
+      "remove": [
+        "pmo:priority:idea"
+      ],
+      "before": [
+        "governance",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake",
+        "program:planning"
+      ],
+      "mappedFrom": "pmo:priority:idea",
+      "mappedTo": "eng:priority:idea",
+      "stage": "pmo:stage:intake",
+      "status": "applied",
+      "after": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "team:engineering",
+        "eng:priority:idea"
+      ]
+    },
+    {
+      "number": 2447,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:idea"
+      ],
+      "remove": [
+        "pmo:priority:idea"
+      ],
+      "before": [
+        "governance",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake",
+        "program:planning"
+      ],
+      "mappedFrom": "pmo:priority:idea",
+      "mappedTo": "eng:priority:idea",
+      "stage": "pmo:stage:intake",
+      "status": "applied",
+      "after": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "team:engineering",
+        "eng:priority:idea"
+      ]
+    },
+    {
+      "number": 2445,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:idea"
+      ],
+      "remove": [
+        "pmo:priority:idea"
+      ],
+      "before": [
+        "governance",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake",
+        "program:planning"
+      ],
+      "mappedFrom": "pmo:priority:idea",
+      "mappedTo": "eng:priority:idea",
+      "stage": "pmo:stage:intake",
+      "status": "applied",
+      "after": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "team:engineering",
+        "eng:priority:idea"
+      ]
+    },
+    {
+      "number": 2443,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:idea"
+      ],
+      "remove": [
+        "pmo:priority:idea"
+      ],
+      "before": [
+        "governance",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake",
+        "program:planning"
+      ],
+      "mappedFrom": "pmo:priority:idea",
+      "mappedTo": "eng:priority:idea",
+      "stage": "pmo:stage:intake",
+      "status": "applied",
+      "after": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "team:engineering",
+        "eng:priority:idea"
+      ]
+    },
+    {
+      "number": 2442,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:idea"
+      ],
+      "remove": [
+        "pmo:priority:idea"
+      ],
+      "before": [
+        "governance",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake",
+        "program:planning"
+      ],
+      "mappedFrom": "pmo:priority:idea",
+      "mappedTo": "eng:priority:idea",
+      "stage": "pmo:stage:intake",
+      "status": "applied",
+      "after": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "team:engineering",
+        "eng:priority:idea"
+      ]
+    },
+    {
+      "number": 2441,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:idea"
+      ],
+      "remove": [
+        "pmo:priority:idea"
+      ],
+      "before": [
+        "governance",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:idea",
+        "pmo:stage:intake",
+        "program:planning"
+      ],
+      "mappedFrom": "pmo:priority:idea",
+      "mappedTo": "eng:priority:idea",
+      "stage": "pmo:stage:intake",
+      "status": "applied",
+      "after": [
+        "governance",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:intake",
+        "team:engineering",
+        "eng:priority:idea"
+      ]
+    },
+    {
+      "number": 2292,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:2"
+      ],
+      "remove": [
+        "pmo:priority:2"
+      ],
+      "before": [
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:2",
+        "pmo:stage:definition",
+        "strategy"
+      ],
+      "mappedFrom": "pmo:priority:2",
+      "mappedTo": "eng:priority:2",
+      "stage": "pmo:stage:definition",
+      "status": "applied",
+      "after": [
+        "strategy",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:definition",
+        "team:engineering",
+        "eng:priority:2"
+      ]
+    },
+    {
+      "number": 2291,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:3"
+      ],
+      "remove": [
+        "pmo:priority:3"
+      ],
+      "before": [
+        "documentation",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:3",
+        "pmo:stage:definition",
+        "program:planning"
+      ],
+      "mappedFrom": "pmo:priority:3",
+      "mappedTo": "eng:priority:3",
+      "stage": "pmo:stage:definition",
+      "status": "applied",
+      "after": [
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:definition",
+        "team:engineering",
+        "eng:priority:3"
+      ]
+    },
+    {
+      "number": 2040,
+      "batch": "pipeline_matching_priority",
+      "add": [
+        "team:engineering",
+        "eng:priority:4"
+      ],
+      "remove": [
+        "pmo:priority:4"
+      ],
+      "before": [
+        "documentation",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:priority:4",
+        "pmo:stage:planning",
+        "program:planning"
+      ],
+      "mappedFrom": "pmo:priority:4",
+      "mappedTo": "eng:priority:4",
+      "stage": "pmo:stage:planning",
+      "status": "applied",
+      "after": [
+        "documentation",
+        "program:planning",
+        "pmo",
+        "pmo:pipeline",
+        "pmo:stage:planning",
+        "team:engineering",
+        "eng:priority:4"
+      ]
+    }
+  ],
+  "quarantine": [
+    {
+      "number": 2643,
+      "reason": "missing_or_multi_stage",
+      "stages": [],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2342,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:23"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2312,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:22"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2273,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:18"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2270,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:19"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2093,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:10"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2085,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:6"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2084,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:9"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2083,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:13"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2082,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:12"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2081,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:11"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2079,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:14"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2078,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:15"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2077,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:16"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2076,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:17"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2075,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:7"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2074,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:8"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 2073,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:5"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 1738,
+      "reason": "non_contract_or_multi_pmo_priority",
+      "priorities": [
+        "pmo:priority:20"
+      ],
+      "batch": "pipeline"
+    },
+    {
+      "number": 1700,
+      "reason": "missing_or_multi_stage",
+      "stages": [],
+      "batch": "pipeline"
+    }
+  ],
+  "errors": [],
+  "rollback": "For each applied entry, remove labels in add[] and restore labels in remove[] / before set"
+}

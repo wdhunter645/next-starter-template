@@ -2,11 +2,11 @@
 Doc Type: Implementation Plan
 Audience: Human + AI
 Authority Level: Operational Authority
-Owns: Program #1411 PMO Automation and Agent Workflow Control orchestration plan, task boundaries, child issue readiness, validation, and Atlas/Bill walkthrough gate
+Owns: Program #1411 PMO Automation and Agent Workflow Control orchestration plan, task boundaries, child issue readiness, validation, and ChatGPT/Bill walkthrough gate
 Does Not Own: Program #1255 website implementation, workflow YAML changes, runtime application behavior, D1 migrations, production configuration, GitHub issue mutation, or merge authority
 Status: staged-blocked-pending-v3-alignment
 Project: program-1-pmo-automation-agent-workflow-control
-Owner: Atlas
+Owner: ChatGPT
 Execution Mode: orchestrated
 Source Issue: 1411
 Related Program Issue: 1411
@@ -23,11 +23,11 @@ Last Reviewed: 2026-06-10
 | --- | --- |
 | Historical label | Program 1 |
 | Status | Completed planning/control artifact (issue `#1411` closed, `status:complete`) |
-| Launch rule | issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Program #1255 is completed and signed off and Atlas/Bill explicitly launch the next cycle. |
+| Launch rule | issue #1411 is not an open blocked program. New execution requires a current open source issue. PMO automation execution remains blocked until Program #1255 is completed and signed off and ChatGPT/Bill explicitly launch the next cycle. |
 
 ## Launch-state control statement
 
-This program is BLOCKED from execution until Program #1255 is completed and signed off, and until Atlas/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until those gates are satisfied and Bill/Atlas explicitly launch it.
+This program is BLOCKED from execution until Program #1255 is completed and signed off, and until ChatGPT/Bill explicitly launch it. Planning, review, and documentation discussion may continue, but Cursor may not execute implementation work from this program until those gates are satisfied and Bill/ChatGPT explicitly launch it.
 
 This is not an active executable Program 1 plan. It is staged/blocked PMO Automation and Agent Workflow Control planning evidence, superseded in part by PMO v3 authority.
 
@@ -89,8 +89,8 @@ This plan does not own:
 - Program issue numbers consistently identify programs.
 - PMO Backlog is consistently treated as ideas, project drafts, and implementation-ready projects.
 - Workflow Automation design authority lives in GitHub documentation before implementation.
-- Cursor can safely continue through validation and PR body updates, then stop at `READY FOR REVIEW` for Atlas/Bill walkthrough.
-- PR readiness, batch review, merge authority, and issue mutation remain under Atlas/Bill control.
+- Cursor can safely continue through validation and PR body updates, then stop at `READY FOR REVIEW` for ChatGPT/Bill walkthrough.
+- PR readiness, batch review, merge authority, and issue mutation remain under ChatGPT/Bill control.
 - Closeout evidence requirements are stable enough to support later automation without premature issue mutation.
 
 ## Program #1411 staged status review
@@ -101,7 +101,7 @@ This plan does not own:
 | Task issues `#1417`-`#1424` | Created, blocked, stale terminology present | Update or supersede issue bodies before launch |
 | Implementation plan | This document | Aligned to PMO v3 by this revision |
 | PMO top-level authority | `/docs/ops/pmo/PMO-V3-OPERATING-MODEL.md` | Controlling authority |
-| Program #1411 launch status | Staged / blocked | Launch only after Program #1255 completion/signoff and Atlas/Bill confirm aligned task set |
+| Program #1411 launch status | Staged / blocked | Launch only after Program #1255 completion/signoff and ChatGPT/Bill confirm aligned task set |
 
 ## Program #1411 project areas under PMO v3
 
@@ -110,7 +110,7 @@ This plan does not own:
 | Task 001 | PMO v3 authority | Replace five-program lane model with program issue numbers and PMO Backlog |
 | Task 002 | Workflow Automation Design Migration | Treat Workflow Automation as promoted from PMO Backlog material |
 | Task 003 | Cursor Continuation and Queue Contract | Preserve source-issue and READY FOR REVIEW stop controls |
-| Task 004 | PR Readiness and Batch Review Control | Preserve Bill/Atlas review and merge authority |
+| Task 004 | PR Readiness and Batch Review Control | Preserve Bill/ChatGPT review and merge authority |
 | Task 005 | Merge and Issue Mutation Policy | Separate evidence generation from mutation authority |
 | Task 006 | Queue/Wave Model and Label Planning | Keep labels/run IDs as planning concepts until explicit implementation |
 | Task 007 | Post-Merge Closeout Evidence Stabilization | Require stable evidence before source issue closeout or queue advancement |
@@ -121,7 +121,7 @@ This plan does not own:
 ## Task 001 — PMO V3 Authority
 
 Type: governance
-Agent: atlas
+Agent: ChatGPT
 Priority: 1
 Depends On: none
 Allowed Files:
@@ -167,7 +167,7 @@ Acceptance Criteria:
 - Workflow Automation is represented as promoted from PMO Backlog material into Program #1411 GitHub authority.
 - Drive/chat content is not sufficient implementation authority until captured in repo docs.
 - Runtime implementation, workflow YAML, D1 migrations, and production configuration remain out of scope.
-- The plan remains ready for aligned child issue creation after Atlas/Bill walkthrough and launch authorization.
+- The plan remains ready for aligned child issue creation after ChatGPT/Bill walkthrough and launch authorization.
 
 Validation:
 
@@ -195,7 +195,7 @@ Allowed Files:
 Acceptance Criteria:
 
 - Cursor continuation rules define when Cursor may continue, report, and stop.
-- A PR ready for review causes Cursor to complete validation and PR body evidence, then stop for Atlas/Bill walkthrough.
+- A PR ready for review causes Cursor to complete validation and PR body evidence, then stop for ChatGPT/Bill walkthrough.
 - Cursor is prohibited from merge, close, relabel, issue-state mutation, queue advancement, and cross-program mutation unless explicitly authorized.
 - Queue continuation preserves one active source issue and one implementation PR per task unless a later approved wave model says otherwise.
 
@@ -224,7 +224,7 @@ Allowed Files:
 Acceptance Criteria:
 
 - PR readiness is defined as a handoff state, not merge authority.
-- Batch review preserves Bill merge authority and Atlas governance review.
+- Batch review preserves Bill merge authority and ChatGPT governance review.
 - The expected PR body evidence includes source issue, allowlist, validation, reviewer/bot disposition, and gate status.
 - Cursor stop conditions are explicit when reviewer or gate action remains.
 
@@ -331,7 +331,7 @@ Rollback:
 ## Task 008 — PMO Backlog Promotion and Program #1411 Launch Gate
 
 Type: governance
-Agent: atlas
+Agent: ChatGPT
 Priority: 8
 Depends On: Task 007
 Allowed Files:
@@ -347,7 +347,7 @@ Acceptance Criteria:
 
 - PMO Backlog promotion criteria are auditable.
 - Program #1411 launch gate is explicit and blocked until Program #1255 completion/signoff.
-- Child issue creation remains blocked until Atlas/Bill walkthrough approval and launch authorization.
+- Child issue creation remains blocked until ChatGPT/Bill walkthrough approval and launch authorization.
 - PMO Backlog inventory is available for Bill review.
 
 Validation:
@@ -365,6 +365,6 @@ Program #1411 is not yet formally launch-ready under PMO v3. It is staged / bloc
 
 1. Program #1255 is completed and signed off.
 2. Task issues `#1417`-`#1424` are either updated or superseded to match this plan.
-3. Atlas/Bill explicitly authorize launch.
+3. ChatGPT/Bill explicitly authorize launch.
 
-No new design gap is known. The remaining readiness work is Program #1255 completion, alignment of issue/task language, and explicit Atlas/Bill launch authorization.
+No new design gap is known. The remaining readiness work is Program #1255 completion, alignment of issue/task language, and explicit ChatGPT/Bill launch authorization.

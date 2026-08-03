@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "repository": "wdhunter645/next-starter-template",
+  "scope": "repository",
+  "runner": {
+    "name": "lgfc-chromebook-linux",
+    "operatingSystem": "linux",
+    "distribution": "debian-12",
+    "architecture": "x64",
+    "serviceManager": "systemd",
+    "labels": [
+      "self-hosted",
+      "linux",
+      "x64",
+      "lgfc-repo-runner",
+      "chromebook",
+      "debian-12"
+    ]
+  },
+  "security": {
+    "publicRepository": true,
+    "trustedEvents": [
+      "workflow_dispatch"
+    ],
+    "trustedRefs": [
+      "refs/heads/main"
+    ],
+    "trustedActors": [
+      "wdhunter645"
+    ],
+    "allowForkPullRequests": false,
+    "allowPullRequestEvents": false,
+    "allowPullRequestTargetEvents": false,
+    "allowWorkflowRunEvents": false,
+    "allowPushEvents": false,
+    "allowScheduledEvents": false,
+    "allowRepositorySecrets": false,
+    "allowProductionCredentials": false,
+    "allowDeployments": false,
+    "allowPersistentGitCredentials": false,
+    "executeIssueOrCommentContent": false
+  },
+  "wakeDelivery": {
+    "enabled": true,
+    "workflow": ".github/workflows/cursor-local-wake.yml",
+    "purpose": "Write host wake packets for Cursor Local Bridge only",
+    "trustedEvents": [
+      "issues",
+      "issue_comment",
+      "workflow_dispatch"
+    ],
+    "requiredLabels": [
+      "agent:cursor",
+      "handoff:ready"
+    ],
+    "mayLaunchCursor": false,
+    "mayHoldApiKeys": false,
+    "mayClaimSerialLane": false,
+    "packetAuthority": "none — Bridge revalidates live Issue state"
+  },
+  "rollout": {
+    "state": "host-registered-wake-delivery-enabled",
+    "healthWorkflow": ".github/workflows/repository-runner-health.yml",
+    "wakeWorkflow": ".github/workflows/cursor-local-wake.yml",
+    "bridgeContract": "docs/reference/ci/cursor-local-bridge-contract.md",
+    "existingWorkflowMigration": "prohibited-until-health-pass-and-explicit-project-go",
+    "initialUse": "manual-health-and-wake-delivery-only",
+    "mutationMode": "disabled"
+  },
+  "operations": {
+    "workDirectory": "_work",
+    "runnerApplicationAutoUpdate": true,
+    "preserveStateOnStop": true,
+    "requiredOutboundPort": 443,
+    "hostMustBeDedicatedToRunnerWork": true,
+    "hostMustNotContainPersonalOrProductionSecrets": true
+  }
+}

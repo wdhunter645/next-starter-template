@@ -2,341 +2,305 @@
 Doc Type: Template
 Audience: Human + AI
 Authority Level: Operational
-Owns: Standard format for assigning scoped work to Cursor, Codex, Copilot, Devin, and future agents
-Does Not Own: Source issue scope, design authority, implementation decisions, or merge approval
-Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Related Issues: #1449, #2564, #1719
-Last Reviewed: 2026-07-18
+Owns: Standard role-based format for assigning scoped work to current and future LGFC agents and systems
+Does Not Own: Source Issue scope, design authority, current team mapping, implementation decisions, PR approval, merge authority, or closeout policy
+Canonical Reference: /docs/governance/AGENT-TEAM.md
+Related Issues: #1449, #2700
+Last Reviewed: 2026-07-21
 ---
 
 # Agent Assignment Template
 
 ## 1. Purpose
 
-This template is the mandatory format for assigning scoped repository work to **Cursor** (sole LGFC implementation executor) and, when explicitly reauthorized, other execution agents under the LGFC PMO model.
+This template is the mandatory format for assigning scoped repository work to an LGFC role holder. It is executor-neutral: current and future agents, models, tools, humans, and automation receive authority through durable roles defined in `docs/governance/AGENT-TEAM.md`.
 
-Canonical team roles and workflow: [`docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md`](../ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md).
+Assignments must identify one source Issue, assigned role, current role holder, Issue class, parent/master relationship, closeout delegation, one deliverable, exact file scope, explicit non-goals, acceptance criteria, verification method, rollback plan, pre-implementation checkpoint, implementation Go, stop conditions, and handoff requirements.
 
-Assignments must give agents one source issue, one deliverable, exact Diataxis location, exact file scope, explicit non-goals, acceptance criteria, verification method, rollback plan, Cursor pre-implementation review checkpoint, and Bill/Atlas stop-gate authorization. Unclear authority causes scope drift, mixed-intent diffs, and gate failures.
-
-This document does not replace shared agent law. It operationalizes how Bill and Atlas (ChatGPT) package work before Cursor executes.
-
-**Do not assign LGFC implementation work to Codex** unless Bill explicitly reauthorizes Codex in a future governance update.
+A named agent does not receive permanent repository authority from this template. The current team mapping or project manifest determines which member fills each role.
 
 ## 2. When to use this template
 
 Use this template when:
 
-- assigning any **implementation** task to **Cursor**;
-- opening a **local** Cursor session for LGFC implementation (default);
-- opening a Cursor Cloud session only when the source issue explicitly authorizes `Runtime: cloud` or `Runtime: either`;
-- routing work through Program 1 — Phase 1 Wrap-Up or any child project under the PMO model;
-- converting a source GitHub issue into a launch-control-ready Cursor package without expanding scope.
+- assigning implementation, remediation, documentation, governance, verification, troubleshooting, worklist, or operations-cleanup work;
+- converting a source GitHub Issue into a launch-control-ready package;
+- assigning a project-child or child-remediation task that may receive delegated task-closeout authority;
+- assigning work to a newly added team member or changing the role holder without changing repository policy; or
+- routing work through a launched program or project dependency map.
 
-Do not use this template for:
+Do not use this template to:
 
-- assigning LGFC implementation to Codex (forbidden unless future Bill-approved reauthorization);
-- merge approval or human-only decisions;
-- defining design authority (use locked design, governance documents, and Atlas design packages);
-- replacing the source issue — the issue remains task authority; this template is the assignment envelope.
+- replace the source Issue;
+- grant a role that is absent from the current team mapping or project manifest;
+- authorize self-approval or self-merge;
+- bypass delivery, Promotion Candidate, Production, or incident policy; or
+- delegate project/master or higher-level closeout through task-level authority.
 
 ## 3. Required assignment fields
 
-Every Cursor implementation assignment must include all of the following. If any field is missing, do not start Cursor — complete the assignment first.
-
 | Field | Requirement |
 | --- | --- |
-| Operating mode | Exactly one mode; agent must not switch modes |
-| Runtime / execution environment | Exactly one value: `local` (Cursor Local, default), `cloud` (Cursor Cloud), or `either`; see [`CURSOR-RUNTIME-ROUTING.md`](../governance/standards/CURSOR-RUNTIME-ROUTING.md). Must not be left implied. |
-| Working branch name | Exact branch name Cursor must use, or `not-applicable` for local-only / no-git delivery |
-| Base / target branch | Exact base branch for creation and PR targeting, or `not-applicable` for local-only work |
-| Branch creation authorized | `YES` / `NO` |
-| Commit authorized | `YES` / `NO` |
-| Push authorized | `YES` / `NO` |
-| Open PR authorized | `YES` / `NO` |
-| Required PR target | Exact PR base branch, or `not-applicable` when Open PR authorized is `NO` |
-| PR initial state | `draft` / `ready-for-review` / `not-applicable` |
-| Post-PR continuation | `stop-after-pr-open` / `continue-remediation-same-issue` / `not-applicable` |
-| Self-approval / self-merge / `main` promotion | Explicit prohibition unless separately authorized in the source issue |
-| Source issue | Exactly one primary source issue (`#number`) |
-| Documentation package | Link or PR reference to merged/approved canonical docs that gate this work |
-| Draft/reference code | Pseudocode or reference implementation for Cursor handoff (not a substitute for allowlist authority) |
-| Repository authority | Ordered read list including `Agent.md`, operating model, shared rules, and task-specific docs |
+| Operating mode | Exactly one mode; the role holder must not switch modes without new authority |
+| Assigned durable role | Product Authority, PMO / Engineering, Implementation / Operations, PR Approver / Engineering, Administration & Communications, Day-2 Operations, or Deterministic CI |
+| Current role holder | Exact current member or system mapped to the assigned role |
+| Runtime or execution surface | Exact runtime, connector, local/cloud surface, or `not applicable`; member-specific policy controls allowed values |
+| Source Issue | Exactly one primary source Issue (`#number`) |
+| Issue class | `one-off-task`, `project-child`, `child-remediation`, `project-master`, `program`, `promotion-candidate`, `production`, `incident`, or `ops-interrupt` |
+| Parent/master | Exact parent or master Issue, or `not applicable` |
+| Task-closeout delegation | `delegated`, `reserved`, or `not applicable` |
+| Documentation package | Canonical policy, design, plan, procedure, or approved PR that gates the work |
 | Objective | Plain language; one task only |
-| Deliverable | Exact file path(s) or issue/PR output |
-| Approved file scope | Explicit allowlist; no wildcards unless gate-approved |
-| Diataxis / documentation location | Target path under active DIATAXIS transition structure |
-| Explicit non-goals | What the agent must not do |
-| Acceptance criteria | Checklist the agent can verify |
-| Verification plan | Commands, checks, or review steps with reported results |
-| Rollback plan | How to revert or safely halt if verification fails |
-| Cursor review checkpoint | Required pre-implementation comment/pass before file edits on new packages |
-| Bill/Atlas stop-gate authorization | Explicit continue authorization before execution and at verification stop points |
-| Handoff | Files changed, summary, verification, risks, scope confirmation |
-| Dependency fields | For launched-program queue tasks: predecessor, successor, stage-before-merge, halt/resume condition |
-
-**Local-only vs branch/PR delivery:** if branch creation, commit, push, and open-PR are all `NO`, the assignment is local-only (no repository delivery expected). If any of those are `YES`, the corresponding branch/base/PR-target fields must be concrete names — not implied by prose.
-
-These fields align with [`SHARED-AGENT-RULES.md`](../ops/ai/SHARED-AGENT-RULES.md) (one source issue per PR, scope boundaries, documentation taxonomy) and [`CORE-RULES.md`](../ops/ai/CORE-RULES.md) (execution discipline, allowlist, required verification).
+| Deliverable | Exact file, Issue, PR, report, review, deployment, or administrative output |
+| Approved file/action scope | Explicit allowlist and permitted GitHub actions |
+| Explicit non-goals | Actions, files, decisions, and closeout levels excluded from the assignment |
+| Acceptance criteria | Checklist the assigned role holder can verify without inventing decisions |
+| Verification plan | Exact commands, checks, evidence sources, or manual review steps |
+| Rollback or recovery plan | How to revert, contain, or safely halt |
+| Pre-implementation checkpoint | Required package review before edits or mutations begin |
+| Implementation Go or action authority | Exact role decision and durable reference authorizing execution |
+| Stop conditions | Protected stops, holds, scope conflicts, or missing evidence that require escalation |
+| Handoff | Changed files/actions, validation, risks, scope confirmation, and next target role |
+| Closeout packet | Required when task-closeout delegation is `delegated` |
+| Dependency fields | Predecessor, successor, stage-before-merge, collision, halt/resume condition when applicable |
 
 ## 4. Mandatory template block
 
-Copy the block below into the agent prompt or issue comment. Replace every `<placeholder>` before sending.
+Copy this block into the source Issue or canonical assignment comment. Replace every placeholder before execution.
 
 ```markdown
-# AGENT ASSIGNMENT — <Work Path / Child Project / Task Name>
+# AGENT ASSIGNMENT — <Work Path / Project / Task Name>
 
 ## 1. Operating Mode
 
-You are operating in: <Design / Documentation / Governance / Worklist / Verification / Troubleshooting / Implementation / Operations cleanup>
+Mode: <Design | Sandbox | Documentation | Governance | Worklist | Verification | Troubleshooting | Implementation | Administration & Communications | Day-2 Operations>
 
-Do not switch modes.
+Do not switch modes without new recorded authority.
 
-For LGFC implementation work, mode must be **Implementation** and executor must be **Cursor only**.
+## 2. Assigned Role and Role Holder
 
-## 2. Source Issue
+Assigned durable role: <role>
+Current role holder: <member or system>
+Runtime or execution surface: <local | cloud | connector | automation | not applicable>
+Current mapping authority: `docs/governance/AGENT-TEAM.md` or <project manifest path/reference>
 
-Primary source issue: #<number>
+The role contract, not the member name, defines authority.
 
-Runtime / execution environment: local | cloud | either
+## 3. Source Issue and Work Class
 
-Default is **local** (Cursor Local). `cloud` (Cursor Cloud) or `either` requires explicit Bill/ChatGPT authorization recorded in the source issue. Do not use `@cursor` for local work; see `docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`.
+Primary source Issue: #<number>
+Issue class: <one-off-task | project-child | child-remediation | project-master | program | promotion-candidate | production | incident | ops-interrupt>
+Parent/master: #<number> | not applicable
+Task-closeout delegation: delegated | reserved | not applicable
 
-Use only this issue as task authority.
+Use only the primary source Issue as task authority. Do not treat umbrella Issues, trackers, prior chats, old PRs, labels, branch state, or memory as substitute authority.
 
-Do not treat umbrella issues, trackers, prior chats, old PRs, or memory as task authority unless explicitly listed below.
+## 4. Documentation Package
 
-## 2A. Git / Branch / PR Authority
-
-Fill every field. Do not imply Git or PR authority from surrounding prose.
-
-- Working branch: `<exact branch name>` / `not-applicable`
-- Base / target branch: `<exact base branch>` / `not-applicable`
-- Branch creation authorized: YES / NO
-- Commit authorized: YES / NO
-- Push authorized: YES / NO
-- Open PR authorized: YES / NO
-- Required PR target: `<exact PR base branch>` / `not-applicable`
-- PR initial state: draft / ready-for-review / `not-applicable`
-- Post-PR continuation: stop-after-pr-open / continue-remediation-same-issue / `not-applicable`
-- Self-approval authorized: NO (default) / YES — `<separate source-issue authorization>`
-- Self-merge authorized: NO (default) / YES — `<separate source-issue authorization>`
-- Promotion to `main` authorized: NO (default) / YES — `<separate Bill/ChatGPT authorization>`
-
-Delivery class:
-
-- **Local-only** when branch creation, commit, push, and Open PR authorized are all `NO`.
-- **Branch/PR delivery** when any of those are `YES` — then working branch, base/target, and PR target (when Open PR authorized is `YES`) must be exact names.
-
-Default prohibition: Cursor must not self-approve, self-merge, or promote to `main` unless the source issue records a separate explicit authorization.
-
-## 3. Documentation Package
-
-Canonical documentation that gates this work:
-
-- Documentation PR: #<number> (merged) / path: `<exact doc path(s)>`
-- Bill approval: YES / pending — <reference>
-
-Cursor must read this package before implementation.
-
-## 4. Draft / Reference Code
-
-Reference implementation or pseudocode for handoff:
-
-- `<path, gist, or inline pseudocode block>`
-- Purpose: orient Cursor; **not** a substitute for the file allowlist
-
-## 5. Repository Authority
-
-Read these files before acting:
+Read before acting:
 
 1. `Agent.md`
-2. `docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md`
-3. `docs/ops/ai/SHARED-AGENT-RULES.md`
-4. `docs/ops/ai/CORE-RULES.md`
-5. `docs/ops/ai/CURSOR-RULES.md`
-6. `<task-specific authority doc>`
-7. `<relevant skill file>`
+2. `docs/governance/REPOSITORY-AUTHORITY.md`
+3. `docs/governance/AGENT-TEAM.md`
+4. `docs/ops/ai/SHARED-AGENT-RULES.md`
+5. `docs/ops/ai/CORE-RULES.md`
+6. <task-specific policy, design, plan, procedure, or skill>
 
-If any source conflicts, stop and report the conflict.
+Approved documentation PR or decision reference: #<number> | <path/reference>
 
-## 6. Objective
+If sources conflict, stop and report `authorityConflict`.
 
-<Plain-language objective. One task only.>
+## 5. Objective
 
-## 7. Deliverable
+<One bounded objective in plain language.>
 
-Create/update exactly this deliverable:
+## 6. Deliverable
 
-- `<exact file path or issue/PR output>`
+Create or update exactly:
 
-## 8. Approved File Scope
+- <exact file path, Issue action, PR, review, report, deployment, or closeout output>
 
-You may touch only:
+## 7. Approved File and Action Scope
 
-- `<path 1>`
-- `<path 2>`
+Files permitted:
 
-Do not edit any other files.
+- <exact path>
 
-## 9. Diataxis / Documentation Location
+GitHub or operational actions permitted:
 
-Documentation belongs here:
+- <exact action>
 
-- `<docs/reference/...>`
-- `<docs/explanation/...>`
-- `<docs/how-to/...>`
-- `<docs/tutorials/...>`
-- `<docs/ops/...>`
-- `<docs/governance/...>`
-- `<docs/reports/...>`
-- `<docs/templates/...>`
+Do not edit or mutate anything else.
 
-Use the required repository documentation header.
-
-## 10. Explicit Non-Goals
+## 8. Explicit Non-Goals
 
 Do not:
 
-- modify app/runtime code unless explicitly authorized;
-- modify workflows unless explicitly authorized;
-- create unrelated cleanup;
-- update trackers unless explicitly authorized;
-- create additional issues or PRs unless instructed;
 - expand scope beyond this assignment;
-- route work to Codex.
+- make product, architecture, acceptance, priority, cost, business, Production, or recovery decisions outside the assigned role;
+- approve or merge work implemented by the same role holder when independent review is required;
+- create additional Issues or PRs unless explicitly authorized;
+- modify workflows, runtime code, Production configuration, credentials, or paid services unless explicitly allowed;
+- close a project/master, program, Promotion Candidate, Production, release, incident, standalone `OPS:`, or Product Authority disposition Issue through task-level delegation.
 
-## 11. Acceptance Criteria
+## 9. Acceptance Criteria
 
-This task is complete when:
+This assignment is complete when:
 
-- [ ] `<criterion 1>`
-- [ ] `<criterion 2>`
-- [ ] `<criterion 3>`
+- [ ] <criterion 1>
+- [ ] <criterion 2>
+- [ ] <criterion 3>
 
-## 12. Verification Plan
+## 10. Verification Plan
 
 Run or perform:
 
-- `<command/check/review method>`
+- `<exact command or evidence check>`
 
-Report exact results. Stop at verification gates until Bill/Atlas authorize continue.
+Expected result:
 
-## 13. Rollback Plan
+- <exact pass condition>
 
-If verification fails or Bill/Atlas issue hold:
+Report exact results. Do not convert failed or ambiguous evidence into success.
 
-- `<revert steps, branch discard, feature flag off, or safe halt procedure>`
+## 11. Rollback or Recovery Plan
 
-## 14. Cursor Review Checkpoint (pre-implementation)
+If validation fails or an authorized role records a hold:
 
-Before editing files, Cursor must comment on the source issue:
+- <exact revert, branch discard, feature disablement, containment, or safe halt procedure>
 
-- [ ] Documentation package read
-- [ ] Runtime / execution environment declared (`local` default; `cloud`/`either` only with issue authorization)
-- [ ] Git / Branch / PR Authority block complete (section 2A), including local-only vs branch/PR delivery class
-- [ ] Draft/reference code reviewed
-- [ ] Allowlist complete
+## 12. Pre-Implementation Checkpoint
+
+Before edits or mutations, the assigned role holder records:
+
+- [ ] Repository authority read
+- [ ] Current role mapping verified
+- [ ] Source Issue and Issue class verified
+- [ ] Parent/master verified
+- [ ] Task-closeout delegation verified
+- [ ] Allowlist and permitted actions complete
 - [ ] Non-goals clear
 - [ ] Acceptance criteria verifiable
 - [ ] Verification and rollback plans present
-- [ ] **Checkpoint:** PASS / FAIL — <blockers if any>
+- [ ] Protected stops reviewed
+- [ ] Checkpoint: PASS | FAIL — <blockers>
 
-Do not edit files until checkpoint PASS and Bill/Atlas execution authorization are recorded.
+Do not begin until checkpoint PASS and required action authority are recorded.
 
-## 15. Bill/Atlas Stop-Gate Authorization
+## 13. Implementation Go or Action Authority
 
-Execution authorization:
+Decision authority role: <role>
+Authorized action: <implementation Go | review | integration | deployment | recovery | closeout transaction | other>
+Authority reference: #<Issue/comment/PR/review/check/deployment>
 
-- Bill/Atlas authorized execution: YES / NO — <date or issue comment reference>
-- Verification stop points: `<when Cursor must stop and wait>`
-- Continue/hold/revise authority: **Bill** (Atlas partners on gate review)
+## 14. Stop Conditions
 
-## 16. Handoff Required
+Stop and route when:
 
-When complete, report:
+- authority, Issue class, parent/master, role mapping, or delegation is missing or contradictory;
+- work would exceed the file or action allowlist;
+- required validation, independent review, integration, or post-integration verification fails;
+- a protected stop or operational hold applies;
+- the requested transaction belongs to a different closeout class or decision authority; or
+- terminal state cannot be determined without interpretation.
 
-- files changed;
-- summary of changes;
-- verification performed;
-- unresolved risks/blockers;
-- confirmation that scope was not expanded.
+## 15. Handoff Required
+
+When implementation, review, or remediation is complete, report:
+
+- files or repository state changed;
+- summary of work;
+- exact validation performed and outcomes;
+- unresolved risks or blockers;
+- confirmation that scope did not expand;
+- target role and requested next action;
+- PR, commit, deployment, or incident identity.
+
+## 16. Task Closeout Packet
+
+Complete this section only when `Task-closeout delegation: delegated` and the Issue class is `project-child` or `child-remediation`.
+
+```text
+CLOSEOUT
+Level: task
+Subject: #____
+Source authority: #____
+Issue class: project-child | child-remediation
+Assigned role holder: ____
+Parent/master: #____
+Profile: development
+PR / integration identity: ____
+Validation and independent review evidence: ____
+Post-integration verification: pass
+Decision authority: Implementation / Operations
+Transaction executor: deterministic-ci | assigned-implementation-operations
+Terminal state: ____
+Parent/program/reporting action: ____
+Successor action: ____
+Unresolved gaps: none | ____
+Exception: none | #____
+```
+
+Deterministic CI attempts the transaction first. The assigned Implementation / Operations role holder may complete an otherwise eligible task transaction if automation does not. Do not duplicate a successful transaction.
+
+## 17. Dependencies and Continuation
+
+Predecessor: #____ | none
+Successor: #____ | terminal | none
+Stage-before-merge: yes | no | not applicable
+Collision constraints: ____ | none
+Halt/resume condition: ____
+
+Dependency state controls technical continuation. Routine administrative prose does not create a dependency.
 ```
 
 ## 5. Prohibited omissions
 
-Do not send a Cursor implementation assignment without:
+Do not issue an assignment without:
 
-- a single numbered source issue (not an umbrella tracker alone);
-- an explicit runtime / execution environment (`local`, `cloud`, or `either`);
-- a complete Git / Branch / PR Authority block (section 2A), including working branch, base/target, create/commit/push/PR authorizations, PR target and initial state when applicable, post-PR continuation, and self-approval/self-merge/`main`-promotion prohibitions;
-- a clear local-only vs branch/PR delivery class;
-- a documentation package reference (merged PR or approved doc paths);
-- draft/reference code or pseudocode;
-- an explicit file allowlist (not “update docs as needed”);
-- explicit non-goals (especially for documentation-only or design-only tasks);
-- acceptance criteria that can be checked without interpretation;
-- a verification plan (command, script, or defined manual check);
-- a rollback plan;
-- a Cursor pre-implementation review checkpoint requirement;
-- Bill/Atlas stop-gate authorization for execution;
+- one numbered primary source Issue;
+- assigned durable role and current role holder;
+- Issue class and parent/master disposition;
+- task-closeout delegation state;
+- canonical documentation package;
+- exact file and action scope;
+- explicit non-goals;
+- verifiable acceptance criteria;
+- verification and rollback or recovery plans;
+- pre-implementation checkpoint;
+- implementation Go or action authority;
+- stop conditions; and
+- handoff requirements.
 
 Do not:
 
-- stack multiple unrelated tasks in one assignment;
-- reference “see prior chat” or “continue from last PR” as authority;
-- omit operating mode and expect the agent to infer Design vs Implementation;
-- assign implementation to Codex for LGFC work;
-- imply Git, branch, push, or PR authority from narrative prose instead of section 2A fields;
-- authorize branch/PR delivery without naming the working branch and base/PR target;
-- assign implementation while forbidding all git/PR steps without stating that constraint as `NO` fields in section 2A and in non-goals/verification;
-- weaken shared agent law in the assignment text (assignments cannot override `SHARED-AGENT-RULES.md` or `CORE-RULES.md`).
+- stack unrelated tasks in one assignment;
+- use “continue from prior chat” as authority;
+- infer a role from an agent name;
+- assign a member to a role absent from the current mapping or project manifest;
+- weaken shared governance in assignment text; or
+- use task-closeout delegation to bypass independent review or higher-level closeout authority.
 
-If the work is not yet definable at this level of precision, refine the source issue first. Do not feed high-capacity agents partial authority.
-
-## 6. Examples of valid operating modes
-
-Each example is one mode only. Mode names match [`LGFC-AI-TEAM-OPERATING-MODEL.md`](../ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md) and the mandatory template block.
+## 6. Valid operating-mode examples
 
 | Mode | Valid assignment summary |
 | --- | --- |
-| Documentation | Create one how-to under `docs/how-to/` from issue #N; allowlist only that file; verify with `docs_check_headers.sh`. |
-| Design | Produce implementation plan markdown in `docs/reference/`; no code changes; verify by checklist against source issue. |
-| Verification | Inspect PR #M gates and review threads; no file edits; report evidence from live PR panel and workflow logs. |
-| Implementation | Implement scoped feature per issue #N via **Cursor**; include documentation package, draft code, review checkpoint, and Bill/Atlas authorization; allowlist listed app files only; run targeted tests listed in verification plan. |
-| Troubleshooting | Diagnose failing workflow on PR #M; allowlist workflow file + docs only if issue authorizes; PR-first only per ops exception rules. |
-| Governance | Align one governance doc with canonical standard; docs allowlist only; header and DIATAXIS checks required. |
-| Worklist | Reconcile program issue hierarchy in GitHub comments only; no repo file edits unless issue authorizes tracker maintenance. |
-| Operations cleanup | Close or relabel stale ops issues per written criteria; no product code; human merge still required for any PR. |
+| Documentation | Assigned PMO / Engineering or Implementation / Operations role holder updates one canonical document under one source Issue; header and taxonomy checks required |
+| Design | PMO / Engineering produces one bounded design or implementation plan; no implementation authority implied |
+| Verification | PR Approver / Engineering inspects one PR, check set, candidate, or integrated state; no file edits unless separately authorized |
+| Implementation | Assigned Implementation / Operations role holder implements one bounded task with exact allowlist, validation, independent review path, and closeout delegation state |
+| Troubleshooting | Owning horizontal role diagnoses one bounded failure and routes changes through the applicable source Issue |
+| Governance | PMO / Engineering aligns one authority domain with canonical policy and controlled contracts |
+| Worklist | PMO / Engineering and Administration & Communications reconcile one Issue hierarchy without creating implementation authority |
+| Administration & Communications | Assigned role holder executes one authorized routing, state, hold/resume, reporting, or closeout transaction |
+| Day-2 Operations | Day-2 Operations handles one bounded monitoring, incident, containment, recovery, or hold-release action |
 
-Invalid pattern: “Documentation + fix the CI workflow + update the homepage” in one assignment (mixed intent).
+## 7. Required references
 
-## 7. Relationship to Agent.md, SHARED-AGENT-RULES, CORE-RULES, and agent-specific rules
-
-| Document | Relationship to this template |
-| --- | --- |
-| [`Agent.md`](../../Agent.md) | Entry point and read order; assignments must require agents to read `Agent.md` first. |
-| [`LGFC-AI-TEAM-OPERATING-MODEL.md`](../ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md) | Canonical team roles, modes, workflow, and launch-control requirements. |
-| [`SHARED-AGENT-RULES.md`](../ops/ai/SHARED-AGENT-RULES.md) | Canonical shared law; this template must not contradict categorized rules (evidence-first, one issue per PR, scope, docs taxonomy). |
-| [`CORE-RULES.md`](../ops/ai/CORE-RULES.md) | Detailed execution rules; allowlist, issue-first discipline, and verification doctrine are enforced through assignment fields. |
-| [`CHATGPT-RULES.md`](../ops/ai/CHATGPT-RULES.md) | Atlas authors assignments and launch-control packages; defines acceptance criteria when the source issue lacks them. |
-| [`CURSOR-RULES.md`](../ops/ai/CURSOR-RULES.md) | Cursor executes only within approved scope; pre-implementation review checkpoint is mandatory for new packages. |
-| [`CODEX-RULES.md`](../ops/ai/CODEX-RULES.md) | Codex inactive for LGFC implementation — do not use this template to assign Codex. |
-| [`governance/ai/AGENT-GOVERNANCE.md`](../../governance/ai/AGENT-GOVERNANCE.md) | Long-form cross-agent rules; assignments implement one-issue, narrow-scope, verified handoff. |
-| [`ops/ai/CROSS-AGENT-OPERATING-RULES.md`](../../ops/ai/CROSS-AGENT-OPERATING-RULES.md) | Handoff contract in section 16 of the template block matches required handoff fields. |
-| `.agents/skills/lgfc-pr-governance/SKILL.md` | Use when the deliverable is a PR; assignment must still name one source issue and allowlist before implementation. |
-| `.agents/skills/lgfc-docs-authority/SKILL.md` | Use for documentation tasks; section 9 of the template block must name exact Diataxis paths. |
-
-Authority order on conflict: follow [`Agent.md`](../../Agent.md) hierarchy — higher authority wins; stop and report.
-
-## 8. Phase 1 Wrap-Up note
-
-Program 1 — Phase 1 Wrap-Up adopts a PMO model with programs, child projects, tasks, issues, PRs, and verification closeout.
-
-**This template is mandatory before feeding Cursor** during Phase 1 Wrap-Up. Operators and Atlas must not assign Cursor with informal prompts, umbrella trackers as sole authority, or partial file scope.
-
-Every child-project task routed to Cursor should be packaged with the mandatory template block (section 4), linked to exactly one source issue, and closed with handoff evidence suitable for verification closeout (`.agents/skills/lgfc-verification-closeout/SKILL.md` when applicable).
-
-Do not assign Codex for LGFC implementation during Phase 1 Wrap-Up unless Bill explicitly reauthorizes Codex in governance.
-
-This note does not expand Phase 1 program documentation; it establishes the assignment standard required for safe agent execution during wrap-up.
+- Constitution and authority order: `Agent.md`, `docs/governance/REPOSITORY-AUTHORITY.md`
+- Durable roles and current mappings: `docs/governance/AGENT-TEAM.md`
+- Shared execution rules: `docs/ops/ai/SHARED-AGENT-RULES.md`, `docs/ops/ai/CORE-RULES.md`
+- Implementation role contract: `docs/reference/agents/implementation-authority-contract.md`
+- Administration executor matrix: `docs/reference/operations/administrative-control-lane-contract.md`
+- Issue closeout procedure: `docs/ops/pmo/github-issue-closeout-protocol.md`
+- Runtime-specific policy: applicable member or tool compatibility document

@@ -41,7 +41,7 @@ As of this report:
 
 - `main` is the clean reference for the cleanup.
 - The two known stale refs from the #2374 plan were reset to `main` commit `e4d7d693d8bda9fc890edbe994491a6037328ee9`.
-- Connector comparison shows `atlas/drive-draft-intake-2367` is identical to `main`.
+- Connector comparison shows `ChatGPT/drive-draft-intake-2367` is identical to `main`.
 - Connector comparison shows `cursor/2360-docs-audit-2e48` is identical to `main`.
 - ZIP History Audit passed on PR #2390 after the stale-ref cleanup.
 - Final issue closeout still depends on PR merge and post-merge verification.
@@ -61,7 +61,7 @@ ChatGPT performed the minimum ref cleanup necessary to remove the known stale br
 
 | Ref | Pre-cleanup condition from #2374 plan | Cleanup action |
 | --- | --- | --- |
-| `atlas/drive-draft-intake-2367` | History contained ZIP introduction commit `21bb616af2eab3bb98210f2be6b0b036643f8c95`; tip had deleted the ZIP but history remained tainted. | Reset branch ref to current clean `main` commit `e4d7d693d8bda9fc890edbe994491a6037328ee9`. |
+| `ChatGPT/drive-draft-intake-2367` | History contained ZIP introduction commit `21bb616af2eab3bb98210f2be6b0b036643f8c95`; tip had deleted the ZIP but history remained tainted. | Reset branch ref to current clean `main` commit `e4d7d693d8bda9fc890edbe994491a6037328ee9`. |
 | `cursor/2360-docs-audit-2e48` | History contained ZIP introduction commit `21bb616af2eab3bb98210f2be6b0b036643f8c95`; tip still contained the ZIP. | Reset branch ref to current clean `main` commit `e4d7d693d8bda9fc890edbe994491a6037328ee9`. |
 
 No repository-wide history rewrite was performed.
@@ -75,7 +75,7 @@ Connector-side ref comparison after cleanup:
 
 | Check | Result |
 | --- | --- |
-| `main` vs `atlas/drive-draft-intake-2367` | Identical; ahead `0`, behind `0`, changed files `0`. |
+| `main` vs `ChatGPT/drive-draft-intake-2367` | Identical; ahead `0`, behind `0`, changed files `0`. |
 | `main` vs `cursor/2360-docs-audit-2e48` | Identical; ahead `0`, behind `0`, changed files `0`. |
 
 This confirms both previously tainted stale branch refs now point to the same commit as `main`:

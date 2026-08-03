@@ -40,7 +40,7 @@ Define the shared content asset contract consumed by Gallery, Library, Memorabil
 | Lou Gehrig metadata schema | `docs/reference/website/lou-gehrig-content-metadata-schema.md` | Candidate metadata for provenance/rights |
 | Unified workflow | `docs/reference/website/unified-content-workflow.md` | Editorial pipeline stages |
 | #2286 runtime libs | `functions/_lib/content-pipeline-*.ts`, `functions/_lib/content-inventory-*.ts` | Completed foundation — consume, do not rebuild |
-| Intake draft (non-authority) | `_incoming/drive-drafts/content-collection/CC-001 … Draft.docx` on `atlas/drive-draft-intake-2367` | Planning input only |
+| Intake draft (non-authority) | `_incoming/drive-drafts/content-collection/CC-001 … Draft.docx` on `ChatGPT/drive-draft-intake-2367` | Planning input only |
 
 **ChatGPT disposition (#2360):** CC-001 is `merge_into_existing` first. Any new file is a **delta/gap matrix** under this package path until ChatGPT freezes a supersession.
 

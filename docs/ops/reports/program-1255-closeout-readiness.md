@@ -1,6 +1,6 @@
 ---
 Doc Type: Operations
-Audience: Atlas, Bill, LGFC maintainers, and operators
+Audience: ChatGPT, Bill, LGFC maintainers, and operators
 Authority Level: Controlled
 Owns: Program #1255 terminal closeout readiness packet and operator hygiene checklist before final inspection
 Does Not Own: GitHub issue closure, Program #1255 terminal authorization, or unauthorized issue mutation
@@ -14,7 +14,7 @@ Last Reviewed: 2026-06-17
 ## Purpose
 
 Consolidate final pre-inspection status for Program **#1255** (Website
-Implementation and Content Operations) before Atlas/Bill terminal closeout
+Implementation and Content Operations) before ChatGPT/Bill terminal closeout
 authorization. Records deliverable completion, residual operator hygiene, accepted
 deferrals, and the authorized close sequence.
 
@@ -22,7 +22,7 @@ deferrals, and the authorized close sequence.
 
 - Readiness documentation and operator command packet only
 - Does **not** close `#1255`, `#1259`, or `#1053`
-- Does **not** authorize Program terminal closeout — Atlas/Bill only
+- Does **not** authorize Program terminal closeout — ChatGPT/Bill only
 
 Assessment date: **2026-06-17** (`main` after Phase 4 Task 009 PR `#1751` merge
 `fd17af2`; Task 008 PR `#1753` merge `678699e`).
@@ -40,7 +40,7 @@ before final inspection.
 | Implementation complete | **Yes** — `#1256`, `#1258`, `#1259` deliverables on `main` |
 | Phase 4 QA evidence | **Yes** — Tasks 001–009 merged |
 | P0 launch blockers | **None** in Phase 4 evidence |
-| Terminal closeout authorized | **No** — awaits Atlas/Bill inspection |
+| Terminal closeout authorized | **No** — awaits ChatGPT/Bill inspection |
 | Operator hygiene remaining | **Complete** (2026-06-17) — `#1123` label; `#1258` close |
 
 ## Child project completion matrix
@@ -104,16 +104,16 @@ Expected after operator hygiene:
 | `#1259` | OPEN; `status:active` |
 | `#1255` | OPEN; `status:active` |
 
-Operator hygiene **complete** (2026-06-17): Atlas applied `#1123` label removal and
+Operator hygiene **complete** (2026-06-17): ChatGPT applied `#1123` label removal and
 `#1258` closeout; `#1255` and `#1259` verified OPEN with `status:active`.
 
-## Atlas/Bill final inspection checklist
+## ChatGPT/Bill final inspection checklist
 
 - [ ] Confirm `#1256` closed complete on GitHub
 - [ ] Confirm operator applied `#1123` and `#1258` hygiene (above)
 - [ ] Confirm `#1259` **open** with Phase 4 Tasks 001–009 evidence on `main`
 - [ ] Review Task 009 final QA handoff report
-- [ ] Review Task 008 legacy disposition package (Atlas batch comments optional)
+- [ ] Review Task 008 legacy disposition package (ChatGPT batch comments optional)
 - [ ] Accept H-011 bounded deferral (Task 007) or schedule follow-up workflow PR
 - [ ] Authorize Program **#1255** terminal closeout
 
@@ -125,7 +125,7 @@ Human/operator only. Order matters:
    referencing Task 009 PR `#1751`.
 2. Close umbrella **#1255** with `status:complete` and program closeout comment
    referencing all three child projects.
-3. Leave **#1053** open or close separately per Atlas disposition on coordination
+3. Leave **#1053** open or close separately per ChatGPT disposition on coordination
    index (subordinated — not required for `#1255` terminal closeout).
 
 Do **not** close `#1259` or `#1255` before terminal authorization.

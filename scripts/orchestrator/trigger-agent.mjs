@@ -14,7 +14,7 @@ const AGENT_PROMPTS = {
   'agent:cursor': '@cursor execute implementation per issue and update the existing draft PR only. Do not open a new PR.',
   'agent:codex': '@codex implement task per issue and update the existing draft PR only. Do not open a new PR.',
   'agent:copilot': '@copilot implement per issue and update the existing draft PR only. Do not open a new PR.',
-  'agent:atlas': 'Atlas-routed task detected. Human/Atlas execution required. Update the existing draft PR only. Do not open a new PR.'
+  'agent:ChatGPT': 'ChatGPT-routed task detected. Human/ChatGPT execution required. Update the existing draft PR only. Do not open a new PR.'
 };
 
 function runGh(args) {
