@@ -1,0 +1,47 @@
+name: Post-Merge Late Review Reaudit
+
+# #3036 — when trusted reviewer comments arrive after merge, re-run late
+# findings detection. Initial closeout can race ahead of bot reviews.
+
+on:
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  reaudit:
+    if: |
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Late reviewer reaudit
+        id: audit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: node scripts/ci/post_merge_reviewer_audit.mjs
+        continue-on-error: true
+
+      - name: Annotate when late findings exist
+        if: steps.audit.outputs.late_findings != '0' && steps.audit.outputs.late_findings != ''
+        run: |
+          echo "::warning::Late trusted reviewer findings detected on merged PR #${{ github.event.pull_request.number }} (count=${{ steps.audit.outputs.late_findings }}). Follow-up: ${{ steps.audit.outputs.audit_issue }}"

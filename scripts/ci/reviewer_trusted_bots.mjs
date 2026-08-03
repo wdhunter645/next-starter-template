@@ -1,6 +1,8 @@
 export const DEFAULT_TRUSTED_BOT_LOGINS = [
   'copilot-pull-request-reviewer[bot]',
   'copilot-pull-request-reviewer',
+  'copilot',
+  'Copilot',
   'cubic-dev-ai[bot]',
   'cubic-dev-ai',
   'chatgpt-codex-connector[bot]',
