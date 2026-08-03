@@ -5,7 +5,7 @@ Authority Level: Supporting
 Owns: Runtime behavior for D1-backed weekly photo matchup auto-rotation
 Does Not Own: Component design, voting policy, photo curation UI
 Canonical Reference: /docs/as-built/weekly-matchup-auto-rotation.md
-Related issues: #2157, #2230, #2519, #3028
+Related issues: #2157, #2230, #2519, #3028, #3031
 Last Reviewed: 2026-08-03
 ---
 
@@ -13,7 +13,7 @@ Last Reviewed: 2026-08-03
 
 ## Purpose
 
-Records how `GET /api/matchup/current` resolves the homepage Weekly Photo Matchup pair from D1 without requiring manual admin action each week, and how browser image-load failures are handled under the #3028 mid-week mutation lockdown.
+Records how `GET /api/matchup/current` resolves the homepage Weekly Photo Matchup pair from D1 without requiring manual admin action each week, how browser image-load failures are handled under the #3028 mid-week mutation lockdown, and how CI (#3031) snapshots the Monday pair and remediates unauthorized mid-week drift.
 
 ## Scope
 
@@ -87,6 +87,22 @@ Mid-week changes to Photo A and/or B require:
 
 **Lazy Monday rotation:** the first homepage or API hit of a new week creates the new pair. No separate scheduled rollover job is required.
 
+### CI Monday snapshot + mid-week drift monitor (#3031)
+
+Workflow: `.github/workflows/matchup-pair-monitor.yml` (hourly + `workflow_dispatch`).
+
+1. Calls public `GET /api/matchup/current` (forces lazy Monday create when needed).
+2. Snapshots photo IDs + URL basenames for the current `week_start` into an Actions cache baseline (first run of the week / missing baseline).
+3. Later runs compare live pair to that baseline.
+4. On drift in `auto` mode: replaces **both** slots via remote D1, deletes `weekly_votes` for that week (**0–0**), adopts the new pair as baseline, and upserts an ops findings issue.
+5. Modes: `auto` (default), `adopt-current` (refresh baseline after an authorized Issue-gated admin change), `watch-only` (report drift without mutating).
+
+**Authorized mid-week changes:** after admin repair/update with `source_issue`, run the workflow with `adopt-current` so CI does not treat the Issue-gated pair as unauthorized drift.
+
+**Deferred:** event-driven trigger when the pair mutates (prefer over interval polling). Interval CI is the shipped first cut.
+
+Scripts: `scripts/ci/matchup_pair_monitor.mjs`, `scripts/ci/ops_matchup_drift_findings.mjs`.
+
 ## Eligibility (interim)
 
 | `is_matchup_eligible` | Meaning | Selection today |
@@ -117,6 +133,8 @@ Votes are stored in D1; winner is computed at read time (not persisted as a colu
 - `functions/api/matchup/results.ts` — totals and last-week winner
 - `src/components/WeeklyMatchup.tsx` — homepage UI
 - `tests/matchup-current-rotation.test.ts` — rotation unit tests
+- `tests/matchup-pair-monitor.test.mjs` — CI snapshot/drift helpers (#3031)
+- `.github/workflows/matchup-pair-monitor.yml` — hourly pair monitor (#3031)
 - `docs/as-built/weekly-matchup-photo-url-normalization.md` — URL normalization on read paths
 
 ## Operator surfaces

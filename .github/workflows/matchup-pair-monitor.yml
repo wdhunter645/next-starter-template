@@ -1,0 +1,106 @@
+name: OPS — Matchup Pair Monitor
+
+# Monday/baseline snapshot of Weekly Photo Matchup pair (ids + URL names),
+# hourly drift watch, and auto-remediate both slots + 0–0 votes (#3031).
+# Event-driven trigger on pair mutation is deferred.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "auto | adopt-current | watch-only"
+        required: true
+        default: auto
+        type: choice
+        options:
+          - auto
+          - adopt-current
+          - watch-only
+  schedule:
+    # Hourly. First run of a new week_start writes the Monday baseline.
+    - cron: "17 * * * *"
+
+concurrency:
+  group: matchup-pair-monitor
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify Cloudflare D1 credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          D1_DATABASE_NAME: ${{ secrets.D1_DATABASE_NAME }}
+          D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
+        run: node scripts/ci/verify_cloudflare_d1_auth.mjs
+
+      - name: Restore baseline cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/matchup-pair-baseline.json
+          key: matchup-pair-baseline-${{ github.run_id }}
+          restore-keys: |
+            matchup-pair-baseline-
+
+      - name: Run matchup pair monitor
+        id: monitor
+        env:
+          MATCHUP_MONITOR_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'auto' }}
+          MATCHUP_PUBLIC_URL: https://www.lougehrigfanclub.com/api/matchup/current
+          MATCHUP_BASELINE_PATH: ${{ github.workspace }}/.cache/matchup-pair-baseline.json
+          D1_DATABASE_NAME: ${{ secrets.D1_DATABASE_NAME }}
+          D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: node scripts/ci/matchup_pair_monitor.mjs
+
+      - name: Save baseline cache
+        if: always() && hashFiles('.cache/matchup-pair-baseline.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/matchup-pair-baseline.json
+          key: matchup-pair-baseline-${{ github.run_id }}
+
+      - name: Open findings issue on drift
+        if: always() && steps.monitor.outputs.drift == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OPS_MATCHUP_WORKFLOW: OPS — Matchup Pair Monitor
+          OPS_MATCHUP_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          OPS_MATCHUP_WEEK_START: ${{ steps.monitor.outputs.week_start }}
+          OPS_MATCHUP_FROM_A: ${{ steps.monitor.outputs.from_a }}
+          OPS_MATCHUP_FROM_B: ${{ steps.monitor.outputs.from_b }}
+          OPS_MATCHUP_TO_A: ${{ steps.monitor.outputs.to_a }}
+          OPS_MATCHUP_TO_B: ${{ steps.monitor.outputs.to_b }}
+          OPS_MATCHUP_REMEDIATED: ${{ steps.monitor.outputs.remediated }}
+          OPS_MATCHUP_LABELS: ops-runtime-finding,ops:monitoring
+        run: node scripts/ci/ops_matchup_drift_findings.mjs
+
+      - name: Escalate runtime failure
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OPS_ESCALATION_WORKFLOW: OPS — Matchup Pair Monitor
+          OPS_ESCALATION_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          OPS_ESCALATION_DETAILS: Matchup pair monitor failed. Review scripts/ci/matchup_pair_monitor.mjs, public GET /api/matchup/current, and Cloudflare D1 credentials.
+          OPS_ESCALATION_LABELS: ops-runtime-failure,ops:monitoring
+        run: node scripts/ci/ops_runtime_escalation.mjs
