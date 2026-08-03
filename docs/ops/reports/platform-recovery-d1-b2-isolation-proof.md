@@ -90,7 +90,7 @@ Measured times below are **local exercise durations**, not Production RTO proofs
 | Source issue | #2895 |
 | Parent project | #2779 |
 | Component branch | `component/platform-recovery-readiness` |
-| Implementation SHA | _pending clean-head commit_ |
+| Implementation SHA | `08617bc048d9a3e4b1bd3f8918503882668fb053` |
 
 ## Results (this run)
 
