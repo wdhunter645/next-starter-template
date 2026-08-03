@@ -5,8 +5,8 @@ Authority Level: Operational Procedure
 Owns: GitHub communication markers, cross-lane routing, lightweight problem adjustment, local Cursor wake/resume, acknowledgment, and task-level handoff behavior
 Does Not Own: Role authority, delivery and promotion policy, PR approval, Production authorization, incident recovery strategy, or runner host maintenance
 Canonical Reference: /docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md
-Related Issues: #2396, #2492, #2640, #2641, #2639, #2648
-Last Reviewed: 2026-07-19
+Related Issues: #2396, #2492, #2640, #2641, #2639, #2648, #2997, #3013
+Last Reviewed: 2026-08-03
 ---
 
 # Cross-Lane ChatGPT / Cursor Communication Workflow
@@ -94,7 +94,7 @@ For a task, project, or incident handoff, the receiving agent responds on the so
 - PR reviews, PR comments, inline threads, checks, deployments, and artifacts are supporting technical evidence.
 - A PR-only disposition does not complete routing back to the implementation agent.
 - When a PR review controls further work, the source-Issue event must reference the PR, candidate SHA, disposition, evidence, and requested next action.
-- Local Cursor execution may additionally require a linked `LOCAL CURSOR RESUME` transport event.
+- Local Cursor execution is triggered by labels/status alone (`agent:cursor` + `handoff:ready`); no linked resume comment is required (#3013).
 
 A handoff is incomplete when the target role/lane, requested action, blocking scope, or acknowledgment state is missing or ambiguous.
 
@@ -251,29 +251,11 @@ Unaffected work resume: <authorized | not authorized>
 
 Day-2 Operations authorizes hold release. Administration & Communications records the state and routes `RESUME`.
 
-## Local Cursor wake and resume adapter
+## Local Cursor wake and resume adapter (retired for gating — #3013)
 
-Until runtime migration is complete, local Cursor may still require the legacy wake transaction:
+Cursor Local Bridge no longer requires, reads, or gates launch on a `LOCAL CURSOR RESUME` (or `CHATGPT RESPONSE`/`CHATGPT CLOSEOUT`) comment. As of #3013, Bridge launch eligibility is decided from Issue **labels and status only** (`agent:cursor` + `handoff:ready`, open, not already handed off — see `docs/reference/ci/cursor-local-bridge-contract.md`). Posting a resume comment is no longer necessary to trigger a Cursor Local launch and has no effect on eligibility.
 
-1. authoritative decision/event exists on the source Issue;
-2. Issue is open;
-3. required wake labels exist;
-4. no newer state supersedes the decision;
-5. a separate `LOCAL CURSOR RESUME` references the exact decision;
-6. the resume contains one bounded next action.
-
-```text
-LOCAL CURSOR RESUME
-Issue: #<issue>
-Resume from: <exact decision comment URL>
-Runtime: local
-Branch:
-PR:
-Next local action:
-- <one bounded action>
-```
-
-The marker is transport, not decision authority. It does not prove pickup or work execution.
+Any of the legacy markers named in this workflow may still be posted as ordinary cross-agent context/evidence — Cursor reads comments after launch the same way it reads the Issue body — but none of them are transport or gating mechanisms for the Bridge.
 
 ## Acknowledgment and retry
 

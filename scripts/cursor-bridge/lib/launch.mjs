@@ -66,17 +66,18 @@ function formatComments(comments = [], limit = 12) {
 }
 
 /**
- * Delivery-first prompt (#2997): Cursor receives live Issue/comment context and
- * semantic findings, then decides act / hold / correction-needed / no-action.
- * Bridge does not pre-reject for semantic resume/response shape.
+ * Label- and status-driven launch prompt: Cursor was assigned this Issue
+ * because it carries `agent:cursor` + `handoff:ready` (mechanical Bridge
+ * gates already passed on that basis alone). Cursor reads the live Issue
+ * body/comments for what to actually do, then decides act / hold /
+ * correction-needed / no-action. There is no resume/response comment
+ * marker for the Bridge to resolve or for Cursor to look for — the label
+ * pair and the Issue content are the complete handoff.
  */
 export function buildPrompt({
   issueNumber,
   issue,
   comments = [],
-  resumeUrl,
-  responseUrl,
-  action,
   semanticFindings = [],
   workspace,
 }) {
@@ -87,15 +88,10 @@ export function buildPrompt({
   const findingsBlock =
     semanticFindings.length > 0
       ? semanticFindings.map((f) => `- ${f}`).join('\n')
-      : '- (none — Bridge mechanical gates passed; semantic markers look complete)';
-
-  const actionBlock =
-    action && String(action).trim()
-      ? `Parser-recognized single action (verify against live comments before executing):\n- ${action}`
-      : 'Parser did not reduce the latest resume to exactly one action. You must evaluate the live Issue and comments and choose act, hold, correction-needed, or no-action. Do not invent authority.';
+      : '- (none)';
 
   return [
-    'MODE: IMPLEMENTATION (delivery-first Bridge launch)',
+    'MODE: IMPLEMENTATION (label- and status-driven Bridge launch)',
     'Runtime: local',
     `Source Issue: #${issueNumber}`,
     `Issue title: ${issue?.title || '(unknown)'}`,
@@ -103,16 +99,14 @@ export function buildPrompt({
     `Issue labels: ${labels || '(none)'}`,
     `Issue URL: ${issue?.url || `(https://github.com/wdhunter645/next-starter-template/issues/${issueNumber})`}`,
     'Read Agent.md and the mandatory documentation chain before any repo work.',
-    'Bridge role: secure transport + mechanical safety only. You own semantic task-readiness evaluation.',
-    `Canonical CHATGPT RESPONSE URL: ${responseUrl || '(not resolved by Bridge — inspect live Issue comments)'}`,
-    `LOCAL CURSOR RESUME URL: ${resumeUrl || '(not resolved by Bridge — inspect live Issue comments)'}`,
-    'Bridge semantic findings (informational — do not treat as Bridge rejection):',
+    'Bridge role: secure transport + mechanical safety only (Issue open, `agent:cursor` + `handoff:ready` present, no stale handoff, no active claim). You own semantic task-readiness evaluation.',
+    'You were assigned this Issue by its labels alone — there is no separate resume/response comment to look for. Read the Issue body and comments below for full context.',
+    'Bridge informational findings (do not treat as Bridge rejection):',
     findingsBlock,
-    actionBlock,
     'Required disposition after evaluating live Issue + comments + governance:',
     '- act: execute one bounded authorized action; set Issue status to status:implementation while working; on finish post IMPLEMENTATION HANDOFF and set status:review;',
-    '- hold: post a Cursor-authored hold explaining the semantic blocker and set the matching canonical Issue status;',
-    '- correction-needed: request a corrected RESPONSE/RESUME and set the matching canonical Issue status;',
+    '- hold: post a Cursor-authored hold explaining the blocker and set the matching canonical Issue status;',
+    '- correction-needed: post what is missing or ambiguous and set the matching canonical Issue status;',
     '- no-action: report that no executable work is authorized, set matching status, and stop.',
     'Shared lifecycle: Issue status transitions + your handoff/disposition. Bridge does not post ACK/STARTED/COMPLETED telemetry.',
     'Do not broaden scope. Do not self-approve or merge protected work.',
@@ -143,7 +137,7 @@ export function resolveWorkspace(config) {
  */
 export function launchLocalAgent(
   config,
-  { issueNumber, issue, comments, resume, response, action, semanticFindings },
+  { issueNumber, issue, comments, semanticFindings },
 ) {
   const pre = cliAuthPreflight(config);
   if (!pre.ok) return { error: pre.reason, detail: pre.detail };
@@ -153,9 +147,6 @@ export function launchLocalAgent(
     issueNumber,
     issue,
     comments,
-    resumeUrl: resume?.url,
-    responseUrl: response?.url,
-    action,
     semanticFindings,
     workspace,
   });

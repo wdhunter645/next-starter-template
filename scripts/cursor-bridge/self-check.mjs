@@ -6,7 +6,6 @@ import os from 'node:os';
 import path from 'node:path';
 import {
   validateEligibility,
-  parseResume,
   resolveDeliveryKey,
   sanitizeDeliveryKey,
 } from './lib/eligibility.mjs';
@@ -35,88 +34,38 @@ const baseIssue = {
   labels: [{ name: 'agent:cursor' }, { name: 'handoff:ready' }],
 };
 
-const response = {
-  id: 111,
-  url: 'https://github.com/wdhunter645/next-starter-template/issues/2667#issuecomment-111',
-  body: 'CHATGPT RESPONSE\nStatus: go\n',
-  createdAt: '2026-07-20T12:00:00Z',
-};
-
-const resume = {
-  id: 222,
-  url: 'https://github.com/wdhunter645/next-starter-template/issues/2667#issuecomment-222',
-  body: `LOCAL CURSOR RESUME
-Issue: #2667
-Source handoff: ${response.url}
-Resume from: ${response.url}
-Next local action:
-- Implement bridge soak validation only
-`,
-  createdAt: '2026-07-20T12:01:00Z',
-};
-
 {
-  const r = validateEligibility(baseIssue, [response, resume]);
-  assert.equal(r.ok, true, r.errors.join(','));
-  assert.equal(r.parsed.actions.length, 1);
-  assert.equal(r.semanticFindings.length, 0);
-}
-
-{
-  // #2997: multiple actions are semantic findings — Bridge still delivers.
-  const bad = {
-    ...resume,
-    body: `LOCAL CURSOR RESUME
-Issue: #2667
-Resume from: ${response.url}
-Next local action:
-- first
-- second
-`,
-  };
-  const r = validateEligibility(baseIssue, [response, bad]);
-  assert.equal(r.ok, true, r.errors.join(','));
-  assert.ok(r.semanticFindings.some((e) => e.startsWith('resume_action_count')));
-}
-
-{
-  // Zero parser actions + Response: URL form still delivers (#2997 / Claude resume style).
-  const zeroAction = {
-    ...resume,
-    body: `LOCAL CURSOR RESUME
-Issue: #2667
-Response: ${response.url}
-
-Action: Do the one bounded thing
-`,
-  };
-  const r = validateEligibility(baseIssue, [response, zeroAction]);
-  assert.equal(r.ok, true, r.errors.join(','));
-  assert.equal(r.parsed.actions.length, 1);
-  assert.equal(r.semanticFindings.length, 0);
-}
-
-{
+  // Label- and status-driven eligibility: no comment body is ever consulted.
   const r = validateEligibility(baseIssue, []);
-  assert.equal(r.ok, true, 'mechanical gates pass without semantic markers');
-  assert.ok(r.semanticFindings.includes('missing_chatgpt_response'));
-  assert.ok(r.semanticFindings.includes('missing_local_cursor_resume'));
+  assert.equal(r.ok, true, r.errors.join(','));
+  assert.equal(r.semanticFindings.length, 0);
 }
 
 {
   const r = validateEligibility(
     { ...baseIssue, labels: [{ name: 'agent:cursor' }] },
-    [response, resume],
+    [],
   );
   assert.equal(r.ok, false);
   assert.ok(r.errors.includes('missing_label:handoff:ready'));
 }
 
 {
-  // #2997 remediation: lowercase open + null issue must not throw.
-  const lower = validateEligibility({ ...baseIssue, state: 'open' }, [response, resume]);
+  // A status label proving the Issue already went through a handoff cycle
+  // blocks relaunch even though agent:cursor + handoff:ready are present.
+  const r = validateEligibility(
+    { ...baseIssue, labels: [...baseIssue.labels, { name: 'status:review' }] },
+    [],
+  );
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.includes('already_handed_off:status:review'));
+}
+
+{
+  // Lowercase open + null issue must not throw.
+  const lower = validateEligibility({ ...baseIssue, state: 'open' }, []);
   assert.equal(lower.ok, true, lower.errors.join(','));
-  const missing = validateEligibility(null, [response, resume]);
+  const missing = validateEligibility(null, []);
   assert.equal(missing.ok, false);
   assert.ok(missing.errors.includes('missing_issue'));
 }
@@ -129,7 +78,6 @@ Action: Do the one bounded thing
   assert.equal(
     resolveDeliveryKey({
       packet: { deliveryId: '../../etc/passwd' },
-      eligibility: { resume: null },
       issueNumber: 1,
     }).startsWith('enc-'),
     true,
@@ -144,43 +92,48 @@ Action: Do the one bounded thing
 }
 
 {
-  // Cursor-only wake ingress: Claude / ChatGPT traffic stays off the Chromebook queue.
+  // Cursor-only wake ingress: label-driven, order-independent, no comment marker.
   assert.equal(
     shouldDeliverCursorWake({
       repository: 'wdhunter645/next-starter-template',
-      eventName: 'issue_comment',
-      issueState: 'open',
-      issueLabels: ['agent:cursor', 'handoff:ready'],
-      commentBody: 'CLAUDE CODE RESUME\nIssue: #1\n',
+      eventName: 'issues',
+      action: 'labeled',
+      labelName: 'handoff:ready',
+      issueLabels: ['agent:claude', 'handoff:ready'],
     }).deliver,
     false,
   );
   assert.equal(
     shouldDeliverCursorWake({
       repository: 'wdhunter645/next-starter-template',
-      eventName: 'issue_comment',
-      issueState: 'open',
+      eventName: 'issues',
+      action: 'labeled',
+      labelName: 'handoff:ready',
       issueLabels: ['agent:ChatGPT', 'handoff:ready'],
-      commentBody: 'CHATGPT HANDOFF\n',
     }).deliver,
     false,
   );
   assert.equal(
     shouldDeliverCursorWake({
       repository: 'wdhunter645/next-starter-template',
-      eventName: 'issue_comment',
-      issueState: 'open',
+      eventName: 'issues',
+      action: 'labeled',
+      labelName: 'handoff:ready',
       issueLabels: ['agent:cursor', 'handoff:ready'],
-      commentBody: 'LOCAL CURSOR RESUME\nIssue: #1\n',
     }).deliver,
     true,
   );
-}
-
-{
-  const p = parseResume(resume.body);
-  assert.equal(p.issueNumber, 2667);
-  assert.equal(p.actions[0], 'Implement bridge soak validation only');
+  // Order-independent: agent:cursor applied last, handoff:ready already present.
+  assert.equal(
+    shouldDeliverCursorWake({
+      repository: 'wdhunter645/next-starter-template',
+      eventName: 'issues',
+      action: 'labeled',
+      labelName: 'agent:cursor',
+      issueLabels: ['agent:cursor', 'handoff:ready'],
+    }).deliver,
+    true,
+  );
 }
 
 {

@@ -107,12 +107,6 @@
       },
       "minItems": 1
     },
-    "responseMarker": {
-      "type": "string"
-    },
-    "resumeMarker": {
-      "type": "string"
-    },
     "fallbackCommentPrefix": {
       "type": "string"
     },

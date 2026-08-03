@@ -21,8 +21,8 @@ Covers operator behavior for `~/.cursor/github-poller/` while working in `wdhunt
 
 ## Current known truth
 
-- **Primary path:** Actions wake delivery → host Bridge → authenticated `cursor agent` (or fallback unclaimed).
-- The poller remains an optional backup that watches open issues with **`agent:cursor` + `handoff:ready`**, assigned issues, and assigned PRs.
+- **Primary path:** Actions wake delivery → host Bridge → authenticated `cursor agent` (or fallback unclaimed). The Bridge gates on Issue labels/status only — no comment marker (#3013).
+- The poller remains an optional backup that watches open issues with **`agent:cursor` + `handoff:ready`**, assigned issues, and assigned PRs. The poller's own marker convention below is independent of Bridge eligibility.
 - An item is fresh only when its `updatedAt` or equivalent is later than the saved `state.since` watermark.
 - `LOCAL CURSOR RESUME` is the human/agent resume pointer to the canonical Chat decision.
 - Poller wake output does **not** launch Cursor; it prints a sentinel for an already-open agent chat.

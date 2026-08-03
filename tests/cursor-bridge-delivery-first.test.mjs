@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   validateEligibility,
-  assessSemanticReadiness,
-  parseResume,
   resolveDeliveryKey,
   sanitizeDeliveryKey,
 } from '../scripts/cursor-bridge/lib/eligibility.mjs';
@@ -10,6 +8,7 @@ import {
   shouldDeliverCursorWake,
   isNonCursorDirectedTraffic,
   hasCursorRoutingSignal,
+  hasReadyCursorHandoff,
 } from '../scripts/cursor-bridge/lib/wake-ingress.mjs';
 import { buildPrompt } from '../scripts/cursor-bridge/lib/launch.mjs';
 import { shouldQueueRecovery, buildRecoveryPacket } from '../scripts/cursor-bridge/lib/reconcile.mjs';
@@ -26,141 +25,92 @@ const baseIssue = {
   repository: { nameWithOwner: 'wdhunter645/next-starter-template' },
 };
 
-const response = {
-  id: 5153153493,
-  url: 'https://github.com/wdhunter645/next-starter-template/issues/2997#issuecomment-5153153493',
-  body: 'CHATGPT RESPONSE\nDisposition: IMPLEMENTATION AUTHORIZED\n',
-  createdAt: '2026-08-01T19:55:29Z',
-};
-
-describe('cursor bridge delivery-first eligibility (#2997)', () => {
-  it('delivers a trusted notification with zero parser-recognized bullet actions', () => {
-    const resume = {
-      id: 1,
-      url: 'https://github.com/example/1',
-      body: `LOCAL CURSOR RESUME
-Issue: #2997
-Response: ${response.url}
-
-Do the work described in the response without a Next local action list.
-`,
-      createdAt: '2026-08-01T19:55:38Z',
-    };
-    const r = validateEligibility(baseIssue, [response, resume], {
+describe('cursor bridge label- and status-driven eligibility', () => {
+  it('is eligible on agent:cursor + handoff:ready alone, no comments involved', () => {
+    const r = validateEligibility(baseIssue, [], {
       expectedRepo: 'wdhunter645/next-starter-template',
     });
     expect(r.ok).toBe(true);
     expect(r.errors).toEqual([]);
-    expect(r.semanticFindings.some((f) => f.startsWith('resume_action_count'))).toBe(true);
   });
 
-  it('delivers a trusted notification with multiple parser-recognized actions', () => {
-    const resume = {
-      id: 2,
-      url: 'https://github.com/example/2',
-      body: `LOCAL CURSOR RESUME
-Issue: #2997
-Resume from: ${response.url}
-Next local action:
-- first thing
-- second thing
-`,
-      createdAt: '2026-08-01T19:55:38Z',
-    };
-    const r = validateEligibility(baseIssue, [response, resume]);
-    expect(r.ok).toBe(true);
-    expect(r.semanticFindings).toContain('resume_action_count:2');
-  });
-
-  it('passes a missing or ambiguous response reference to Cursor as a finding', () => {
-    const resume = {
-      id: 3,
-      url: 'https://github.com/example/3',
-      body: `LOCAL CURSOR RESUME
-Issue: #2997
-Next local action:
-- Inspect only
-`,
-      createdAt: '2026-08-01T19:55:38Z',
-    };
-    const r = validateEligibility(baseIssue, [response, resume]);
-    expect(r.ok).toBe(true);
-    expect(r.semanticFindings).toContain('resume_missing_response_reference');
+  it('is eligible identically whether comments are omitted or present (unused)', () => {
+    const withComments = validateEligibility(baseIssue, [
+      { id: 1, body: 'unrelated chatter', createdAt: '2026-08-01T00:00:00Z' },
+    ]);
+    const withoutComments = validateEligibility(baseIssue, []);
+    expect(withComments.ok).toBe(withoutComments.ok);
+    expect(withComments.errors).toEqual(withoutComments.errors);
   });
 
   it('accepts lowercase open state and fails closed on null issue without throwing', () => {
-    const lowercase = validateEligibility({ ...baseIssue, state: 'open' }, [response]);
+    const lowercase = validateEligibility({ ...baseIssue, state: 'open' }, []);
     expect(lowercase.ok).toBe(true);
 
-    expect(() => validateEligibility(null, [response])).not.toThrow();
-    const missing = validateEligibility(null, [response]);
+    expect(() => validateEligibility(null, [])).not.toThrow();
+    const missing = validateEligibility(null, []);
     expect(missing.ok).toBe(false);
     expect(missing.errors).toContain('missing_issue');
-
-    expect(() => assessSemanticReadiness(null, [response])).not.toThrow();
   });
 
   it('still blocks untrusted repository identity and closed issues before launch', () => {
-    const closed = validateEligibility({ ...baseIssue, state: 'CLOSED' }, [response]);
+    const closed = validateEligibility({ ...baseIssue, state: 'CLOSED' }, []);
     expect(closed.ok).toBe(false);
     expect(closed.errors).toContain('source_issue_not_open');
 
     const wrongRepo = validateEligibility(
-      {
-        ...baseIssue,
-        repository: { nameWithOwner: 'evil/other' },
-      },
-      [response],
+      { ...baseIssue, repository: { nameWithOwner: 'evil/other' } },
+      [],
       { expectedRepo: 'wdhunter645/next-starter-template' },
     );
     expect(wrongRepo.ok).toBe(false);
     expect(wrongRepo.errors).toContain('repository_mismatch');
 
-    const missingLabel = validateEligibility(
-      { ...baseIssue, labels: [{ name: 'handoff:ready' }] },
-      [response],
-    );
+    const missingLabel = validateEligibility({ ...baseIssue, labels: [{ name: 'handoff:ready' }] }, []);
     expect(missingLabel.ok).toBe(false);
     expect(missingLabel.errors).toContain('missing_label:agent:cursor');
   });
 
-  it('builds a prompt with live Issue/comment context and disposition instructions', () => {
-    const resume = {
-      id: 4,
-      url: 'https://github.com/example/4',
-      body: `LOCAL CURSOR RESUME
-Issue: #2997
-Response: ${response.url}
-Action: Implement the bounded bridge correction
-`,
-      createdAt: '2026-08-01T19:55:38Z',
-    };
-    const assessed = assessSemanticReadiness(baseIssue, [response, resume]);
+  it('blocks relaunch when the Issue already carries a handed-off status label', () => {
+    for (const status of ['status:review', 'status:complete', 'status:post-merge-verify']) {
+      const r = validateEligibility(
+        { ...baseIssue, labels: [...baseIssue.labels, { name: status }] },
+        [],
+      );
+      expect(r.ok).toBe(false);
+      expect(r.errors).toContain(`already_handed_off:${status}`);
+    }
+
+    // A live in-progress status must not block a fresh handoff.
+    const inProgress = validateEligibility(
+      { ...baseIssue, labels: [...baseIssue.labels, { name: 'status:implementation' }] },
+      [],
+    );
+    expect(inProgress.ok).toBe(true);
+  });
+
+  it('builds a prompt with live Issue/comment context and disposition instructions, no marker fields', () => {
     const prompt = buildPrompt({
       issueNumber: 2997,
       issue: baseIssue,
-      comments: [response, resume],
-      resumeUrl: resume.url,
-      responseUrl: response.url,
-      action: assessed.parsed.actions[0],
-      semanticFindings: assessed.findings,
+      comments: [{ id: 1, author: 'wdhunter645', body: 'context', createdAt: '2026-08-01T00:00:00Z' }],
+      semanticFindings: [],
       workspace: '/tmp/ws',
     });
-    expect(prompt).toContain('delivery-first');
+    expect(prompt).toContain('label- and status-driven');
     expect(prompt).toContain('Trusted notifications must reach Cursor.');
-    expect(prompt).toContain('CHATGPT RESPONSE');
+    expect(prompt).toContain('assigned this Issue by its labels alone');
     expect(prompt).toContain('Required disposition after evaluating live Issue + comments + governance:');
-    expect(prompt).toContain('- hold: post a Cursor-authored hold explaining the semantic blocker and set the matching canonical Issue status;');
-    expect(prompt).toContain('Implement the bounded bridge correction');
-    expect(parseResume(resume.body).responseRef).toContain('issuecomment-5153153493');
+    expect(prompt).toContain('- hold: post a Cursor-authored hold explaining the blocker and set the matching canonical Issue status;');
+    expect(prompt).not.toContain('LOCAL CURSOR RESUME URL');
+    expect(prompt).not.toContain('CHATGPT RESPONSE URL');
   });
 
-  it('reconciliation follows the delivery-first mechanical contract', () => {
+  it('reconciliation follows the label/state-only mechanical contract', () => {
     expect(
       shouldQueueRecovery({
         eligibilityOk: true,
         deliveryKey: 'issue-2997',
-        resumeId: null,
         consumed: false,
         hasPendingPacket: false,
         claimBlocks: false,
@@ -187,11 +137,8 @@ Action: Implement the bounded bridge correction
 
   it('does not queue reconciliation recovery for ChatGPT/Claude-only issues', () => {
     const chatgptOnly = validateEligibility(
-      {
-        ...baseIssue,
-        labels: [{ name: 'agent:ChatGPT' }, { name: 'handoff:ready' }],
-      },
-      [response],
+      { ...baseIssue, labels: [{ name: 'agent:ChatGPT' }, { name: 'handoff:ready' }] },
+      [],
     );
     expect(chatgptOnly.ok).toBe(false);
     expect(
@@ -204,22 +151,12 @@ Action: Implement the bounded bridge correction
       }).queue,
     ).toBe(false);
 
-    const claudeOnly = validateEligibility(
-      {
-        ...baseIssue,
-        labels: [{ name: 'agent:claude' }],
-      },
-      [],
-    );
+    const claudeOnly = validateEligibility({ ...baseIssue, labels: [{ name: 'agent:claude' }] }, []);
     expect(claudeOnly.ok).toBe(false);
     expect(
       shouldQueueRecovery({
         eligibilityOk: claudeOnly.ok,
-        deliveryKey: resolveDeliveryKey({
-          packet: null,
-          eligibility: claudeOnly,
-          issueNumber: 2997,
-        }),
+        deliveryKey: resolveDeliveryKey({ packet: null, issueNumber: 2997 }),
         consumed: false,
         hasPendingPacket: false,
         claimBlocks: false,
@@ -227,44 +164,14 @@ Action: Implement the bounded bridge correction
     ).toBe('ineligible');
   });
 
-  it('resolveDeliveryKey prefers resume id and sanitizes unsafe packet identities', () => {
-    expect(
-      resolveDeliveryKey({
-        packet: { deliveryId: 'wake-1' },
-        eligibility: { resume: { id: 99 } },
-        issueNumber: 2997,
-      }),
-    ).toBe('99');
-    expect(
-      resolveDeliveryKey({
-        packet: { deliveryId: 'wake-1' },
-        eligibility: { resume: null },
-        issueNumber: 2997,
-      }),
-    ).toBe('wake-1');
-    expect(
-      resolveDeliveryKey({
-        packet: null,
-        eligibility: { resume: null },
-        issueNumber: 2997,
-      }),
-    ).toBe('issue-2997');
+  it('resolveDeliveryKey always uses packet identity — there is no comment id to prefer', () => {
+    expect(resolveDeliveryKey({ packet: { deliveryId: 'wake-1' }, issueNumber: 2997 })).toBe('wake-1');
+    expect(resolveDeliveryKey({ packet: null, issueNumber: 2997 })).toBe('issue-2997');
 
-    const traversal = resolveDeliveryKey({
-      packet: { deliveryId: '../x' },
-      eligibility: { resume: null },
-      issueNumber: 2997,
-    });
+    const traversal = resolveDeliveryKey({ packet: { deliveryId: '../x' }, issueNumber: 2997 });
     expect(traversal).toMatch(/^enc-[0-9a-f]+$/);
     expect(traversal.includes('..')).toBe(false);
     expect(traversal.includes('/')).toBe(false);
-
-    const urlKey = resolveDeliveryKey({
-      packet: { resumeHint: 'https://example.com/a/b' },
-      eligibility: { resume: null },
-      issueNumber: 2997,
-    });
-    expect(urlKey).toMatch(/^enc-[0-9a-f]+$/);
 
     const recovery = buildRecoveryPacket({
       issueNumber: 2997,
@@ -293,8 +200,7 @@ Action: Implement the bounded bridge correction
   });
 
   it('sanitizeDeliveryKey keeps long shared-prefix GitHub URLs distinct', () => {
-    const base =
-      'https://github.com/wdhunter645/next-starter-template/issues/2997#issuecomment-';
+    const base = 'https://github.com/wdhunter645/next-starter-template/issues/2997#issuecomment-';
     const a = `${base}${'1'.repeat(80)}`;
     const b = `${base}${'2'.repeat(80)}`;
     const keyA = sanitizeDeliveryKey(a);
@@ -302,29 +208,16 @@ Action: Implement the bounded bridge correction
     expect(keyA).toMatch(/^enc-[0-9a-f]{64}$/);
     expect(keyB).toMatch(/^enc-[0-9a-f]{64}$/);
     expect(keyA).not.toBe(keyB);
-    // Deterministic digests of the complete original identity.
     expect(sanitizeDeliveryKey(a)).toBe(keyA);
     expect(sanitizeDeliveryKey(b)).toBe(keyB);
-
-    const home = '/tmp/lgfc-bridge-home-digest';
-    process.env.LGFC_CURSOR_BRIDGE_HOME = home;
-    try {
-      const pathA = consumedPath({ consumedDir: 'consumed' }, a);
-      const pathB = consumedPath({ consumedDir: 'consumed' }, b);
-      expect(pathA).not.toBe(pathB);
-      expect(path.basename(pathA)).toBe(`${keyA}.json`);
-      expect(path.basename(pathB)).toBe(`${keyB}.json`);
-    } finally {
-      delete process.env.LGFC_CURSOR_BRIDGE_HOME;
-    }
   });
 });
 
-describe('cursor-only wake ingress / packet boundary (#2997)', () => {
+describe('cursor-only wake ingress / packet boundary (label-driven)', () => {
   const repo = 'wdhunter645/next-starter-template';
   const cursorLabels = ['agent:cursor', 'handoff:ready'];
 
-  it('delivers trusted Cursor labeled and LOCAL CURSOR RESUME events', () => {
+  it('delivers on a handoff:ready labeled event when agent:cursor is already present', () => {
     expect(
       shouldDeliverCursorWake({
         repository: repo,
@@ -334,46 +227,45 @@ describe('cursor-only wake ingress / packet boundary (#2997)', () => {
         issueLabels: cursorLabels,
       }),
     ).toEqual({ deliver: true, reason: 'handoff_ready_on_cursor_issue' });
-
-    expect(
-      shouldDeliverCursorWake({
-        repository: repo,
-        eventName: 'issue_comment',
-        issueState: 'open',
-        issueLabels: cursorLabels,
-        commentBody: 'LOCAL CURSOR RESUME\nIssue: #2997\n',
-      }).deliver,
-    ).toBe(true);
-
-    // Byte-for-byte with workflow startsWith — leading whitespace must not queue.
-    expect(
-      shouldDeliverCursorWake({
-        repository: repo,
-        eventName: 'issue_comment',
-        issueState: 'open',
-        issueLabels: cursorLabels,
-        commentBody: '  LOCAL CURSOR RESUME\nIssue: #2997\n',
-      }).reason,
-    ).toBe('not_cursor_resume_marker');
   });
 
-  it('rejects ChatGPT/Atlas-directed traffic at wake ingress', () => {
+  it('delivers on an agent:cursor labeled event when handoff:ready is already present (order-independent)', () => {
     expect(
-      isNonCursorDirectedTraffic({
-        labels: ['agent:ChatGPT', 'handoff:ready'],
-        commentBody: '',
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'issues',
+        action: 'labeled',
+        labelName: 'agent:cursor',
+        issueLabels: cursorLabels,
       }),
-    ).toBe(true);
+    ).toEqual({ deliver: true, reason: 'handoff_ready_on_cursor_issue' });
+  });
+
+  it('does not deliver when only one of the two required labels is present', () => {
+    expect(
+      shouldDeliverCursorWake({
+        repository: repo,
+        eventName: 'issues',
+        action: 'labeled',
+        labelName: 'agent:cursor',
+        issueLabels: ['agent:cursor'],
+      }).reason,
+    ).toBe('absent_cursor_routing');
 
     expect(
       shouldDeliverCursorWake({
         repository: repo,
-        eventName: 'issue_comment',
-        issueState: 'open',
-        issueLabels: ['agent:ChatGPT', 'handoff:ready'],
-        commentBody: 'CHATGPT HANDOFF\nSubject: #1\n',
-      }),
-    ).toEqual({ deliver: false, reason: 'non_cursor_directed_traffic' });
+        eventName: 'issues',
+        action: 'labeled',
+        labelName: 'handoff:ready',
+        issueLabels: ['handoff:ready'],
+      }).reason,
+    ).toBe('absent_cursor_routing');
+  });
+
+  it('rejects ChatGPT/Atlas/Engineering-directed traffic at wake ingress', () => {
+    expect(isNonCursorDirectedTraffic({ labels: ['agent:ChatGPT', 'handoff:ready'] })).toBe(true);
+    expect(isNonCursorDirectedTraffic({ labels: ['agent:engineering', 'handoff:ready'] })).toBe(true);
 
     expect(
       shouldDeliverCursorWake({
@@ -382,28 +274,6 @@ describe('cursor-only wake ingress / packet boundary (#2997)', () => {
         action: 'labeled',
         labelName: 'handoff:ready',
         issueLabels: ['agent:ChatGPT', 'handoff:ready'],
-      }).deliver,
-    ).toBe(false);
-  });
-
-  it('rejects Claude/Claude Code-directed traffic at wake ingress', () => {
-    expect(
-      shouldDeliverCursorWake({
-        repository: repo,
-        eventName: 'issue_comment',
-        issueState: 'open',
-        issueLabels: cursorLabels,
-        commentBody: 'CLAUDE CODE RESUME\nIssue: #2997\n',
-      }),
-    ).toEqual({ deliver: false, reason: 'non_cursor_directed_traffic' });
-
-    expect(
-      shouldDeliverCursorWake({
-        repository: repo,
-        eventName: 'issue_comment',
-        issueState: 'open',
-        issueLabels: ['agent:claude'],
-        commentBody: 'CLAUDE CODE WAKE: delivered\n',
       }).deliver,
     ).toBe(false);
   });
@@ -418,16 +288,6 @@ describe('cursor-only wake ingress / packet boundary (#2997)', () => {
         issueLabels: ['bug'],
       }).reason,
     ).toBe('unrelated_issue_label_event');
-
-    expect(
-      shouldDeliverCursorWake({
-        repository: repo,
-        eventName: 'issue_comment',
-        issueState: 'open',
-        issueLabels: cursorLabels,
-        commentBody: 'Thanks for the update',
-      }).reason,
-    ).toBe('not_cursor_resume_marker');
 
     expect(
       shouldDeliverCursorWake({
@@ -449,6 +309,8 @@ describe('cursor-only wake ingress / packet boundary (#2997)', () => {
 
     expect(hasCursorRoutingSignal({ labels: ['agent:codex'] })).toBe(false);
     expect(hasCursorRoutingSignal({ labels: ['agent:cursor'] })).toBe(true);
+    expect(hasReadyCursorHandoff({ labels: cursorLabels })).toBe(true);
+    expect(hasReadyCursorHandoff({ labels: ['agent:cursor'] })).toBe(false);
   });
 
   it('manual dispatch requires Cursor routing before queue write', () => {

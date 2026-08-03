@@ -5,8 +5,8 @@ Authority Level: Project Contract
 Owns: Cursor Local Bridge component inventory, eligibility auto-start gates, transactional launch acceptance, wake-packet authority boundary, health/watchdog/reconciliation contract, and fallback taxonomy
 Does Not Own: Product decisions, PR approval, Background Agents, or unrestricted workflow migration onto the Chromebook runner
 Canonical Reference: /docs/explanation/operations/cursor-local-auto-start-architecture.md
-Related Issues: #2294, #2667, #2669, #2681, #2694, #2739, #2814, #2997
-Last Reviewed: 2026-08-01
+Related Issues: #2294, #2667, #2669, #2681, #2694, #2739, #2814, #2997, #3013
+Last Reviewed: 2026-08-03
 ---
 
 # Cursor Local Bridge Contract
@@ -25,8 +25,8 @@ Every component has a role. No infrastructure may be introduced without purpose,
 
 | Component | Purpose | Inputs | Outputs | Dependencies |
 | --- | --- | --- | --- | --- |
-| Source Issue | Task authority | Labels, `CHATGPT RESPONSE`, `LOCAL CURSOR RESUME` | Live state Bridge re-reads | Governance handoff contracts |
-| Wake workflow (`.github/workflows/cursor-local-wake.yml`) | Near-real-time delivery | Trusted `issues` / `issue_comment` / manual dispatch | Host wake packet JSON | `lgfc-repo-runner` |
+| Source Issue | Task authority | Labels (`agent:cursor`, `handoff:ready`) and status | Live state Bridge re-reads | Governance handoff contracts |
+| Wake workflow (`.github/workflows/cursor-local-wake.yml`) | Near-real-time delivery | Trusted `issues` (`labeled`) / manual dispatch | Host wake packet JSON | `lgfc-repo-runner` |
 | Actions runner service | Host job receiver | Jobs with `lgfc-repo-runner` | Process that can write packets | systemd runner unit |
 | Wake packet queue (`~/lgfc-cursor-bridge/queue/`) | Decouple job vs agent lifetime | Packets from wake workflow or reconciliation recovery | Files for Bridge | Host user permissions |
 | Cursor Local Bridge (`scripts/cursor-bridge/bridge.mjs`) | Sole Cursor launcher and supervisor | Packets, live Issue via `gh`, claim store, CLI auth | Transactional launch, local evidence, actionable fallback, heartbeat | `gh`, `cursor agent`/`agent` |
@@ -36,7 +36,7 @@ Every component has a role. No infrastructure may be introduced without purpose,
 | Bridge Watch (`bridge-watch.mjs` + `cursor-bridge-watch.yml`) | Classify health and repository-to-host package drift | Installed package hashes, claim/in-flight, heartbeat, units | `healthy` / `rebuild_required` / `rebuild_deferred` / `manual_review_required` / `failed` | Host Bridge home + `main` checkout |
 | Bridge Build (`bridge-build.mjs` + `cursor-bridge-build.yml`) | Stage, validate, atomically promote, or roll back Bridge package | Immutable `main` commit SHA | Promoted package identity or automatic restore | Idle serial lane; same-filesystem rename |
 | Missed-handoff reconciliation | Recover mechanically routable handoffs when wake packet was missed | `reconcileIntervalSeconds` cadence + live Issue mechanical eligibility | Recovery packet into normal queue | `gh`, mechanical eligibility contract |
-| Eligibility validator | Mechanical fail-closed + semantic findings for Cursor | Issue + comments | mechanical ok/errors + semanticFindings | Delivery-first checklist below |
+| Eligibility validator | Mechanical fail-closed + informational findings for Cursor | Issue labels/status (comments not required) | mechanical ok/errors + informational findings | Delivery-first checklist below |
 | Serial claim store | One Implementation stream | Claim requests | Exclusive lease | Local `claim.json` |
 | Local Cursor CLI | Execute one bounded action | Bridge prompt + workspace | NDJSON lifecycle events, result, exit | Cursor login or `CURSOR_API_KEY` |
 | Notify fallback | Operator-visible failure | Failure class | Desktop/log + Issue comment | `notify-send` optional |
@@ -71,9 +71,11 @@ Rules:
 - Bridge Build refuses promotion while a claim, `cli_spawned`, accepted, or running transaction exists.
 - Runtime evidence (`queue/`, `consumed/`, `claim.json`, `in-flight.json`, `heartbeat.json`, `runtime-meta.json`, alerts/logs/preflight/watchdog state) is never deleted by rebuild.
 
-## Eligibility (delivery-first — #2997)
+## Eligibility (label/status-driven — #2997, simplified #3013)
 
 The Bridge is the secure transport, host-readiness, deduplication, and serial-concurrency controller. It is **not** the final semantic task-authority decision-maker. Trusted Cursor-routed notifications must reach Cursor for evaluation unless a mechanical safety gate prevents launch.
+
+There is **no comment-marker protocol**. The Bridge does not parse, search for, or require any specific text in an Issue comment (no `LOCAL CURSOR RESUME`, `CHATGPT RESPONSE`, `Action:`/`Response:` line forms, or resume/issue chronology matching). Comments are read by Cursor as ordinary context after launch, the same way Cursor reads the Issue body — they carry no routing or gating authority. Routing and gating are decided **only** from the Issue's current labels and status.
 
 ### Locked routing rule (Cursor-only Chromebook Bridge queue)
 
@@ -81,36 +83,31 @@ Routing is by intended agent identity, not semantic task readiness:
 
 | Traffic | Chromebook Bridge queue / Cursor launch |
 | --- | --- |
-| `agent:cursor` and/or `LOCAL CURSOR RESUME` (with required handoff labels) | Must cross when mechanical safety allows |
-| ChatGPT/Atlas-directed notifications (`agent:ChatGPT`, `CHATGPT HANDOFF`, …) | Must not enter |
-| Claude/Claude Code-directed notifications (`CLAUDE CODE RESUME` / `WAKE`, …) | Must not enter |
-| Other `agent:*` labels without Cursor routing | Must not enter |
+| `agent:cursor` + `handoff:ready` both present on the Issue | Must cross when mechanical safety allows |
+| `agent:engineering` or other non-Cursor `agent:*` labels | Must not enter |
+| ChatGPT/Atlas-directed notifications (`agent:ChatGPT`, …) | Must not enter |
+| Claude/Claude Code-directed notifications (`agent:claude`, …) | Must not enter |
 | Generic unrelated GitHub Issue/PR/workflow/review/bot activity | Must not enter |
 
-Canonical ingress predicate: `scripts/cursor-bridge/lib/wake-ingress.mjs` (`shouldDeliverCursorWake`). Wake workflow `.github/workflows/cursor-local-wake.yml` must invoke that predicate before writing a Chromebook queue packet (job-level `if:` is only a coarse filter). Only `handoff:ready` label events and `LOCAL CURSOR RESUME` comments on Cursor-routed open Issues (plus authorized manual dispatch) may queue. Claude Code wake (`.github/workflows/claude-code-wake.yml`) is a separate notification path and must never write Chromebook Bridge packets.
+Canonical ingress predicate: `scripts/cursor-bridge/lib/wake-ingress.mjs` (`shouldDeliverCursorWake`). Wake workflow `.github/workflows/cursor-local-wake.yml` must invoke that predicate before writing a Chromebook queue packet (job-level `if:` is only a coarse filter). The only trigger is an `issues` `labeled` event where the label applied is `agent:cursor` or `handoff:ready` **and** the Issue's current label set carries both (order-independent — whichever of the two labels lands second is the one that fires delivery), plus authorized manual dispatch. There is no `issue_comment` trigger. Claude Code wake (`.github/workflows/claude-code-wake.yml`) is a separate notification path and must never write Chromebook Bridge packets.
 
 ### Mechanical gates (Bridge may reject before launch)
 
-1. Source Issue is present and open (`open` / `OPEN`; null Issue fails closed).  
-2. Required routing labels from Bridge config are present (default: `agent:cursor` and `handoff:ready`).  
-3. Positive Cursor routing signal is present (`agent:cursor`).  
-4. Repository matches the configured expected repository (`wdhunter645/next-starter-template`).  
-5. Serial lane has no active conflicting claim.  
-6. Delivery key is not already consumed (resume comment id when present; otherwise packet `deliveryId` / issue fallback). Unsafe delivery identities are encoded as a stable SHA-256 digest of the complete original value (`enc-<hex>`) before use in `consumed/`, recovery filenames, and claims — never a truncated reversible encoding.  
-7. Bridge, workspace, GitHub, and Cursor authentication/preflight readiness succeed.  
-8. Wake packet Issue identity is valid and the wake source is trusted.
+1. Source Issue is present and open (`open` / `OPEN`; null Issue fails closed).
+2. Required routing labels from Bridge config are present (default: `agent:cursor` and `handoff:ready`).
+3. Positive Cursor routing signal is present (`agent:cursor`), and no non-Cursor `agent:*` label (including `agent:engineering`) is present.
+4. Issue does not already carry an already-handed-off status label (`status:review`, `status:complete`, `status:post-merge-verify`) — a stale label/status pairing does not re-launch a finished handoff. `status:implementation` does not block (Cursor may still be actively working it).
+5. Repository matches the configured expected repository (`wdhunter645/next-starter-template`).
+6. Serial lane has no active conflicting claim.
+7. Delivery key is not already consumed (wake packet `deliveryId`; otherwise issue-number fallback). Unsafe delivery identities are encoded as a stable SHA-256 digest of the complete original value (`enc-<hex>`) before use in `consumed/`, recovery filenames, and claims — never a truncated reversible encoding.
+8. Bridge, workspace, GitHub, and Cursor authentication/preflight readiness succeed.
+9. Wake packet Issue identity is valid and the wake source is trusted.
 
-### Semantic assessment (Bridge delivers to Cursor; does not reject)
+### Informational findings (Bridge delivers to Cursor; does not reject)
 
-Cursor evaluates live Issue/comment context and returns act, hold, correction-needed, or no-action. Bridge records these as informational findings in the launch prompt only (not as repository-visible Bridge telemetry comments):
+Cursor evaluates live Issue/comment context after launch and returns act, hold, correction-needed, or no-action. The Bridge records only queue-routing / parent-project classification outcomes as informational findings in the launch prompt (not as repository-visible Bridge telemetry comments) — there is no comment-marker finding of any kind.
 
-- latest canonical `CHATGPT RESPONSE` / `CHATGPT CLOSEOUT` presence;
-- separate `LOCAL CURSOR RESUME` presence and response reference shape (including `Response:` URL form);
-- resume action count (zero, one, or many — including `Action:` single-line form);
-- resume/issue chronology and issue-number match;
-- queue-routing / parent-project classification outcomes.
-
-Reconciliation applies the same mechanical Cursor-routing contract before writing a recovery packet (issues listed with required Cursor labels only). Deduplication keys are sanitized delivery keys (resume comment id when present, else packet/issue identity).
+Reconciliation applies the same mechanical Cursor-routing contract before writing a recovery packet (issues listed with required Cursor labels only, not already handed off). Deduplication keys are sanitized delivery keys (packet `deliveryId`, else issue identity).
 
 ## Shared operational lifecycle (#2997 design simplification)
 
@@ -118,7 +115,7 @@ The GitHub Issue is the sole shared operational status surface for Cursor Local 
 
 Repository-visible lifecycle:
 
-1. Engineering assigns Cursor with routing labels and a resume signal.
+1. Engineering assigns Cursor by applying routing labels (`agent:cursor` + `handoff:ready`) — no resume comment is required or read by the Bridge.
 2. After Cursor accepts the session, Cursor updates the Issue to the canonical in-progress status (`status:implementation`).
 3. Cursor performs the work.
 4. On finish, Cursor posts an `IMPLEMENTATION HANDOFF` and updates the Issue to the canonical Engineering-review status (`status:review`).
@@ -233,7 +230,7 @@ Bridge Build accepts only an immutable commit SHA that is an ancestor of `main`,
 ## Fallback taxonomy
 
 - Mechanical eligibility or claim failure: no launch; explicit unclaimed fallback.
-- Semantic RESPONSE/RESUME/action-count/queue findings: launch proceeds; Cursor dispositions act/hold/correction/no-action.
+- Informational queue-routing findings: launch proceeds; Cursor dispositions act/hold/correction/no-action.
 - Pre-accept launch failure: claim released, resume unconsumed, one packet retained for bounded retry.
 - Post-accept failure: resume remains consumed; automatic retry suppressed; manual verification required.
 - Usage/plan failure after acceptance: same post-accept duplicate-safety rule.

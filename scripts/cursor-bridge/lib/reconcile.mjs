@@ -188,31 +188,18 @@ export async function runReconcileSweep(config, dirs, opts = {}) {
         '--json',
         'number,title,state,labels,url,body',
       ]);
-      const commentsRaw = gh(['api', `repos/${repo}/issues/${issueNumber}/comments`, '--paginate']);
-      const comments = (Array.isArray(commentsRaw) ? commentsRaw : []).map((c) => ({
-        id: c.id,
-        url: c.html_url,
-        body: c.body,
-        createdAt: c.created_at,
-        author: c.user?.login,
-      }));
 
-      const eligibility = validateEligibility(issue, comments, {
+      // Eligibility is label/state-only; no comment fetch is needed to decide it.
+      const eligibility = validateEligibility(issue, [], {
         requiredLabels: labels,
         expectedRepo: repo,
       });
-      const resumeId = eligibility.resume ? String(eligibility.resume.id) : null;
-      const deliveryKey = resolveDeliveryKey({
-        packet: null,
-        eligibility,
-        issueNumber,
-      });
+      const deliveryKey = resolveDeliveryKey({ packet: null, issueNumber });
       const consumed = isConsumed(config, deliveryKey);
       const pending = hasPendingOrProcessingPacket(dirs.queue, deliveryKey);
 
       const decision = shouldQueueRecovery({
         eligibilityOk: eligibility.ok,
-        resumeId,
         deliveryKey,
         consumed,
         hasPendingPacket: pending,
@@ -221,7 +208,6 @@ export async function runReconcileSweep(config, dirs, opts = {}) {
 
       inspected.push({
         issueNumber,
-        resumeId,
         deliveryKey,
         eligibilityOk: eligibility.ok,
         errors: eligibility.errors,
@@ -233,14 +219,12 @@ export async function runReconcileSweep(config, dirs, opts = {}) {
 
       const packet = buildRecoveryPacket({
         issueNumber,
-        resumeCommentId: resumeId,
         deliveryKey,
       });
       const write = writeRecoveryPacket(dirs.queue, packet);
       if (write.wrote) {
         recovered.push({
           issueNumber,
-          resumeId,
           deliveryKey,
           deliveryId: packet.deliveryId,
           file: write.file,
