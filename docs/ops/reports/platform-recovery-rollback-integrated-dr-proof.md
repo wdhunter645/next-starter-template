@@ -101,7 +101,7 @@ Measured times below are **local exercise durations**, not Production RTO proofs
 | Parent project | #2779 |
 | Component branch | `component/platform-recovery-readiness` |
 | Predecessor tip | `8b6e87662d16c099d07d93390547660ba241d9f6` |
-| Implementation SHA | pending-commit |
+| Implementation SHA | `a81c7ee88380a13c02649e78acf38bd2e264643e` |
 
 ## Results (this run)
 
