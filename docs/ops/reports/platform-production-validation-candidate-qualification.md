@@ -104,7 +104,7 @@ Guarantees:
 | Parent project | #2778 |
 | Component branch | `component/platform-production-validation` |
 | Integrated baseline SHA (post-#2892) | `feda96efcd628c9f5f3609d150a05a1b35b3b643` |
-| Qualification candidate SHA (this PR head) | `8fdd6721c35a95c9fac84f975649949badbdbd76` |
+| Qualification implementation SHA (validator+docs+tests) | `8fdd6721c35a95c9fac84f975649949badbdbd76` |
 
 ## Results (this run)
 
