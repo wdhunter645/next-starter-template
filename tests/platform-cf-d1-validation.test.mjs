@@ -40,16 +40,24 @@ database_id = "22d0dc3e-ad34-43af-8e6a-2063df1a1e04"
 
 describe('platform-cf-d1-validation runner', () => {
   it('passes repository checks without live Cloudflare credentials (HTTP skipped)', async () => {
-    const priorToken = process.env.CLOUDFLARE_API_TOKEN;
-    const priorAccount = process.env.CLOUDFLARE_ACCOUNT_ID;
+    const prior = {
+      CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+      CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
+      CF_API_TOKEN: process.env.CF_API_TOKEN,
+      CF_ACCOUNT_ID: process.env.CF_ACCOUNT_ID,
+    };
     delete process.env.CLOUDFLARE_API_TOKEN;
     delete process.env.CLOUDFLARE_ACCOUNT_ID;
     delete process.env.CF_API_TOKEN;
     delete process.env.CF_ACCOUNT_ID;
     try {
-      const result = await runPlatformCfD1Validation({ skipHttp: true });
+      const result = await runPlatformCfD1Validation({
+        skipHttp: true,
+        actorRole: 'test-runner',
+      });
       expect(result.productionMutation).toBe(false);
       expect(result.writeAttempts).toBe(0);
+      expect(result.actorRole).toBe('test-runner');
       expect(result.ok).toBe(true);
       expect(result.summary.knownDebt).toEqual(
         expect.arrayContaining([
@@ -57,12 +65,19 @@ describe('platform-cf-d1-validation runner', () => {
           'live_d1_unauthenticated_fail_closed',
         ]),
       );
+      const drift = result.checks.find((c) => c.name === 'pages_name_drift_recorded');
+      expect(drift?.ok).toBe(true);
+      expect(drift?.severity).toBe('info');
       const live = result.checks.find((c) => c.name === 'live_d1_schema_read');
       expect(live?.ok).toBe(false);
       expect(live?.severity).toBe('fail_closed');
+      const inventory = result.checks.find((c) => c.name === 'functions_inventory');
+      expect(inventory?.sideEffectGet?.length ?? 0).toBeGreaterThan(0);
     } finally {
-      if (priorToken !== undefined) process.env.CLOUDFLARE_API_TOKEN = priorToken;
-      if (priorAccount !== undefined) process.env.CLOUDFLARE_ACCOUNT_ID = priorAccount;
+      for (const [key, value] of Object.entries(prior)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
     }
   });
 });

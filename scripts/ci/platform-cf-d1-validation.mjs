@@ -201,15 +201,19 @@ export async function runPlatformCfD1Validation(opts = {}) {
     /\*\*Project:\*\*\s*`([^`]+)`/.exec(cfDoc)?.[1] ||
     /Project:\s*`([^`]+)`/.exec(cfDoc)?.[1] ||
     null;
-  const driftPresent = Boolean(wrangler.name) && Boolean(docsProject) && wrangler.name !== docsProject;
+  const driftComparable = Boolean(wrangler.name) && Boolean(docsProject);
+  const driftPresent = driftComparable && wrangler.name !== docsProject;
+  // Informational: ok means the comparison completed, not that drift must exist.
   checks.push(
     check(
       'pages_name_drift_recorded',
-      driftPresent,
+      driftComparable,
       driftPresent
-        ? `wrangler name=${wrangler.name}; docs project=${docsProject} (expected documented drift from #2890)`
-        : `unable to confirm documented Pages name drift (wrangler=${wrangler.name || 'missing'}; docs=${docsProject || 'missing'})`,
-      { severity: 'info' },
+        ? `wrangler name=${wrangler.name}; docs project=${docsProject} (documented drift from #2890)`
+        : driftComparable
+          ? `wrangler name=${wrangler.name}; docs project=${docsProject} (names match; no drift)`
+          : `unable to compare Pages names (wrangler=${wrangler.name || 'missing'}; docs=${docsProject || 'missing'})`,
+      { severity: 'info', driftPresent },
     ),
   );
 
@@ -223,19 +227,38 @@ export async function runPlatformCfD1Validation(opts = {}) {
   checks.push(check('routes_json_shape', routesOk, routesOk ? '_routes.json include /*' : 'invalid _routes.json'));
 
   const handlers = collectTsFiles(join(REPO_ROOT, 'functions/api'));
+  const sideEffectGets = new Set(
+    (isolationManifest?.sideEffectGetRoutes || []).map((r) => r.handler).filter(Boolean),
+  );
   const mutating = [];
+  const sideEffectGet = [];
   const getOnly = [];
   for (const rel of handlers) {
     const source = readFileSync(join(REPO_ROOT, rel), 'utf8');
     if (handlerHasMutationExport(source)) mutating.push(rel);
+    else if (sideEffectGets.has(rel)) sideEffectGet.push(rel);
     else getOnly.push(rel);
   }
   checks.push(
     check(
       'functions_inventory',
       handlers.length > 0,
-      `${handlers.length} handlers; mutating=${mutating.length}; getish=${getOnly.length}`,
-      { mutating: mutating.slice(0, 40), sampleGet: getOnly.slice(0, 15) },
+      `${handlers.length} handlers; mutating=${mutating.length}; sideEffectGet=${sideEffectGet.length}; getish=${getOnly.length}`,
+      {
+        mutating: mutating.slice(0, 40),
+        sideEffectGet: sideEffectGet.slice(0, 20),
+        sampleGet: getOnly.slice(0, 15),
+      },
+    ),
+  );
+  checks.push(
+    check(
+      'side_effect_get_routes_classified',
+      [...sideEffectGets].every((h) => sideEffectGet.includes(h) || mutating.includes(h)),
+      sideEffectGets.size
+        ? `classified ${sideEffectGet.length}/${sideEffectGets.size} manifest sideEffectGetRoutes (not counted as pure getish)`
+        : 'no sideEffectGetRoutes listed in preview-isolation manifest',
+      { severity: 'info' },
     ),
   );
 
@@ -302,7 +325,7 @@ export async function runPlatformCfD1Validation(opts = {}) {
       const healthUrl = `${host.replace(/\/$/, '')}/api/health`;
       try {
         const result = await fetchJson(healthUrl);
-        const bodyOk = result.json && result.json.ok === true;
+        const bodyOk = result.json?.ok === true && result.json?.db_ok === true;
         checks.push(
           check(
             `http_health_${host.replace(/^https?:\/\//, '').replace(/[^a-z0-9]+/gi, '_')}`,
@@ -326,8 +349,15 @@ export async function runPlatformCfD1Validation(opts = {}) {
   }
 
   // Live D1: fail closed without credentials; never write.
-  const hasToken = Boolean(process.env.CLOUDFLARE_API_TOKEN || process.env.CF_API_TOKEN);
-  const hasAccount = Boolean(process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID);
+  // Normalize repository-supported CF_* aliases to Wrangler canonical names.
+  if (!process.env.CLOUDFLARE_API_TOKEN && process.env.CF_API_TOKEN) {
+    process.env.CLOUDFLARE_API_TOKEN = process.env.CF_API_TOKEN;
+  }
+  if (!process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CF_ACCOUNT_ID) {
+    process.env.CLOUDFLARE_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
+  }
+  const hasToken = Boolean(process.env.CLOUDFLARE_API_TOKEN);
+  const hasAccount = Boolean(process.env.CLOUDFLARE_ACCOUNT_ID);
   if (!hasToken || !hasAccount) {
     checks.push(
       check(
@@ -338,39 +368,71 @@ export async function runPlatformCfD1Validation(opts = {}) {
       ),
     );
   } else {
-    const args = ['d1', 'info', wrangler.databaseName || 'lgfc_lite', '--json'];
+    const dbName = wrangler.databaseName || 'lgfc_lite';
     const bin = existsSync(join(REPO_ROOT, 'node_modules/.bin/wrangler'))
       ? join(REPO_ROOT, 'node_modules/.bin/wrangler')
       : 'npx';
-    const cmd = bin.endsWith('wrangler') ? [bin, ...args] : [bin, '--no-install', 'wrangler', ...args];
-    const r = spawnSync(cmd[0], cmd.slice(1), {
-      encoding: 'utf8',
-      cwd: REPO_ROOT,
-      env: process.env,
-      timeout: 60000,
-    });
-    const ok = r.status === 0;
-    checks.push(
-      check(
-        'live_d1_schema_read',
-        ok,
-        ok
-          ? `wrangler d1 info succeeded for ${wrangler.databaseName} (read-only)`
-          : `wrangler d1 info failed: ${(r.stderr || r.stdout || '').trim().slice(0, 400)}`,
-        { attempted: true, readOnly: true },
-      ),
-    );
+    const runWrangler = (args) => {
+      const cmd = bin.endsWith('wrangler') ? [bin, ...args] : [bin, '--no-install', 'wrangler', ...args];
+      return spawnSync(cmd[0], cmd.slice(1), {
+        encoding: 'utf8',
+        cwd: REPO_ROOT,
+        env: process.env,
+        timeout: 90000,
+      });
+    };
+    const info = runWrangler(['d1', 'info', dbName, '--json']);
+    if (info.status !== 0) {
+      checks.push(
+        check(
+          'live_d1_schema_read',
+          false,
+          `wrangler d1 info failed: ${(info.stderr || info.stdout || '').trim().slice(0, 400)}`,
+          { attempted: true, readOnly: true },
+        ),
+      );
+    } else {
+      // Read-only table inventory; SELECT only.
+      const tableListSql = 'SELECT name FROM sqlite_master WHERE type = \'table\' ORDER BY name;';
+      const exec = runWrangler(['d1', 'execute', dbName, '--remote', '--command', tableListSql, '--json']);
+      let liveTables = [];
+      let parseOk = false;
+      try {
+        const parsed = JSON.parse(exec.stdout || 'null');
+        const rows = Array.isArray(parsed)
+          ? parsed.flatMap((block) => block?.results || block?.result || [])
+          : parsed?.results || parsed?.result || [];
+        liveTables = rows.map((r) => r.name || r.Name).filter(Boolean);
+        parseOk = true;
+      } catch {
+        parseOk = false;
+      }
+      const missingLive = REQUIRED_APPLICATION_TABLES.filter((t) => !liveTables.includes(t));
+      const ok = exec.status === 0 && parseOk && missingLive.length === 0;
+      checks.push(
+        check(
+          'live_d1_schema_read',
+          ok,
+          ok
+            ? `remote D1 table inventory ok for ${dbName}; required tables present (${liveTables.length} tables)`
+            : `remote D1 table inventory incomplete: status=${exec.status} parseOk=${parseOk} missing=${missingLive.join(',') || 'n/a'} detail=${(exec.stderr || '').trim().slice(0, 240)}`,
+          { attempted: true, readOnly: true, missingLive, liveTableCount: liveTables.length },
+        ),
+      );
+    }
   }
 
-  const hardFailures = checks.filter((c) => !c.ok && c.severity !== 'info' && c.name !== 'pages_name_drift_recorded');
-  // pages_name_drift_recorded is informational expected-true when drift exists; invert not needed for pass.
   const blocking = checks.filter((c) => {
-    if (c.name === 'pages_name_drift_recorded') return false; // expected drift note
     if (c.severity === 'info') return false;
     if (c.name === 'live_d1_schema_read' && c.severity === 'fail_closed') return false; // recorded, not blocking offline runs
     if (c.name === 'migration_prefix_collisions') return false; // known #2890 debt; report but do not block tooling land
     return !c.ok;
   });
+
+  const actorRole =
+    opts.actorRole ||
+    process.env.LGFC_VALIDATION_ACTOR_ROLE ||
+    'Implementation / Operations';
 
   const result = {
     schemaVersion: 1,
@@ -379,7 +441,7 @@ export async function runPlatformCfD1Validation(opts = {}) {
     parent: 2778,
     observedAt: now,
     candidateSha,
-    actorRole: 'Implementation / Operations (Cursor Local)',
+    actorRole,
     productionMutation: false,
     writeAttempts: 0,
     wrangler,
@@ -390,9 +452,7 @@ export async function runPlatformCfD1Validation(opts = {}) {
       blockingFailures: blocking.map((c) => c.name),
       knownDebt: [
         ...collisions.map((c) => `migration_prefix_collision:${c.prefix}`),
-        wrangler.name && docsProject && wrangler.name !== docsProject
-          ? `pages_name_drift:${wrangler.name}->${docsProject}`
-          : null,
+        driftPresent ? `pages_name_drift:${wrangler.name}->${docsProject}` : null,
         !hasToken || !hasAccount ? 'live_d1_unauthenticated_fail_closed' : null,
       ].filter(Boolean),
     },
