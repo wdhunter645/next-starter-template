@@ -98,13 +98,13 @@ Guarantees:
 
 | Field | Value |
 | --- | --- |
-| Observed at (UTC) | 2026-08-03T16:48:11Z |
+| Observed at (UTC) | 2026-08-03T16:48:35Z |
 | Actor role | Implementation / Operations (Cursor Local) |
 | Source issue | #2893 |
 | Parent project | #2778 |
 | Component branch | `component/platform-production-validation` |
-| Integrated baseline SHA | `feda96efcd628c9f5f3609d150a05a1b35b3b643` |
-| Qualification worktree note | Clean-head evidence recorded after this PR commit; pre-commit runs used allow-dirty/tests |
+| Integrated baseline SHA (post-#2892) | `feda96efcd628c9f5f3609d150a05a1b35b3b643` |
+| Qualification candidate SHA (this PR head) | `8fdd6721c35a95c9fac84f975649949badbdbd76` |
 
 ## Results (this run)
 
