@@ -129,7 +129,7 @@ Also reconcile: `docs/governance/OPERATIONS-AND-RECOVERY.md`,
 | Parent project | #2779 |
 | Component branch | `component/platform-recovery-readiness` |
 | Consumed #2778 tip | `72e0943661dfe4dc2e0dafdb286630f159e8f5cc` |
-| Implementation SHA note | recorded at PR head after commit |
+| Implementation SHA (validator+docs+tests) |  |
 
 ## Results (this run)
 
