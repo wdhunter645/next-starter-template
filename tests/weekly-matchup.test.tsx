@@ -152,7 +152,7 @@ describe('WeeklyMatchup last closed week winner thumbnail', () => {
     expect(window.localStorage.getItem(`lgfc_weekly_vote_${currentWeek}`)).toBeNull();
   });
 
-  it('requests matchup repair when a photo fails to load', async () => {
+  it('reports broken photo for audit without expecting mid-week pair mutation (#3028)', async () => {
     window.localStorage.clear();
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
       const path = String(input);
@@ -178,10 +178,12 @@ describe('WeeklyMatchup last closed week winner thumbnail', () => {
             ok: true,
             week_start: currentWeek,
             matchup_id: 2,
-            repaired: true,
+            repaired: false,
+            mutated: false,
+            mutation_blocked: true,
             items: [
               { id: 10, url: '/photos/10.jpg', title: 'Current A' },
-              { id: 12, url: '/photos/12.jpg', title: 'Replacement B' },
+              { id: 11, url: '/photos/broken.jpg', title: 'Broken B' },
             ],
           }),
         );
@@ -199,12 +201,13 @@ describe('WeeklyMatchup last closed week winner thumbnail', () => {
     fireEvent.error(brokenImg!);
 
     await waitFor(() => {
-      expect(screen.getByText('Replacement B')).toBeInTheDocument();
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/matchup/repair',
+        expect.objectContaining({ method: 'POST' }),
+      );
     });
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/matchup/repair',
-      expect.objectContaining({ method: 'POST' }),
-    );
+    expect(screen.getByText('Broken B')).toBeInTheDocument();
+    expect(screen.queryByText('Replacement B')).not.toBeInTheDocument();
   });
 
   it('renders winner A thumbnail and keeps result text', async () => {

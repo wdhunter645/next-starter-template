@@ -12,8 +12,9 @@ function jsonResponse(body: unknown, status = 200): Response {
  * POST /api/matchup/repair
  * Body: { broken_photo_id: number }
  *
- * Browser image-load failures call this to exclude a missing object (when confirmed)
- * and replace the broken slot in the active weekly matchup without transferring votes.
+ * Public browser image-load failures call this for **audit logging only** (#3028).
+ * Mid-week D1 pair mutation is locked; authorized changes require admin + source Issue
+ * via POST /api/admin/matchup/repair (or admin matchup update with source_issue).
  */
 export const onRequestPost = async (context: any): Promise<Response> => {
   const { env, request } = context;
@@ -36,6 +37,9 @@ export const onRequestPost = async (context: any): Promise<Response> => {
       db: d1Check.db,
       request,
       brokenPhotoId,
+      allowMutation: false,
+      trigger: "public_repair_post",
+      sourceIssue: body?.source_issue ?? null,
     });
   } catch (err: any) {
     return jsonResponse({ ok: false, error: String(err?.message ?? err) }, 500);

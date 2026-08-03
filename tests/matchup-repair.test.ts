@@ -130,7 +130,7 @@ describe('matchup broken-image repair', () => {
     vi.restoreAllMocks();
   });
 
-  it('excludes a missing Photo B and replaces that slot without transferring votes', async () => {
+  it('public repair audits but does not mutate the pair or clear votes (#3028)', async () => {
     const weekStart = '2026-07-13';
     const { db, matchups, photos, votes } = makeRepairDb({
       weekStart,
@@ -168,14 +168,73 @@ describe('matchup broken-image repair', () => {
       db,
       request: new Request('https://www.lougehrigfanclub.com/api/matchup/repair'),
       brokenPhotoId: 20,
+      allowMutation: false,
+      trigger: 'public_repair_post',
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.repaired).toBe(false);
+    expect(body.mutated).toBe(false);
+    expect(body.mutation_blocked).toBe(true);
+    expect(body.items).toHaveLength(2);
+    expect(body.items.map((item: { id: number }) => item.id)).toEqual([10, 20]);
+    expect(photos.find((row) => row.id === 20)?.is_matchup_eligible).toBe(1);
+    expect(matchups[0].photo_b_id).toBe(20);
+    expect(votes).toHaveLength(2);
+  });
+
+  it('authorized repair with source_issue replaces broken B and clears votes', async () => {
+    const weekStart = '2026-07-13';
+    const { db, matchups, photos, votes } = makeRepairDb({
+      weekStart,
+      matchups: [
+        { id: 5, week_start: weekStart, photo_a_id: 10, photo_b_id: 20, status: 'active' },
+      ],
+      votes: [{ week_start: weekStart }, { week_start: weekStart }],
+      photos: [
+        { id: 10, url: 'https://example.test/10.jpg', is_memorabilia: 0, is_matchup_eligible: 1 },
+        { id: 20, url: 'https://example.test/20-missing.jpg', is_memorabilia: 0, is_matchup_eligible: 1 },
+        { id: 30, url: 'https://example.test/30.jpg', is_memorabilia: 0, is_matchup_eligible: 1 },
+        { id: 40, url: 'https://example.test/40.jpg', is_memorabilia: 0, is_matchup_eligible: 1 },
+      ],
+    });
+
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const url = String(input);
+      const method = String(init?.method || 'GET').toUpperCase();
+      if (method === 'HEAD' || (method === 'GET' && url.includes('example.test'))) {
+        if (url.includes('20-missing')) return jsonResponse({}, 404);
+        return jsonResponse({}, 200);
+      }
+      const getMatch = url.match(/\/api\/photos\/get\?id=(\d+)/);
+      if (getMatch) {
+        const id = Number(getMatch[1]);
+        const photo = photos.find((row) => row.id === id);
+        if (!photo || photo.is_matchup_eligible < 0) return jsonResponse({ ok: false }, 404);
+        return jsonResponse({ ok: true, item: { id: photo.id, url: photo.url } });
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+    });
+
+    const response = await repairBrokenActiveMatchupPhoto({
+      db,
+      request: new Request('https://www.lougehrigfanclub.com/api/admin/matchup/repair'),
+      brokenPhotoId: 20,
+      allowMutation: true,
+      sourceIssue: 3028,
+      trigger: 'admin_authorized',
     });
 
     expect(response.status).toBe(200);
     const body = await response.json();
     expect(body.repaired).toBe(true);
-    expect(body.items).toHaveLength(2);
-    expect(body.items.map((item: { id: number }) => item.id)).not.toContain(20);
+    expect(body.mutated).toBe(true);
+    expect(body.vote_restore_possible).toBe(false);
+    expect(body.source_issue).toBe('#3028');
     expect(body.items[0].id).toBe(10);
+    expect(body.items.map((item: { id: number }) => item.id)).not.toContain(20);
     expect(photos.find((row) => row.id === 20)?.is_matchup_eligible).toBe(MATCHUP_EXCLUDED_ELIGIBILITY);
     expect(matchups[0].photo_b_id).not.toBe(20);
     expect(votes).toHaveLength(0);

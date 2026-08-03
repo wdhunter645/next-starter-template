@@ -99,6 +99,9 @@ export function syncWeeklyVoteLock(
 
 type RepairResp = CurrentResp & {
   repaired?: boolean;
+  mutated?: boolean;
+  mutation_blocked?: boolean;
+  mutation_blocked_reason?: string;
   excluded_broken_photo_id?: number;
 };
 
