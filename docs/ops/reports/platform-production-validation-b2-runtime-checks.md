@@ -91,14 +91,14 @@ Guarantees:
 
 | Field | Value |
 | --- | --- |
-| Observed at (UTC) | 2026-08-03T16:04:31Z |
+| Observed at (UTC) | 2026-08-03T16:05:21Z |
 | Actor role | Implementation / Operations (Cursor Local) |
 | Source issue | #2892 |
 | Parent project | #2778 |
 | Component branch | `component/platform-production-validation` |
 | PR vehicle | #3020 |
-| Candidate identity at dirty pre-commit run | `b417b895f954bd5ca8ffd72f9fad4a860ae36241+dirty:ef9361f60ae7385f` |
-| Candidate SHA (authoritative post-commit) | _filled after clean commit validation_ |
+| Worktree | clean |
+| Candidate SHA (authoritative) | `aeabad35c34c867e0c3f48f8e5f59b98eeb11888` |
 
 ## Results (this run)
 
@@ -106,14 +106,12 @@ Commands:
 
 ```bash
 npx vitest run tests/platform-b2-runtime-validation.test.mjs
-npm run validate:platform-b2-runtime -- --allow-dirty   # pre-commit dirty tree
-# after commit:
 npm run validate:platform-b2-runtime
 ```
 
 | Check | Result | Notes |
 | --- | --- | --- |
-| Worktree identity | PASS (info/dirty allowed) | Dirty identity recorded; clean SHA required for final evidence |
+| Worktree identity | PASS | clean; `candidateSha=aeabad35c34c867e0c3f48f8e5f59b98eeb11888` |
 | B2 inventory doc present | PASS | `docs/reference/platform/Backblaze_B2.md` |
 | Bucket / endpoint metadata | PASS | `LouGehrigFanClub` / `s3.us-east-005.backblazeb2.com` |
 | Env names documented | PASS | 5/5 in docs + `.env.example` (names only) |
