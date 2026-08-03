@@ -87,6 +87,7 @@ Guarantees:
 | Parent project | #2779 |
 | Component branch | `component/platform-recovery-readiness` |
 | Base tip | `f25b85774a0ba04e00bee4d2dd1a65144e5cece7` |
+| Implementation SHA | `331149b8ec3817432f48daec45b5deab3af7193b` |
 | D1 measured restore | 10 ms (target RTO 8 hours; within target) |
 | B2 measured sample | <1 ms (target RTO 24 hours; within target) |
 | D1 export digest | `7b07d42405661ca40dedd2a4ebce53247ac2db4e6639960c7dce22a467763a02` |
