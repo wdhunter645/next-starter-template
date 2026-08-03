@@ -135,6 +135,7 @@ Compared against RTO **upper bounds** only as a sanity gate (not Production RTO 
 3. Measured times are local exercise durations; Production RTO still uses launch-package targets until live drills.
 4. `node:sqlite` is experimental; disposable local DB only.
 5. Does not prove source/config/deployment rollback (#2896) or integrated DR.
+6. Day-2 qualification / operator handoff is #2897 (`docs/ops/reports/platform-recovery-day2-handoff.md`).
 
 ## Rollback
 

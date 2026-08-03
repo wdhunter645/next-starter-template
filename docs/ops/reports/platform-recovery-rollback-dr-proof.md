@@ -135,7 +135,7 @@ npm run validate:platform-recovery-inventory
 2. No Production outage induced; no live D1/B2 mutation.
 3. Credentialed live CF/D1/B2 restore remains deferred and separately authorized.
 4. Measured times are local exercise durations; Production RTO still uses launch-package targets until live drills.
-5. Day-2 Production recovery activation remains a separate protected decision (#2897 / Day-2).
+5. Day-2 Production recovery activation remains a separate protected decision. See #2897 handoff (`docs/ops/reports/platform-recovery-day2-handoff.md`).
 
 ## Rollback
 

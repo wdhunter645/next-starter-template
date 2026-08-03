@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "source_issue": "#2897",
+  "parent_project": "#2779",
+  "task_id": "004",
+  "component_branch": "component/platform-recovery-readiness",
+  "production_activation_authorized": false,
+  "production_merge_authorized": false,
+  "predecessor_tasks": ["#2894", "#2895", "#2896"],
+  "predecessor_prs": ["#3023", "#3024", "#3026", "#3027"],
+  "measured_vs_target": {
+    "source_configuration_rto_target_hours": 4,
+    "deployment_rto_target_hours": 2,
+    "d1_rpo_target_hours": 24,
+    "d1_rto_target_hours": 8,
+    "b2_catalog_rpo_target_hours": 24,
+    "synthetic_exercise_only": true,
+    "production_rto_proven": false
+  },
+  "exceptions": [
+    "live_cloudflare_pages_rollback_deferred",
+    "live_d1_export_restore_deferred",
+    "live_b2_listobjects_deferred",
+    "domains_dns_untested_restore",
+    "secrets_boundary_untested_restore",
+    "production_rto_not_proven_by_synthetic_ms"
+  ],
+  "exercise_cadence": {
+    "synthetic": "re-run validators on component tip after material recovery-path changes; at least quarterly for #2779 package while project remains open",
+    "live_deferred": "credentialed live CF/D1/B2 drills require separate Product Authority + Day-2 authorization; not in #2897"
+  },
+  "activation_authority": {
+    "day2": "Day-2 Operations owns first Production recovery activation under incident control",
+    "product_authority": "Product Authority owns cost, credential, domain, outage, and Production Go decisions",
+    "implementation": "Implementation / Operations maintains synthetic validators and procedures only"
+  },
+  "evidence_retention": {
+    "minimum_days": 90,
+    "locations": [
+      "docs/ops/reports/platform-recovery-*.md",
+      "GitHub Issues/PRs #2779 children",
+      "Actions run logs for validate:platform-recovery-* scripts"
+    ]
+  },
+  "disable_env": "LGFC_PLATFORM_RECOVERY_DAY2_QUALIFY_DISABLED"
+}
