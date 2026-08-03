@@ -1,28 +1,39 @@
 #!/usr/bin/env node
 
+/**
+ * Post-merge late reviewer audit (#3036).
+ *
+ * Counts trusted reviewer findings that arrive after merge. Inline review
+ * comments from trusted bots (including login `Copilot`) are always counted
+ * when undispositioned — they do not need P0/P1 wording.
+ */
+
 import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import { isTrustedReviewer } from './reviewer_trusted_bots.mjs';
+import { hasValidDisposition, parseReviewerDispositions } from './reviewer_comment_disposition.mjs';
 
-const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
-const repository = process.env.GITHUB_REPOSITORY;
-const prNumber = process.env.PR_NUMBER;
-const runId = process.env.GITHUB_RUN_ID || '';
-const serverUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
+const apiBase = 'https://api.github.com';
+const BREAK_GLASS_MARKER = /<!--\s*reviewer-lifecycle-break-glass\s*-->/i;
+const HIGH_SEVERITY_PATTERN =
+  /(^|[^A-Za-z0-9])(P0|P1)([^A-Za-z0-9]|$)|high[- ]priority|request changes|requested changes|must fix|blocking/i;
+const RESOLVED_PATTERN = /addressed in|\bresolved\b|all checks passed|no warnings detected/i;
+const UNRESOLVED_PATTERN = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
 
-if (!token || !repository || !prNumber) {
-  console.error('Missing required environment: GITHUB_TOKEN/GH_TOKEN, GITHUB_REPOSITORY, PR_NUMBER');
-  process.exit(1);
+function isResolvedText(body = '') {
+  return RESOLVED_PATTERN.test(body) && !UNRESOLVED_PATTERN.test(body);
 }
 
-const [owner, repo] = repository.split('/');
-const apiBase = 'https://api.github.com';
-const trustedReviewerPattern = /copilot-pull-request-reviewer|cubic-dev-ai/i;
-const highSeverityPattern = /(^|[^A-Za-z0-9])(P0|P1)([^A-Za-z0-9]|$)|high[- ]priority|request changes|requested changes|must fix|blocking/i;
-const resolvedPattern = /✅\s*Addressed|addressed in|\bresolved\b|all checks passed|no warnings detected/i;
-const unresolvedPattern = /\bunresolved\b|\bnot\s+resolved\b|\bstill\s+open\b|\bstill\s+blocking\b/i;
-// Must stay aligned with BREAK_GLASS_MARKER in scripts/ci/reviewer_lifecycle_gate.mjs
-const BREAK_GLASS_MARKER = /<!--\s*reviewer-lifecycle-break-glass\s*-->/i;
+function isHighSeverityFinding(body = '', state = '') {
+  return (state === 'CHANGES_REQUESTED' || HIGH_SEVERITY_PATTERN.test(body)) && !isResolvedText(body);
+}
 
-async function request(path, options = {}) {
+function isAfterMerge(value, mergedAt) {
+  if (!value || !mergedAt) return false;
+  return new Date(value).getTime() > new Date(mergedAt).getTime();
+}
+
+async function request(path, token, options = {}) {
   const hasBody = Boolean(options.body);
 
   const response = await fetch(`${apiBase}${path}`, {
@@ -46,13 +57,13 @@ async function request(path, options = {}) {
   return response.json();
 }
 
-async function paginate(path) {
+async function paginate(path, token) {
   const results = [];
   let page = 1;
 
   while (true) {
     const separator = path.includes('?') ? '&' : '?';
-    const data = await request(`${path}${separator}per_page=100&page=${page}`);
+    const data = await request(`${path}${separator}per_page=100&page=${page}`, token);
     if (!Array.isArray(data) || data.length === 0) break;
     results.push(...data);
     if (data.length < 100) break;
@@ -60,25 +71,6 @@ async function paginate(path) {
   }
 
   return results;
-}
-
-function isTrusted(login) {
-  return trustedReviewerPattern.test(login || '');
-}
-
-function isResolvedText(body) {
-  const text = body || '';
-  return resolvedPattern.test(text) && !unresolvedPattern.test(text);
-}
-
-function isHighSeverityFinding(body, state = '') {
-  const text = body || '';
-  return (state === 'CHANGES_REQUESTED' || highSeverityPattern.test(text)) && !isResolvedText(text);
-}
-
-function isAfterMerge(value, mergedAt) {
-  if (!value || !mergedAt) return false;
-  return new Date(value).getTime() > new Date(mergedAt).getTime();
 }
 
 function findingLine(item, fallbackUrl) {
@@ -89,8 +81,74 @@ function findingLine(item, fallbackUrl) {
   return `- ${url} by ${login}: ${body.slice(0, 240)}`;
 }
 
+function itemId(item) {
+  return String(item?.id || item?.databaseId || '').trim();
+}
+
+function hasDisposition(item, dispositions) {
+  const id = itemId(item);
+  return id && hasValidDisposition(dispositions.get(id));
+}
+
+export function collectLateAuditFindings({
+  pr,
+  issueComments = [],
+  reviewComments = [],
+  reviews = [],
+} = {}) {
+  const mergedAt = pr?.merged_at || pr?.mergedAt || '';
+  const prUrl = pr?.html_url || pr?.url || '';
+  const dispositions = parseReviewerDispositions(pr?.body || '');
+  const findings = [];
+
+  for (const comment of issueComments) {
+    if (
+      isTrustedReviewer(comment.user?.login || '') &&
+      isAfterMerge(comment.created_at, mergedAt) &&
+      isHighSeverityFinding(comment.body || '') &&
+      !hasDisposition(comment, dispositions)
+    ) {
+      findings.push(findingLine(comment, prUrl));
+    }
+  }
+
+  for (const comment of reviewComments) {
+    if (
+      isTrustedReviewer(comment.user?.login || '') &&
+      isAfterMerge(comment.created_at, mergedAt) &&
+      !hasDisposition(comment, dispositions)
+    ) {
+      findings.push(findingLine(comment, prUrl));
+    }
+  }
+
+  for (const review of reviews) {
+    if (
+      isTrustedReviewer(review.user?.login || '') &&
+      isAfterMerge(review.submitted_at, mergedAt) &&
+      isHighSeverityFinding(review.body || '', review.state || '') &&
+      !hasDisposition(review, dispositions)
+    ) {
+      findings.push(findingLine(review, prUrl));
+    }
+  }
+
+  return findings;
+}
+
 async function main() {
-  const pr = await request(`/repos/${owner}/${repo}/pulls/${prNumber}`);
+  const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+  const repository = process.env.GITHUB_REPOSITORY;
+  const prNumber = process.env.PR_NUMBER;
+  const runId = process.env.GITHUB_RUN_ID || '';
+  const serverUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
+
+  if (!token || !repository || !prNumber) {
+    throw new Error('Missing required environment: GITHUB_TOKEN/GH_TOKEN, GITHUB_REPOSITORY, PR_NUMBER');
+  }
+
+  const [owner, repo] = repository.split('/');
+  const pr = await request(`/repos/${owner}/${repo}/pulls/${prNumber}`, token);
   const mergedAt = pr.merged_at;
   const prUrl = pr.html_url;
   const prTitle = pr.title || '';
@@ -116,39 +174,24 @@ async function main() {
   }
 
   const [issueComments, reviewComments, reviews] = await Promise.all([
-    paginate(`/repos/${owner}/${repo}/issues/${prNumber}/comments`),
-    paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/comments`),
-    paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`),
+    paginate(`/repos/${owner}/${repo}/issues/${prNumber}/comments`, token),
+    paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/comments`, token),
+    paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`, token),
   ]);
 
-  const findings = [];
-
-  for (const comment of issueComments) {
-    if (isTrusted(comment.user?.login) && isAfterMerge(comment.created_at, mergedAt) && isHighSeverityFinding(comment.body)) {
-      findings.push(findingLine(comment, prUrl));
-    }
-  }
-
-  for (const comment of reviewComments) {
-    if (isTrusted(comment.user?.login) && isAfterMerge(comment.created_at, mergedAt) && isHighSeverityFinding(comment.body)) {
-      findings.push(findingLine(comment, prUrl));
-    }
-  }
-
-  for (const review of reviews) {
-    if (isTrusted(review.user?.login) && isAfterMerge(review.submitted_at, mergedAt) && isHighSeverityFinding(review.body, review.state || '')) {
-      findings.push(findingLine(review, prUrl));
-    }
-  }
+  const findings = collectLateAuditFindings({ pr, issueComments, reviewComments, reviews });
 
   let auditIssue = 'none';
 
   if (findings.length > 0) {
     const title = `Post-merge reviewer follow-up for PR #${prNumber}`;
-    const search = await request(`/search/issues?q=${encodeURIComponent(`repo:${repository} is:issue is:open in:title "${title}"`)}`);
+    const search = await request(
+      `/search/issues?q=${encodeURIComponent(`repo:${repository} is:issue is:open in:title "${title}"`)}`,
+      token,
+    );
     const existing = search.items?.[0];
     const body = [
-      `Post-merge reviewer audit found ${findings.length} late high-severity reviewer finding(s).`,
+      `Post-merge reviewer audit found ${findings.length} late trusted reviewer finding(s) (#3036 detector).`,
       '',
       `- PR: ${prUrl}`,
       `- PR title: ${prTitle}`,
@@ -159,19 +202,20 @@ async function main() {
       ...findings,
       '',
       '## Required action',
-      'Review each finding, confirm whether it is valid, and open corrective PRs as needed.',
+      'Review each finding, confirm whether it is valid, reopen/keep the source Issue failed until remediated, and open corrective PRs as needed.',
+      'Do not treat an earlier closeout `late_review=0` as authoritative once late findings exist.',
     ].join('\n');
 
     if (existing?.number) {
-      await request(`/repos/${owner}/${repo}/issues/${existing.number}/comments`, {
+      await request(`/repos/${owner}/${repo}/issues/${existing.number}/comments`, token, {
         method: 'POST',
         body: JSON.stringify({ body }),
       });
       auditIssue = existing.html_url || `#${existing.number}`;
     } else {
-      const created = await request(`/repos/${owner}/${repo}/issues`, {
+      const created = await request(`/repos/${owner}/${repo}/issues`, token, {
         method: 'POST',
-        body: JSON.stringify({ title, body, labels: ['change-ops'] }),
+        body: JSON.stringify({ title, body, labels: ['change-ops', 'ops-runtime-finding'] }),
       });
       auditIssue = created.html_url || `#${created.number}`;
     }
@@ -182,11 +226,15 @@ async function main() {
 
   const summaryPath = process.env.GITHUB_STEP_SUMMARY;
   if (summaryPath) {
-    fs.appendFileSync(summaryPath, `\n### Late reviewer audit\n- Late high-severity findings: ${findings.length}\n- Follow-up issue: ${auditIssue}\n`);
+    fs.appendFileSync(
+      summaryPath,
+      `\n### Late reviewer audit\n- Late trusted findings: ${findings.length}\n- Follow-up issue: ${auditIssue}\n`,
+    );
   }
 
   console.log(`late_findings=${findings.length}`);
   console.log(`audit_issue=${auditIssue}`);
+  if (findings.length > 0) process.exitCode = 2;
 }
 
 function writeOutput(name, value) {
@@ -196,7 +244,11 @@ function writeOutput(name, value) {
   }
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isMain) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

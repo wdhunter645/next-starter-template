@@ -32,6 +32,7 @@ import { findUnlistedChangedFiles, parseAllowedFiles } from './pr_hygiene_audit.
 
 export { isPermittedClosedSourceIssueFollowup };
 import { evaluateReviewerCommentDisposition, hasValidDisposition, parseReviewerDispositions } from './reviewer_comment_disposition.mjs';
+import { isTrustedReviewer } from './reviewer_trusted_bots.mjs';
 import { resolveExistingCloseoutBodyFile } from './post_merge_closeout_trigger.mjs';
 import { AUTO_REPAIR_END, AUTO_REPAIR_START } from './pr_body_auto_repair.mjs';
 
@@ -150,7 +151,7 @@ export function stripAutoRepairBlock(body = '') {
 	return String(body || '').replace(AUTO_REPAIR_BLOCK_PATTERN, '');
 }
 
-const TRUSTED_REVIEWER_PATTERN = /chatgpt-codex-connector|gemini-code-assist|copilot-pull-request-reviewer|cubic-dev-ai/i;
+const TRUSTED_REVIEWER_PATTERN = /chatgpt-codex-connector|gemini-code-assist|copilot-pull-request-reviewer|\bcopilot\b|cubic-dev-ai/i;
 const HIGH_SEVERITY_PATTERN =
 	/(^|[^A-Za-z0-9])(P0|P1)([^A-Za-z0-9]|$)|high[- ]priority|request changes|requested changes|must fix|blocking/i;
 const RESOLVED_PATTERN = /addressed in|\bresolved\b|all checks passed|no warnings detected/i;
@@ -868,7 +869,7 @@ export function reviewerFindings({ pr, issueComments = [], reviewComments = [], 
 
 	for (const comment of issueComments) {
 		if (
-			TRUSTED_REVIEWER_PATTERN.test(comment.user?.login || '') &&
+			isTrustedReviewer(comment.user?.login || '') &&
 			isAfterMerge(comment.created_at, mergedAt) &&
 			isHighSeverityFinding(comment.body || '') &&
 			!hasDispositionForReviewerItem(comment, dispositions)
@@ -877,11 +878,13 @@ export function reviewerFindings({ pr, issueComments = [], reviewComments = [], 
 		}
 	}
 
+	// Inline review comments after merge are always late findings when trusted
+	// and undispositioned (#3036 — do not require P0/P1 wording; Copilot login
+	// is trusted via reviewer_trusted_bots).
 	for (const comment of reviewComments) {
 		if (
-			TRUSTED_REVIEWER_PATTERN.test(comment.user?.login || '') &&
+			isTrustedReviewer(comment.user?.login || '') &&
 			isAfterMerge(comment.created_at, mergedAt) &&
-			isHighSeverityFinding(comment.body || '') &&
 			!hasDispositionForReviewerItem(comment, dispositions)
 		) {
 			findings.push(findingLine(comment, prUrl));
@@ -890,7 +893,7 @@ export function reviewerFindings({ pr, issueComments = [], reviewComments = [], 
 
 	for (const review of reviews) {
 		if (
-			TRUSTED_REVIEWER_PATTERN.test(review.user?.login || '') &&
+			isTrustedReviewer(review.user?.login || '') &&
 			isAfterMerge(review.submitted_at, mergedAt) &&
 			isHighSeverityFinding(review.body || '', review.state || '') &&
 			!hasDispositionForReviewerItem(review, dispositions)
