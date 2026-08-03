@@ -88,7 +88,9 @@ Full structured records live in `scripts/ci/platform-recovery-inventory.mjs`
 `domains_dns` and `secrets_boundary` remain untested for live mutation/rotation.
 `b2_media_bucket` stays **partial** (synthetic catalog only; live ListObjects deferred).
 `d1_migrations` is **partial** (path reconstruct proven; isolated migration apply still debt).
-Qualification / Day-2 handoff remains #2897.
+Qualification / Day-2 handoff is delivered in #2897
+(`docs/ops/reports/platform-recovery-day2-handoff.md`). Live Production
+activation remains separately authorized.
 
 ## Consumed #2778 evidence
 

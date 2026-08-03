@@ -64,6 +64,7 @@
     "validate:platform-recovery-d1-b2-isolation": "node scripts/ci/platform-recovery-d1-b2-isolation.mjs",
     "validate:platform-recovery-rollback-dr": "node scripts/ci/platform-recovery-rollback-dr.mjs",
     "validate:platform-recovery-rollback-integrated-dr": "node scripts/ci/platform-recovery-rollback-integrated-dr.mjs",
+    "validate:platform-recovery-day2-qualify": "node scripts/ci/platform-recovery-day2-qualify.mjs",
     "delivery-profile:check": "node scripts/ci/delivery_profile.mjs",
     "pr:preflight": "node scripts/ci/pr_preflight.mjs",
     "launch-readiness:unit": "vitest run tests/launch-readiness-manifest.test.ts tests/d1-b2-fail-closed.test.ts tests/homepage-structure.test.tsx tests/join-login-auth.test.tsx tests/mobile-navigation.test.tsx",

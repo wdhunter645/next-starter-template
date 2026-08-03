@@ -147,7 +147,7 @@ Compared against RTO **upper bounds** only as a sanity gate (not Production RTO 
 2. No Production outage, DNS, or traffic mutation is authorized or performed.
 3. Nested D1/B2 evidence reuses #2895 synthetic fixtures; live restore remains deferred.
 4. Measured times are local exercise durations; Production RTO still uses launch-package targets until live drills.
-5. Day-2 Production recovery activation remains separately authorized (#2897 / incident path).
+5. Day-2 Production recovery activation remains separately authorized. Development qualification and operator handoff are recorded in #2897 (`docs/ops/reports/platform-recovery-day2-handoff.md`); this proof does not grant activation.
 
 ## Rollback
 
