@@ -62,6 +62,7 @@
     "verify:invariants": "node scripts/ci/verify_lgfc_invariants.mjs",
     "validate:platform-recovery-inventory": "node scripts/ci/platform-recovery-inventory.mjs",
     "validate:platform-recovery-d1-b2-isolation": "node scripts/ci/platform-recovery-d1-b2-isolation.mjs",
+    "validate:platform-recovery-rollback-dr": "node scripts/ci/platform-recovery-rollback-dr.mjs",
     "validate:platform-recovery-rollback-integrated-dr": "node scripts/ci/platform-recovery-rollback-integrated-dr.mjs",
     "delivery-profile:check": "node scripts/ci/delivery_profile.mjs",
     "pr:preflight": "node scripts/ci/pr_preflight.mjs",
