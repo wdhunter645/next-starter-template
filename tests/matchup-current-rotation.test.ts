@@ -369,7 +369,7 @@ describe('public matchup current rotation', () => {
     });
   });
 
-  it('probes object URLs and repairs a missing Photo B on GET /api/matchup/current', async () => {
+  it('probes object URLs but does not mutate the pair when Photo B is missing (#3028)', async () => {
     const currentWeek = '2026-06-30';
     const { db, matchups, photos, votes, weekStart } = makeRotationDb({
       weekStart: currentWeek,
@@ -412,14 +412,16 @@ describe('public matchup current rotation', () => {
     expect(response.status).toBe(200);
     const body = await response.json();
     expect(body.ok).toBe(true);
-    expect(body.repaired).toBe(true);
+    expect(body.mutated).toBe(false);
+    expect(body.mutation_blocked).toBe(true);
+    expect(body.probe_warning).toBe(true);
+    expect(body.probe_failed_photo_id).toBe(202);
     expect(body.week_start).toBe(weekStart);
     expect(body.items).toHaveLength(2);
-    expect(body.items.map((item: { id: number }) => item.id)).not.toContain(202);
-    expect(body.items[0].id).toBe(201);
-    expect(photos.find((row) => row.id === 202)?.is_matchup_eligible).toBe(-1);
-    expect(matchups[0].photo_b_id).not.toBe(202);
-    expect(votes).toHaveLength(0);
+    expect(body.items.map((item: { id: number }) => item.id)).toEqual([201, 202]);
+    expect(photos.find((row) => row.id === 202)?.is_matchup_eligible).toBe(1);
+    expect(matchups[0].photo_b_id).toBe(202);
+    expect(votes).toHaveLength(1);
   });
 
   it('closes stale active matchups and creates a new current-week matchup', async () => {
