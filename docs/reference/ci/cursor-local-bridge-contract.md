@@ -84,6 +84,7 @@ Routing is by intended agent identity, not semantic task readiness:
 | Traffic | Chromebook Bridge queue / Cursor launch |
 | --- | --- |
 | `agent:cursor` + `handoff:ready` both present on the Issue | Must cross when mechanical safety allows |
+| `agent:cursor` + any other `agent:*` (mixed routing) | Must not enter — fail closed with `conflicting_agent_routing_labels:<sorted>` |
 | `agent:engineering` or other non-Cursor `agent:*` labels | Must not enter |
 | ChatGPT/Atlas-directed notifications (`agent:ChatGPT`, …) | Must not enter |
 | Claude/Claude Code-directed notifications (`agent:claude`, …) | Must not enter |
@@ -95,7 +96,7 @@ Canonical ingress predicate: `scripts/cursor-bridge/lib/wake-ingress.mjs` (`shou
 
 1. Source Issue is present and open (`open` / `OPEN`; null Issue fails closed).
 2. Required routing labels from Bridge config are present (default: `agent:cursor` and `handoff:ready`).
-3. Positive Cursor routing signal is present (`agent:cursor`), and no non-Cursor `agent:*` label (including `agent:engineering`) is present.
+3. Positive Cursor routing signal is present (`agent:cursor`), and **exactly one** `agent:*` label is present. Multiple/conflicting `agent:*` labels fail closed with deterministic reason `conflicting_agent_routing_labels:<sorted-labels>` (#3013 remediation). Non-Cursor-only `agent:*` traffic is rejected as `non_cursor_directed_traffic`.
 4. Issue does not already carry an already-handed-off status label (`status:review`, `status:complete`, `status:post-merge-verify`) — a stale label/status pairing does not re-launch a finished handoff. `status:implementation` does not block (Cursor may still be actively working it).
 5. Repository matches the configured expected repository (`wdhunter645/next-starter-template`).
 6. Serial lane has no active conflicting claim.

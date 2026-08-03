@@ -36,6 +36,27 @@ function normalizeLabels(labels) {
   return labels.map((l) => (typeof l === 'string' ? l : l?.name)).filter(Boolean);
 }
 
+/** All `agent:*` routing labels on the Issue, sorted for stable reasons. */
+export function listAgentRoutingLabels(labels = []) {
+  return normalizeLabels(labels)
+    .filter((name) => name.startsWith('agent:'))
+    .sort();
+}
+
+/**
+ * Deterministic conflict reason when more than one `agent:*` label is present.
+ * @returns {string|null}
+ */
+export function conflictingAgentRoutingReason(labels = []) {
+  const agents = listAgentRoutingLabels(labels);
+  if (agents.length <= 1) return null;
+  return `conflicting_agent_routing_labels:${agents.join(',')}`;
+}
+
+export function hasConflictingAgentRoutingLabels(labels = []) {
+  return listAgentRoutingLabels(labels).length > 1;
+}
+
 /** Positive Cursor routing signal on a live Issue: the `agent:cursor` label. */
 export function hasCursorRoutingSignal({ labels = [] } = {}) {
   return normalizeLabels(labels).includes(CURSOR_AGENT_LABEL);
@@ -69,6 +90,8 @@ export function hasReadyCursorHandoff({ labels = [] } = {}) {
  * first: the moment both are present and a `labeled` event fires for
  * either one, delivery proceeds.
  *
+ * Mixed/conflicting `agent:*` labels fail closed (#3013 remediation).
+ *
  * @param {object} event
  * @returns {{ deliver: boolean, reason: string }}
  */
@@ -79,6 +102,11 @@ export function shouldDeliverCursorWake(event = {}) {
   }
 
   const labels = normalizeLabels(event.issueLabels);
+
+  const conflictReason = conflictingAgentRoutingReason(labels);
+  if (conflictReason) {
+    return { deliver: false, reason: conflictReason };
+  }
 
   if (isNonCursorDirectedTraffic({ labels })) {
     return { deliver: false, reason: 'non_cursor_directed_traffic' };

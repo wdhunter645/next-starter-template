@@ -10,7 +10,7 @@
 
 import crypto from 'node:crypto';
 import { classifyQueueCandidate } from '../../orchestrator/queue-routing.mjs';
-import { hasCursorRoutingSignal } from './wake-ingress.mjs';
+import { conflictingAgentRoutingReason, hasCursorRoutingSignal } from './wake-ingress.mjs';
 
 /** Errors that remain Bridge-side hard stops before launch. */
 const MECHANICAL_ERROR_PREFIXES = [
@@ -20,6 +20,7 @@ const MECHANICAL_ERROR_PREFIXES = [
   'repository_mismatch',
   'absent_cursor_routing',
   'already_handed_off:',
+  'conflicting_agent_routing_labels',
 ];
 
 /**
@@ -142,6 +143,11 @@ export function validateEligibility(issue, _comments, opts = {}) {
   const labels = issueLabels(issue);
   for (const need of requiredLabels) {
     if (!labels.includes(need)) errors.push(`missing_label:${need}`);
+  }
+
+  const conflictReason = conflictingAgentRoutingReason(labels);
+  if (conflictReason) {
+    errors.push(conflictReason);
   }
 
   if (!hasCursorRoutingSignal({ labels })) {
