@@ -5,8 +5,8 @@ Authority Level: Project Contract
 Owns: Claude Code wake-delivery trigger conditions, comment markers, and notification-only scope boundary
 Does Not Own: Cursor Local Bridge, PR approval authority, Production promotion, or any guarantee that a Claude Code session launches
 Canonical Reference: /.github/workflows/claude-code-wake.yml
-Related Issues: #2994
-Last Reviewed: 2026-08-01
+Related Issues: #2994, #3013
+Last Reviewed: 2026-08-03
 ---
 
 # Claude Code Wake Contract
@@ -44,9 +44,11 @@ This workflow is **delivery only**. It does not:
 
 Every PR eventually needs PR Approver / Engineering review, so the `pull_request`
 trigger covers that class without requiring a label. Issue-side routing
-uses a resume marker (parallel to Cursor's `LOCAL CURSOR RESUME`) rather
-than a dedicated label, keeping this bounded to the two use cases that
-currently exist.
+uses a resume marker rather than a dedicated label, keeping this bounded to
+the two use cases that currently exist. (Cursor Local Bridge dropped its
+equivalent comment marker in favor of labels/status only — #3013 — but that
+change is scoped to the Bridge; this workflow's own `CLAUDE CODE RESUME`
+trigger is unaffected.)
 
 The fork and comment-author restrictions exist because this is a write
 path: a fork PR's `pull_request` event only gets a read-only token
@@ -60,11 +62,10 @@ resume marker on any open issue.
 - `CLAUDE CODE WAKE: delivered` — the alert comment this workflow posts.
   Includes a delivery id and the triggering event name.
 - `CLAUDE CODE RESUME` — the issue-side marker that requests a wake alert
-  for Engineering, analogous to `LOCAL CURSOR RESUME` for Cursor. This
-  marker is not currently part of the Bridge eligibility contract
-  (`scripts/cursor-bridge/lib/eligibility.mjs`, which recognizes only
-  `CHATGPT RESPONSE` / `CHATGPT CLOSEOUT` / `LOCAL CURSOR RESUME`) and does
-  not attempt to be; it exists solely to trigger this delivery workflow.
+  for Engineering. It exists solely to trigger this delivery workflow and
+  is unrelated to Cursor Local Bridge, which (as of #3013) does not parse
+  any comment marker at all — Bridge eligibility is labels/status only
+  (`scripts/cursor-bridge/lib/eligibility.mjs`).
 
 ## Deduplication
 
@@ -75,19 +76,14 @@ first line — the check matches it anywhere in the comment, not only at the
 start). This keeps `reopened` and repeated manual dispatch from spamming
 the thread.
 
-## Known gap this contract does not fix
+## Former gap, now resolved (#3013)
 
-The Bridge eligibility contract's response-marker vocabulary
-(`CHATGPT RESPONSE`, `CHATGPT CLOSEOUT`) hardcodes a vendor/product name
-rather than the durable `PMO / Engineering` role, which is out of step
-with the naming rule in `docs/governance/AGENT-TEAM.md` ("Canonical policy
-names durable roles, not preferred vendors, models, or agent products").
-Now that Claude Code also holds the Engineering role, a Claude-authored
-canonical response comment must still use the literal string
-`CHATGPT RESPONSE` to be machine-claimable by Cursor Local Bridge. Renaming
-that vocabulary is out of scope for this contract (it would require a
-coordinated change to `eligibility.mjs`, `CURSOR-RUNTIME-ROUTING.md`, and
-every doc that names the marker) and is left as follow-up work.
+This section previously described a naming-rule violation: the Bridge
+eligibility contract's response-marker vocabulary (`CHATGPT RESPONSE`,
+`CHATGPT CLOSEOUT`) hardcoded a vendor/product name rather than the durable
+`PMO / Engineering` role. #3013 removed comment-marker parsing from the
+Bridge eligibility contract entirely — there is no vocabulary left to rename
+or hardcode. Bridge eligibility is decided from Issue labels/status only.
 
 ## Verification
 

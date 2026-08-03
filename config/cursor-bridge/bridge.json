@@ -24,8 +24,6 @@
     "agent:cursor",
     "handoff:ready"
   ],
-  "responseMarker": "CHATGPT RESPONSE",
-  "resumeMarker": "LOCAL CURSOR RESUME",
   "fallbackCommentPrefix": "CURSOR BRIDGE FALLBACK: unclaimed",
   "cliBinaryCandidates": [
     "agent",

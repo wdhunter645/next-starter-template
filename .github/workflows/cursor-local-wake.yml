@@ -3,15 +3,16 @@ name: Cursor Local Wake Delivery
 # Delivery only: write a wake packet on the Chromebook host for Cursor Local Bridge.
 # Does not launch Cursor, hold API keys, claim the lane, or treat labels as authority.
 #
-# Locked #2997 routing: Cursor-routed traffic only. ChatGPT/Atlas, Claude/Claude Code,
-# other-agent, and unrelated GitHub traffic must not enter the Chromebook Bridge queue.
-# Canonical predicate: scripts/cursor-bridge/lib/wake-ingress.mjs (shouldDeliverCursorWake).
+# Label- and status-driven routing: Cursor-routed traffic only. ChatGPT/Atlas,
+# Claude/Claude Code, other-agent, and unrelated GitHub traffic must not enter the
+# Chromebook Bridge queue. Canonical predicate:
+# scripts/cursor-bridge/lib/wake-ingress.mjs (shouldDeliverCursorWake). There is no
+# comment-marker trigger — see docs/reference/ci/cursor-local-bridge-contract.md,
+# "Label and status-driven handoff".
 
 on:
   issues:
     types: [labeled]
-  issue_comment:
-    types: [created]
   workflow_dispatch:
     inputs:
       issue_number:
@@ -35,13 +36,7 @@ jobs:
         (
           github.event_name == 'issues' &&
           github.event.action == 'labeled' &&
-          github.event.label.name == 'handoff:ready' &&
-          contains(join(github.event.issue.labels.*.name, ','), 'agent:cursor')
-        ) ||
-        (
-          github.event_name == 'issue_comment' &&
-          github.event.issue.state == 'open' &&
-          startsWith(github.event.comment.body, 'LOCAL CURSOR RESUME') &&
+          (github.event.label.name == 'handoff:ready' || github.event.label.name == 'agent:cursor') &&
           contains(join(github.event.issue.labels.*.name, ','), 'agent:cursor') &&
           contains(join(github.event.issue.labels.*.name, ','), 'handoff:ready')
         ) ||
@@ -59,7 +54,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
         run: |
           test "$REPOSITORY" = "wdhunter645/next-starter-template"
-          test "$EVENT_NAME" = "issues" -o "$EVENT_NAME" = "issue_comment" -o "$EVENT_NAME" = "workflow_dispatch"
+          test "$EVENT_NAME" = "issues" -o "$EVENT_NAME" = "workflow_dispatch"
           echo "delivery_only=true"
 
       - name: Resolve issue number
@@ -68,7 +63,6 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           ISSUE_FROM_EVENT: ${{ github.event.issue.number }}
           ISSUE_FROM_INPUT: ${{ inputs.issue_number }}
-          COMMENT_ID: ${{ github.event.comment.id }}
           RUN_ID: ${{ github.run_id }}
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
@@ -78,7 +72,7 @@ jobs:
           fi
           test -n "$ISSUE"
           echo "issue=$ISSUE" >> "$GITHUB_OUTPUT"
-          DELIVERY="wake-${RUN_ID}-${ISSUE}-${COMMENT_ID:-nolabel}"
+          DELIVERY="wake-${RUN_ID}-${ISSUE}"
           echo "delivery_id=$DELIVERY" >> "$GITHUB_OUTPUT"
 
       # Checkout so the queue gate can invoke the canonical Node predicate
@@ -94,9 +88,7 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           ISSUE: ${{ steps.meta.outputs.issue }}
-          COMMENT_BODY: ${{ github.event.comment.body }}
           ISSUE_LABELS: ${{ join(github.event.issue.labels.*.name, ',') }}
-          ISSUE_STATE: ${{ github.event.issue.state }}
           LABEL_NAME: ${{ github.event.label.name }}
           ACTION: ${{ github.event.action }}
           ACTOR: ${{ github.actor }}
@@ -108,8 +100,7 @@ jobs:
           # Job-level if: is a coarse filter; this step is the single authority before queue write.
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             ISSUE_LABELS=$(gh issue view "$ISSUE" --repo "$REPOSITORY" --json labels --jq '[.labels[].name] | join(",")')
-            ISSUE_STATE=$(gh issue view "$ISSUE" --repo "$REPOSITORY" --json state --jq '.state')
-            export ISSUE_LABELS ISSUE_STATE
+            export ISSUE_LABELS
           fi
           node --input-type=module <<'EOF'
           import { shouldDeliverCursorWake } from './scripts/cursor-bridge/lib/wake-ingress.mjs';
@@ -124,8 +115,6 @@ jobs:
             action: process.env.ACTION || '',
             labelName: process.env.LABEL_NAME || '',
             issueLabels: labels,
-            issueState: process.env.ISSUE_STATE || '',
-            commentBody: process.env.COMMENT_BODY || '',
             actor: process.env.ACTOR || '',
           });
           if (!decision.deliver) {
@@ -143,7 +132,6 @@ jobs:
           DELIVERY_ID: ${{ steps.meta.outputs.delivery_id }}
           EVENT_NAME: ${{ github.event_name }}
           ACTOR: ${{ github.actor }}
-          COMMENT_URL: ${{ github.event.comment.html_url }}
         run: |
           HOME_DIR="${LGFC_CURSOR_BRIDGE_HOME:-$HOME/lgfc-cursor-bridge}"
           QUEUE="$HOME_DIR/queue"
@@ -160,7 +148,6 @@ jobs:
             "deliveryId": os.environ["DELIVERY_ID"],
             "eventName": os.environ["EVENT_NAME"],
             "actor": os.environ.get("ACTOR") or "unknown",
-            "resumeHint": os.environ.get("COMMENT_URL") or "",
             "deliveredAt": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
             "runId": os.environ.get("GITHUB_RUN_ID"),
           }
@@ -172,4 +159,4 @@ jobs:
           PY
 
           # Delivery evidence is local (queue packet + Bridge status). Routine
-          # CURSOR BRIDGE ACK Issue comments are prohibited (#2997 design simplification).
+          # CURSOR BRIDGE ACK Issue comments are prohibited (label/status-driven design).

@@ -1,9 +1,14 @@
 /**
- * Cursor-only wake / packet-ingress routing (#2997).
+ * Cursor-only wake / packet-ingress routing.
  *
  * Canonical mechanical predicate for whether a trusted repository event may
- * enter the Chromebook Cursor Local Bridge queue. Semantic task readiness is
- * evaluated later by Cursor — this module only answers "is this Cursor-routed?".
+ * enter the Chromebook Cursor Local Bridge queue. Routing is label-driven
+ * only: which agent label an Issue carries, and whether it carries
+ * `handoff:ready`. There is no comment-text parsing anywhere in this
+ * decision (see docs/reference/ci/cursor-local-bridge-contract.md, "Label
+ * and status-driven handoff"). Semantic task readiness — what to actually
+ * do — is Cursor's job, evaluated from the live Issue body/comments after
+ * launch; this module only answers "is this Cursor-routed and ready?".
  *
  * `.github/workflows/cursor-local-wake.yml` must stay aligned with
  * `shouldDeliverCursorWake`. Claude Code / ChatGPT wakes use separate paths
@@ -12,12 +17,12 @@
 
 export const CURSOR_AGENT_LABEL = 'agent:cursor';
 export const CURSOR_HANDOFF_LABEL = 'handoff:ready';
-export const CURSOR_RESUME_PREFIX = 'LOCAL CURSOR RESUME';
 
 /** Agent labels that route work away from Cursor Local. */
 export const NON_CURSOR_AGENT_LABELS = Object.freeze([
   'agent:ChatGPT',
   'agent:chatgpt',
+  'agent:engineering',
   'agent:claude',
   'agent:Claude',
   'agent:codex',
@@ -26,61 +31,43 @@ export const NON_CURSOR_AGENT_LABELS = Object.freeze([
   'agent:Atlas',
 ]);
 
-/**
- * Comment body prefixes that are directed at non-Cursor agents / lanes.
- * These must not create Chromebook Bridge wake packets.
- */
-export const NON_CURSOR_COMMENT_PREFIXES = Object.freeze([
-  'CHATGPT HANDOFF',
-  'CLAUDE CODE RESUME',
-  'CLAUDE CODE WAKE',
-  'CLAUDE CODE HANDOFF',
-]);
-
 function normalizeLabels(labels) {
   if (!Array.isArray(labels)) return [];
   return labels.map((l) => (typeof l === 'string' ? l : l?.name)).filter(Boolean);
 }
 
-/**
- * Marker match aligned with workflow `startsWith(comment.body, …)` —
- * no leading-whitespace tolerance (byte-for-byte with cursor-local-wake.yml).
- */
-function commentStartsWith(body, prefix) {
-  const text = String(body || '').replace(/^\uFEFF/, '');
-  return text.startsWith(prefix);
+/** Positive Cursor routing signal on a live Issue: the `agent:cursor` label. */
+export function hasCursorRoutingSignal({ labels = [] } = {}) {
+  return normalizeLabels(labels).includes(CURSOR_AGENT_LABEL);
 }
 
 /**
- * Positive Cursor routing signal on a live Issue.
- * Labels alone or an equivalent Cursor resume marker establish routing.
+ * True when the Issue carries a non-Cursor agent label and not `agent:cursor`.
+ * Comment bodies are never inspected to make this determination.
  */
-export function hasCursorRoutingSignal({ labels = [], commentBody = '' } = {}) {
-  const names = normalizeLabels(labels);
-  if (names.includes(CURSOR_AGENT_LABEL)) return true;
-  if (commentStartsWith(commentBody, CURSOR_RESUME_PREFIX)) return true;
-  return false;
-}
-
-/**
- * True when the event is directed at ChatGPT/Atlas, Claude, or another
- * non-Cursor agent without a positive Cursor routing signal — or when the
- * comment marker itself belongs to a non-Cursor wake lane.
- */
-export function isNonCursorDirectedTraffic({ labels = [], commentBody = '' } = {}) {
+export function isNonCursorDirectedTraffic({ labels = [] } = {}) {
   const names = normalizeLabels(labels);
   const hasCursor = names.includes(CURSOR_AGENT_LABEL);
   const hasNonCursorAgent = names.some((name) => NON_CURSOR_AGENT_LABELS.includes(name));
-  if (hasNonCursorAgent && !hasCursor) return true;
+  return hasNonCursorAgent && !hasCursor;
+}
 
-  for (const prefix of NON_CURSOR_COMMENT_PREFIXES) {
-    if (commentStartsWith(commentBody, prefix)) return true;
-  }
-  return false;
+/** True when both required labels for delivery are present on the live label set. */
+export function hasReadyCursorHandoff({ labels = [] } = {}) {
+  const names = normalizeLabels(labels);
+  return names.includes(CURSOR_AGENT_LABEL) && names.includes(CURSOR_HANDOFF_LABEL);
 }
 
 /**
  * Decide whether cursor-local-wake may write a Chromebook Bridge packet.
+ *
+ * Every branch reads `event.repository`, `event.eventName`, and
+ * `event.issueLabels` — the Issue's complete *current* label set at event
+ * time — never a comment body. Because the decision is made from the full
+ * current label set rather than "which single label was just added", it
+ * does not matter whether `agent:cursor` or `handoff:ready` was applied
+ * first: the moment both are present and a `labeled` event fires for
+ * either one, delivery proceeds.
  *
  * @param {object} event
  * @returns {{ deliver: boolean, reason: string }}
@@ -92,9 +79,8 @@ export function shouldDeliverCursorWake(event = {}) {
   }
 
   const labels = normalizeLabels(event.issueLabels);
-  const commentBody = event.commentBody || '';
 
-  if (isNonCursorDirectedTraffic({ labels, commentBody })) {
+  if (isNonCursorDirectedTraffic({ labels })) {
     return { deliver: false, reason: 'non_cursor_directed_traffic' };
   }
 
@@ -109,27 +95,16 @@ export function shouldDeliverCursorWake(event = {}) {
   }
 
   if (event.eventName === 'issues') {
-    if (event.action !== 'labeled' || event.labelName !== CURSOR_HANDOFF_LABEL) {
+    const isRoutingLabelEvent =
+      event.action === 'labeled' &&
+      (event.labelName === CURSOR_HANDOFF_LABEL || event.labelName === CURSOR_AGENT_LABEL);
+    if (!isRoutingLabelEvent) {
       return { deliver: false, reason: 'unrelated_issue_label_event' };
     }
-    if (!labels.includes(CURSOR_AGENT_LABEL)) {
+    if (!hasReadyCursorHandoff({ labels })) {
       return { deliver: false, reason: 'absent_cursor_routing' };
     }
     return { deliver: true, reason: 'handoff_ready_on_cursor_issue' };
-  }
-
-  if (event.eventName === 'issue_comment') {
-    const state = String(event.issueState || '').toLowerCase();
-    if (state !== 'open') {
-      return { deliver: false, reason: 'source_issue_not_open' };
-    }
-    if (!commentStartsWith(commentBody, CURSOR_RESUME_PREFIX)) {
-      return { deliver: false, reason: 'not_cursor_resume_marker' };
-    }
-    if (!labels.includes(CURSOR_AGENT_LABEL) || !labels.includes(CURSOR_HANDOFF_LABEL)) {
-      return { deliver: false, reason: 'absent_cursor_routing' };
-    }
-    return { deliver: true, reason: 'local_cursor_resume' };
   }
 
   return { deliver: false, reason: 'unrelated_github_traffic' };

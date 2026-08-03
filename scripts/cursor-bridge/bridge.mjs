@@ -323,7 +323,7 @@ async function processPacket(config, dirs, packetPath) {
       );
     }
 
-    const resumeId = resolveDeliveryKey({ packet, eligibility, issueNumber });
+    const resumeId = resolveDeliveryKey({ packet, issueNumber });
     if (isConsumed(config, resumeId)) {
       appendBridgeLog(config, `skip already consumed deliveryKey=${resumeId}`);
       moveProcessingToConsumed(dirs, packetPath, processing, 'dup');
@@ -380,15 +380,10 @@ async function processPacket(config, dirs, packetPath) {
       return { ok: false, reason: claim.reason };
     }
 
-    const action =
-      eligibility.parsed?.actions?.length === 1 ? eligibility.parsed.actions[0] : null;
     const launched = launchLocalAgent(config, {
       issueNumber,
       issue,
       comments,
-      resume: eligibility.resume,
-      response: eligibility.response,
-      action,
       semanticFindings: eligibility.semanticFindings || [],
     });
 

@@ -5,8 +5,8 @@ Authority Level: Operational Procedure
 Owns: Chromebook install, auth preflight, systemd enablement, transactional launch verification, heartbeat/watchdog/reconciliation verification, and rollback for Cursor Local Bridge
 Does Not Own: Wake workflow gates, runner registration, or Background Agents
 Canonical Reference: /docs/reference/ci/cursor-local-bridge-contract.md
-Related Issues: #2294, #2667, #2669, #2681, #2694, #2739, #2746, #2814, #2997
-Last Reviewed: 2026-08-01
+Related Issues: #2294, #2667, #2669, #2681, #2694, #2739, #2746, #2814, #2997, #3013
+Last Reviewed: 2026-08-03
 ---
 
 # Configure Cursor Local Bridge
@@ -145,7 +145,7 @@ Operator-visible fallback comment prefixes are distinct by class:
 - pre-accept launch retries: `CURSOR BRIDGE FALLBACK: launch-retry`
 - post-accept duplicate-risk failures: `CURSOR BRIDGE FALLBACK: accepted-run-failure`
 
-Semantic resume/response/action-count problems are **not** Bridge unclaimed fallbacks after #2997 — they are delivered to Cursor as findings for act/hold/correction/no-action disposition.
+There is no comment-marker requirement (#3013): mechanical eligibility is decided from Issue labels/status only. Queue-routing/parent-project classification is delivered to Cursor as an informational finding, not a Bridge unclaimed fallback.
 
 ## Verify wake delivery without launch
 
@@ -158,11 +158,11 @@ Expected for mechanical ineligibility (closed Issue, missing `agent:cursor`, wro
 
 ChatGPT/Atlas-directed, Claude/Claude Code-directed, other-agent, and unrelated GitHub traffic must never write a Chromebook Bridge wake packet. `.github/workflows/cursor-local-wake.yml` invokes `shouldDeliverCursorWake` from `scripts/cursor-bridge/lib/wake-ingress.mjs` before queue write. Those other lanes use their own notification paths.
 
-A trusted open Issue with `agent:cursor` + `handoff:ready` must still launch even when RESPONSE/RESUME parsing is incomplete; Cursor owns the semantic disposition.
+A trusted open Issue with `agent:cursor` + `handoff:ready` must launch regardless of comment content — there is no comment-marker gate to satisfy (#3013).
 
 ## Verify successful transactional launch
 
-Use a temporary bounded test Issue with `agent:cursor` and `handoff:ready`. Prefer a valid `CHATGPT RESPONSE` plus one-action `LOCAL CURSOR RESUME`, but incomplete semantic markers must still reach Cursor.
+Use a temporary bounded test Issue with `agent:cursor` and `handoff:ready`. No resume/response comment is needed or read for eligibility; Cursor reads any existing comments as ordinary context only after launch.
 
 Observe in order:
 

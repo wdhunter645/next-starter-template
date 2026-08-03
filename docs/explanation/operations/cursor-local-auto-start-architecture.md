@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Conceptual as-built architecture for Cursor Local Auto-Start, component roles, transactional launch flow, health/recovery paths, cost model, and rejected alternatives
 Does Not Own: Host install runbooks, executable wake gates, Background Agents, or workflow migration Go decisions
 Canonical Reference: /docs/reference/ci/cursor-local-bridge-contract.md
-Related Issues: #2294, #2667, #2669, #2694, #2739, #2814
-Last Reviewed: 2026-07-24
+Related Issues: #2294, #2667, #2669, #2694, #2739, #2814, #2997, #3013
+Last Reviewed: 2026-08-03
 ---
 
 # Cursor Local Auto-Start Architecture
@@ -28,6 +28,8 @@ Mode B therefore added event delivery and a persistent local Bridge. Subsequent 
 3. the CLI could spawn and open a connection without the Cursor agent accepting the task, while the Bridge prematurely marked the handoff consumed and treated spawn as acceptance evidence.
 
 The third boundary is critical. Transport success, process creation, connection establishment, agent acceptance, and completed work are different states and must not be collapsed. Shared operator evidence is Issue status plus Cursor's substantive handoff, not routine Bridge ACK/STARTED/COMPLETED comments (#2997).
+
+A fourth reliability boundary surfaced later: the eligibility/routing logic had drifted into parsing specific comment text (`LOCAL CURSOR RESUME`, `CHATGPT RESPONSE`, action-count and chronology checks) as a de-facto second gate on top of labels, even though #2997 had already established labels as the routing signal. That made the handoff brittle — a missing or malformed comment could block a Cursor-labeled, ready Issue indefinitely — and duplicated notification steps (ACK/STARTED/COMPLETED-style comments) added noise without adding safety. #3013 removed comment-text parsing entirely: routing and gating are decided from Issue **labels and status only**.
 
 ## Decision
 
@@ -66,9 +68,7 @@ Auto-start can consume allowance without Bill opening a chat. The controls are f
 ```mermaid
 flowchart LR
   subgraph github [GitHub]
-    Issue[Source_Issue]
-    Response[CHATGPT_RESPONSE]
-    Resume[LOCAL_CURSOR_RESUME]
+    Issue[Source_Issue_labels_and_status]
     WF[cursor_local_wake]
   end
 
@@ -85,9 +85,7 @@ flowchart LR
     Notify[Fallback]
   end
 
-  Response --> Resume
-  Issue --> WF
-  Resume --> WF
+  Issue -->|agent:cursor + handoff:ready labeled| WF
   WF -->|delivery only| Runner
   Runner --> Queue
   Reconcile -->|recovery packet| Queue
@@ -169,7 +167,7 @@ A zero exit releases the claim, clears transaction state, and archives the packe
 
 ## Event flow
 
-1. ChatGPT posts authority and a separate one-action resume; required labels are present.
+1. Engineering applies `agent:cursor` and `handoff:ready` to the Issue (order-independent — whichever label lands second fires delivery). No resume comment is posted or required; the Issue body and any existing comments are ordinary context Cursor reads after launch, not a routing signal.
 2. The wake workflow writes a local host packet only (no routine `CURSOR BRIDGE ACK` Issue comment).
 3. The Bridge dequeues the packet, re-fetches Issue state, and validates mechanical eligibility/auth.
 4. The Bridge acquires the serial claim and writes `cli_spawned` transaction state.
@@ -202,6 +200,7 @@ A zero exit releases the claim, clears transaction state, and archives the packe
 | Background Agents / cloud runtime | Prohibited cost/runtime path |
 | Synthetic keepalive comments | Noise; not health evidence |
 | Reconciliation launches directly | Bypasses the normal safety path |
+| Comment-marker parsing as a routing/gating signal (`LOCAL CURSOR RESUME`, `CHATGPT RESPONSE`, action-count/chronology matching) | Brittle second gate duplicating labels; a missing/malformed comment could block a ready, Cursor-labeled Issue indefinitely — removed by #3013 |
 
 ## Verification obligations
 
