@@ -3,7 +3,7 @@ Doc Type: Operations Report
 Audience: Bill, ChatGPT, Cursor, Day-2 Operations, LGFC maintainers
 Authority Level: Operational Evidence
 Owns: Project #2779 Task 001 (#2894) recovery inventory, owners, RPO/RTO targets, and test-plan map
-Does Not Own: Live restore proofs (#2895–#2897), Production recovery activation, secret values, paid backup products
+Does Not Own: Live Production restore, source/deployment DR proofs (#2896–#2897), Production recovery activation, secret values, paid backup products
 Canonical Reference: /docs/governance/OPERATIONS-AND-RECOVERY.md
 Related Issues: #2779, #2894, #2778, #2890
 Last Reviewed: 2026-08-03
@@ -30,7 +30,7 @@ In scope:
 Out of scope:
 
 - Destructive Production restore or outage simulation
-- D1/B2 isolated restore proof (later children)
+- Live Cloudflare disposable D1 / credentialed B2 sampling (deferred; #2895 synthetic isolation done)
 - Secret values
 - Paid backup products
 - Production / `main` merge
@@ -76,17 +76,18 @@ Full structured records live in `scripts/ci/platform-recovery-inventory.mjs`
 | `github_workflows_config` | source_configuration | Implementation / Ops + CI | untested_restore |
 | `wrangler_pages_config` | source_configuration | PMO/Eng + Implementation | untested_restore |
 | `pages_functions` | source_configuration | Implementation / Operations | untested_restore |
-| `d1_database` | d1_operational_data | Day-2 (activation) + Implementation | untested_restore |
+| `d1_database` | d1_operational_data | Day-2 (activation) + Implementation | partial |
 | `d1_migrations` | source_configuration | Implementation / Operations | untested_restore |
-| `b2_media_bucket` | b2_media | Day-2 + Product Authority (creds/cost) | untested_restore |
-| `b2_d1_catalog_sync` | b2_media | Implementation / Operations | untested_restore |
+| `b2_media_bucket` | b2_media | Day-2 + Product Authority (creds/cost) | partial |
+| `b2_d1_catalog_sync` | b2_media | Implementation / Operations | partial |
 | `deployment_runtime` | deployment_runtime | Day-2 + Implementation | untested_restore |
 | `domains_dns` | source_configuration | Product Authority + Day-2 | untested_restore |
 | `operational_evidence` | source_configuration | Administration & Communications | partial |
 | `secrets_boundary` | source_configuration | Product Authority + Day-2 | untested_restore |
 
 `operational_evidence` is **partial** because #2778 reports are verified present on the
-sibling component ref; restore drills for other assets remain for #2895–#2897.
+sibling component ref. D1/B2 assets are **partial** after #2895 synthetic isolated
+proofs; live provider restore and remaining classes remain for #2896–#2897.
 
 ## Consumed #2778 evidence
 
@@ -118,6 +119,7 @@ Also reconcile: `docs/governance/OPERATIONS-AND-RECOVERY.md`,
 | Unit tests | `tests/platform-recovery-inventory.test.mjs` |
 | Ownership | `docs/reference/operations/platform-recovery-ownership.md` |
 | Disable env | `LGFC_PLATFORM_RECOVERY_INVENTORY_DISABLED=1` |
+| D1/B2 isolated proof (#2895) | `npm run validate:platform-d1-b2-recovery-proof` |
 
 ## Assessment identity
 
