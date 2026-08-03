@@ -1,0 +1,37 @@
+{
+  "purpose": "Synthetic B2 catalog fixture for #2895 isolated recovery proof",
+  "bucket": "LouGehrigFanClub-synthetic-isolation",
+  "endpointHost": "s3.us-east-005.backblazeb2.com",
+  "productionMutation": false,
+  "objects": [
+    {
+      "key": "photos/synthetic/lou-001.jpg",
+      "size": 1024,
+      "etag": "etag-synth-001",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "contentType": "image/jpeg"
+    },
+    {
+      "key": "photos/synthetic/lou-002.jpg",
+      "size": 2048,
+      "etag": "etag-synth-002",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "contentType": "image/jpeg"
+    },
+    {
+      "key": "memorabilia/synthetic/card-001.png",
+      "size": 4096,
+      "etag": "etag-synth-003",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "contentType": "image/png"
+    },
+    {
+      "key": "photos/synthetic/orphan-unreferenced.jpg",
+      "size": 512,
+      "etag": "etag-synth-orphan",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "contentType": "image/jpeg",
+      "note": "Present in B2 catalog but intentionally absent from D1 media_assets — orphan detection"
+    }
+  ]
+}
