@@ -97,8 +97,9 @@ Guarantees:
 | Parent project | #2778 |
 | Component branch | `component/platform-production-validation` |
 | PR vehicle | #3020 |
-| Worktree | clean |
-| Candidate SHA (authoritative) | `aeabad35c34c867e0c3f48f8e5f59b98eeb11888` |
+| Worktree | clean at validation |
+| Implementation candidate SHA (validator + tests) | `aeabad35c34c867e0c3f48f8e5f59b98eeb11888` |
+| Evidence commit (this report) | `9103ee06197102208ac8b54ff72a2160fe60d24e` |
 
 ## Results (this run)
 
