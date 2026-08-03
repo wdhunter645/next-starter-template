@@ -1,4 +1,9 @@
 import { requireD1, requireTables } from "../../_lib/d1";
+import {
+  clientAuditHints,
+  logMatchupRepairAudit,
+  normalizeSourceIssue,
+} from "../../_lib/matchup-repair-audit";
 
 /** Monday-inclusive week anchor for weekly_matchups.week_start (YYYY-MM-DD). */
 export const MATCHUP_WEEK_START_SQL =
@@ -309,54 +314,193 @@ async function markPhotoExcludedMissingObject(db: any, photoId: number, detail: 
 }
 
 /**
- * Browser-reported broken matchup image repair.
- * Confirms the photo is in the active current-week pair, excludes missing objects,
- * replaces the broken slot (or the full pair if needed), clears votes on pair change,
- * and returns the repaired current matchup payload.
+ * Broken-image / probe repair path (#2519), lockdown (#3028).
+ *
+ * Public callers must pass allowMutation=false → audit log only; no D1 writes.
+ * Authorized callers (admin + source Issue) may mutate; pair change clears votes (0–0).
+ * Vote restore is not possible with current schema.
  */
 export async function repairBrokenActiveMatchupPhoto(options: {
   db: any;
   request: Request;
   brokenPhotoId: number;
+  allowMutation?: boolean;
+  sourceIssue?: unknown;
+  trigger?: 'public_repair_post' | 'current_get_probe' | 'admin_authorized';
 }): Promise<Response> {
-  const { db, request, brokenPhotoId } = options;
+  const {
+    db,
+    request,
+    brokenPhotoId,
+    allowMutation = false,
+    sourceIssue = null,
+    trigger = 'public_repair_post',
+  } = options;
+  const client = clientAuditHints(request);
+  const issueRef = normalizeSourceIssue(sourceIssue);
+
   if (!Number.isFinite(brokenPhotoId) || brokenPhotoId <= 0) {
     return jsonResponse({ ok: false, error: "invalid_broken_photo_id" }, 400);
   }
 
   const weekStart = await computeWeekStart(db);
   if (!weekStart) {
-    return jsonResponse({ ok: true, week_start: null, matchup_id: null, items: [], repaired: false });
+    logMatchupRepairAudit({
+      event: 'matchup_repair_audit',
+      at: new Date().toISOString(),
+      trigger,
+      week_start: null,
+      broken_photo_id: brokenPhotoId,
+      slot: null,
+      probe_available: null,
+      probe_status: null,
+      before_photo_a_id: null,
+      before_photo_b_id: null,
+      after_photo_a_id: null,
+      after_photo_b_id: null,
+      mutated: false,
+      votes_cleared: false,
+      source_issue: issueRef,
+      mutation_blocked_reason: 'no_week_start',
+      ...client,
+    });
+    return jsonResponse({ ok: true, week_start: null, matchup_id: null, items: [], repaired: false, mutated: false });
   }
 
   const active = await findActiveCurrentWeekMatchup(db, weekStart);
   if (!active) {
-    return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [], repaired: false });
+    logMatchupRepairAudit({
+      event: 'matchup_repair_audit',
+      at: new Date().toISOString(),
+      trigger,
+      week_start: weekStart,
+      broken_photo_id: brokenPhotoId,
+      slot: null,
+      probe_available: null,
+      probe_status: null,
+      before_photo_a_id: null,
+      before_photo_b_id: null,
+      after_photo_a_id: null,
+      after_photo_b_id: null,
+      mutated: false,
+      votes_cleared: false,
+      source_issue: issueRef,
+      mutation_blocked_reason: 'no_active_matchup',
+      ...client,
+    });
+    return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [], repaired: false, mutated: false });
   }
 
-  const brokenIsA = Number(active.photo_a_id) === brokenPhotoId;
-  const brokenIsB = Number(active.photo_b_id) === brokenPhotoId;
+  const beforeA = Number(active.photo_a_id);
+  const beforeB = Number(active.photo_b_id);
+  const brokenIsA = beforeA === brokenPhotoId;
+  const brokenIsB = beforeB === brokenPhotoId;
   if (!brokenIsA && !brokenIsB) {
+    logMatchupRepairAudit({
+      event: 'matchup_repair_audit',
+      at: new Date().toISOString(),
+      trigger,
+      week_start: weekStart,
+      broken_photo_id: brokenPhotoId,
+      slot: 'unknown',
+      probe_available: null,
+      probe_status: null,
+      before_photo_a_id: beforeA,
+      before_photo_b_id: beforeB,
+      after_photo_a_id: beforeA,
+      after_photo_b_id: beforeB,
+      mutated: false,
+      votes_cleared: false,
+      source_issue: issueRef,
+      mutation_blocked_reason: 'stale_broken_id_not_in_active_pair',
+      ...client,
+    });
     // Stale client report after another repair already replaced the pair.
     return buildSuccessResponse(request, weekStart, active.id, active.photo_a_id, active.photo_b_id);
   }
 
+  const slot: 'a' | 'b' = brokenIsA ? 'a' : 'b';
   const brokenItem = await readPhotoById(request, brokenPhotoId);
   const probe = brokenItem?.url
     ? await probePhotoObjectAvailable(brokenItem.url)
     : { available: false, status: null };
 
+  if (!allowMutation) {
+    logMatchupRepairAudit({
+      event: 'matchup_repair_audit',
+      at: new Date().toISOString(),
+      trigger,
+      week_start: weekStart,
+      broken_photo_id: brokenPhotoId,
+      slot,
+      probe_available: probe.available,
+      probe_status: probe.status,
+      before_photo_a_id: beforeA,
+      before_photo_b_id: beforeB,
+      after_photo_a_id: beforeA,
+      after_photo_b_id: beforeB,
+      mutated: false,
+      votes_cleared: false,
+      source_issue: issueRef,
+      mutation_blocked_reason: 'public_midweek_mutation_locked_requires_issue_pr',
+      ...client,
+    });
+    const response = await buildSuccessResponse(
+      request,
+      weekStart,
+      active.id,
+      active.photo_a_id,
+      active.photo_b_id,
+    );
+    const body = await response.json();
+    return jsonResponse({
+      ...body,
+      repaired: false,
+      mutated: false,
+      mutation_blocked: true,
+      mutation_blocked_reason: 'public_midweek_mutation_locked_requires_issue_pr',
+      probe_available: probe.available,
+      probe_status: probe.status,
+    });
+  }
+
+  if (!issueRef) {
+    logMatchupRepairAudit({
+      event: 'matchup_repair_audit',
+      at: new Date().toISOString(),
+      trigger,
+      week_start: weekStart,
+      broken_photo_id: brokenPhotoId,
+      slot,
+      probe_available: probe.available,
+      probe_status: probe.status,
+      before_photo_a_id: beforeA,
+      before_photo_b_id: beforeB,
+      after_photo_a_id: beforeA,
+      after_photo_b_id: beforeB,
+      mutated: false,
+      votes_cleared: false,
+      source_issue: null,
+      mutation_blocked_reason: 'missing_source_issue',
+      ...client,
+    });
+    return jsonResponse({
+      ok: false,
+      error: 'source_issue_required',
+      detail: 'Authorized mid-week pair change requires source_issue (GitHub Issue number). Votes cannot be restored; pair change resets to 0-0.',
+    }, 400);
+  }
+
   // Permanent exclude only when the object is confirmed missing/unreachable.
-  // Still replace the slot so the homepage does not stay on a broken image.
   if (!probe.available) {
     await markPhotoExcludedMissingObject(
       db,
       brokenPhotoId,
-      `status=${probe.status ?? "unreachable"}`,
+      `status=${probe.status ?? "unreachable"}; issue=${issueRef}`,
     );
   }
 
-  const keepId = brokenIsA ? Number(active.photo_b_id) : Number(active.photo_a_id);
+  const keepId = brokenIsA ? beforeB : beforeA;
   const eligiblePhotos = await fetchEligiblePhotos(db);
   const recentIds = await getRecentMatchupPhotoIds(db);
 
@@ -375,20 +519,63 @@ export async function repairBrokenActiveMatchupPhoto(options: {
       selectTwoPhotoIds(eligiblePhotos, new Set<number>([brokenPhotoId, ...recentIds])) ??
       selectTwoPhotoIds(eligiblePhotos, new Set<number>([brokenPhotoId]));
     if (!selected) {
-      return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [], repaired: false });
+      logMatchupRepairAudit({
+        event: 'matchup_repair_audit',
+        at: new Date().toISOString(),
+        trigger,
+        week_start: weekStart,
+        broken_photo_id: brokenPhotoId,
+        slot,
+        probe_available: probe.available,
+        probe_status: probe.status,
+        before_photo_a_id: beforeA,
+        before_photo_b_id: beforeB,
+        after_photo_a_id: beforeA,
+        after_photo_b_id: beforeB,
+        mutated: false,
+        votes_cleared: false,
+        source_issue: issueRef,
+        mutation_blocked_reason: 'no_replacement_candidates',
+        ...client,
+      });
+      return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [], repaired: false, mutated: false });
     }
     [nextA, nextB] = selected;
   }
 
   if (!nextA || !nextB || nextA === nextB) {
-    return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [], repaired: false });
+    return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [], repaired: false, mutated: false });
   }
 
   const matchupId = await upsertCurrentWeekMatchup(db, weekStart, nextA, nextB);
   const resolved = await findCurrentWeekMatchup(db, weekStart);
   if (!resolved) {
-    return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [], repaired: false });
+    return jsonResponse({ ok: true, week_start: weekStart, matchup_id: null, items: [], repaired: false, mutated: false });
   }
+
+  const afterA = Number(resolved.photo_a_id);
+  const afterB = Number(resolved.photo_b_id);
+  const pairChanged = afterA !== beforeA || afterB !== beforeB;
+
+  logMatchupRepairAudit({
+    event: 'matchup_repair_audit',
+    at: new Date().toISOString(),
+    trigger,
+    week_start: weekStart,
+    broken_photo_id: brokenPhotoId,
+    slot,
+    probe_available: probe.available,
+    probe_status: probe.status,
+    before_photo_a_id: beforeA,
+    before_photo_b_id: beforeB,
+    after_photo_a_id: afterA,
+    after_photo_b_id: afterB,
+    mutated: pairChanged,
+    votes_cleared: pairChanged,
+    source_issue: issueRef,
+    mutation_blocked_reason: null,
+    ...client,
+  });
 
   const response = await buildSuccessResponse(
     request,
@@ -398,7 +585,15 @@ export async function repairBrokenActiveMatchupPhoto(options: {
     resolved.photo_b_id,
   );
   const body = await response.json();
-  return jsonResponse({ ...body, repaired: true, excluded_broken_photo_id: brokenPhotoId });
+  return jsonResponse({
+    ...body,
+    repaired: pairChanged,
+    mutated: pairChanged,
+    votes_reset_to_zero: pairChanged,
+    vote_restore_possible: false,
+    source_issue: issueRef,
+    excluded_broken_photo_id: brokenPhotoId,
+  });
 }
 
 export const onRequestGet = async (context: any): Promise<Response> => {
@@ -447,11 +642,39 @@ export const onRequestGet = async (context: any): Promise<Response> => {
           });
         }
 
+        // #3028: probe failure must not mutate the weekly pair. Audit only, keep pair.
         const brokenId = !probeA.available ? Number(items[0].id) : Number(items[1].id);
-        return await repairBrokenActiveMatchupPhoto({
-          db,
-          request,
-          brokenPhotoId: brokenId,
+        const slot = !probeA.available ? 'a' : 'b';
+        const failedProbe = !probeA.available ? probeA : probeB;
+        logMatchupRepairAudit({
+          event: 'matchup_repair_audit',
+          at: new Date().toISOString(),
+          trigger: 'current_get_probe',
+          week_start: weekStart,
+          broken_photo_id: brokenId,
+          slot,
+          probe_available: failedProbe.available,
+          probe_status: failedProbe.status,
+          before_photo_a_id: Number(activeCurrentWeek.photo_a_id),
+          before_photo_b_id: Number(activeCurrentWeek.photo_b_id),
+          after_photo_a_id: Number(activeCurrentWeek.photo_a_id),
+          after_photo_b_id: Number(activeCurrentWeek.photo_b_id),
+          mutated: false,
+          votes_cleared: false,
+          source_issue: null,
+          mutation_blocked_reason: 'public_midweek_mutation_locked_requires_issue_pr',
+          ...clientAuditHints(request),
+        });
+        return jsonResponse({
+          ok: true,
+          week_start: weekStart,
+          matchup_id: activeCurrentWeek.id,
+          items: items.slice(0, 2),
+          probe_warning: true,
+          probe_failed_photo_id: brokenId,
+          mutated: false,
+          mutation_blocked: true,
+          mutation_blocked_reason: 'public_midweek_mutation_locked_requires_issue_pr',
         });
       }
     }
