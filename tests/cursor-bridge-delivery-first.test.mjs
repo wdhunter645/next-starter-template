@@ -9,6 +9,8 @@ import {
   isNonCursorDirectedTraffic,
   hasCursorRoutingSignal,
   hasReadyCursorHandoff,
+  conflictingAgentRoutingReason,
+  hasConflictingAgentRoutingLabels,
 } from '../scripts/cursor-bridge/lib/wake-ingress.mjs';
 import { buildPrompt } from '../scripts/cursor-bridge/lib/launch.mjs';
 import { shouldQueueRecovery, buildRecoveryPacket } from '../scripts/cursor-bridge/lib/reconcile.mjs';
@@ -276,6 +278,43 @@ describe('cursor-only wake ingress / packet boundary (label-driven)', () => {
         issueLabels: ['agent:ChatGPT', 'handoff:ready'],
       }).deliver,
     ).toBe(false);
+  });
+
+  it('fails closed on mixed agent:cursor + other agent:* labels (#3013)', () => {
+    const mixed = ['agent:cursor', 'agent:claude', 'handoff:ready'];
+    expect(hasConflictingAgentRoutingLabels(mixed)).toBe(true);
+    expect(conflictingAgentRoutingReason(mixed)).toBe(
+      'conflicting_agent_routing_labels:agent:claude,agent:cursor',
+    );
+
+    const wake = shouldDeliverCursorWake({
+      repository: repo,
+      eventName: 'issues',
+      action: 'labeled',
+      labelName: 'handoff:ready',
+      issueLabels: mixed,
+    });
+    expect(wake.deliver).toBe(false);
+    expect(wake.reason).toBe('conflicting_agent_routing_labels:agent:claude,agent:cursor');
+
+    const eligibility = validateEligibility(
+      {
+        ...baseIssue,
+        labels: [
+          { name: 'agent:cursor' },
+          { name: 'agent:codex' },
+          { name: 'handoff:ready' },
+        ],
+      },
+      [],
+    );
+    expect(eligibility.ok).toBe(false);
+    expect(eligibility.errors).toContain(
+      'conflicting_agent_routing_labels:agent:codex,agent:cursor',
+    );
+
+    // Single agent:cursor remains eligible
+    expect(hasConflictingAgentRoutingLabels(['agent:cursor', 'handoff:ready'])).toBe(false);
   });
 
   it('rejects other-agent and unrelated GitHub traffic', () => {
