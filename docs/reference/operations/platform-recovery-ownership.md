@@ -5,7 +5,7 @@ Authority Level: Controlled
 Owns: Durable ownership map for #2779 platform recovery inventory, restore proofs, Day-2 activation, and Production boundary
 Does Not Own: Live restore execution authority, secret values, or paid backup procurement
 Canonical Reference: /docs/governance/OPERATIONS-AND-RECOVERY.md
-Related Issues: #2779, #2894, #2895, #2778
+Related Issues: #2779, #2894, #2895, #2896, #2778
 Last Reviewed: 2026-08-03
 ---
 
@@ -18,8 +18,8 @@ Last Reviewed: 2026-08-03
 | Recovery inventory / targets (#2894) | Implementation / Operations with PMO / Engineering for material target changes | Zero-cost baseline; explicit untested status where applicable |
 | D1 export / isolated restore proofs (#2895) | Implementation / Operations | Synthetic isolated proof complete; live CF D1 deferred |
 | B2 / catalog recovery proofs (#2895) | Implementation / Operations | Synthetic catalog reconcile complete; no Production deletes; live list deferred |
-| Source / config / deployment rollback proofs | Implementation / Operations + Day-2 for activation | Immutable candidate identity required (#2896) |
-| Integrated DR exercise | Day-2 Operations coordination + Implementation execution | Requires applicable protected approvals |
+| Source / config / deployment rollback proofs (#2896) | Implementation / Operations + Day-2 for activation | Synthetic immutable candidate + offline reconstruct proven; live Pages rollback deferred |
+| Integrated DR exercise (#2896) | Day-2 Operations coordination + Implementation execution | Bounded synthetic scenario complete; Production outage not authorized |
 | Production recovery activation | Day-2 Operations | First Production use is incident-controlled |
 | Credentials, cost, domain, outage decisions | Product Authority | Required before paid products or destructive tests |
 | Evidence reconciliation | Administration & Communications | Does not authorize activation |
@@ -29,8 +29,8 @@ Last Reviewed: 2026-08-03
 | Field | Value |
 | --- | --- |
 | Component branch | `component/platform-recovery-readiness` |
-| Current task | #2895 (after #2894 inventory) |
-| Predecessor | #2778 Development accepted 2026-08-03; #2894 closed |
+| Current task | #2896 (after #2895 isolation proof) |
+| Predecessor | #2895 closed after PR #3024 @ `8b6e8766…`; #2894 closed |
 | Production merge | prohibited unless separately authorized |
 
 ## Handoff rules

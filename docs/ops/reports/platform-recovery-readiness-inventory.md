@@ -72,21 +72,23 @@ Full structured records live in `scripts/ci/platform-recovery-inventory.mjs`
 
 | ID | Class | Owner | Tested status |
 | --- | --- | --- | --- |
-| `git_source` | source_configuration | Implementation / Operations | untested_restore |
-| `github_workflows_config` | source_configuration | Implementation / Ops + CI | untested_restore |
-| `wrangler_pages_config` | source_configuration | PMO/Eng + Implementation | untested_restore |
-| `pages_functions` | source_configuration | Implementation / Operations | untested_restore |
-| `d1_database` | d1_operational_data | Day-2 (activation) + Implementation | untested_restore |
-| `d1_migrations` | source_configuration | Implementation / Operations | untested_restore |
-| `b2_media_bucket` | b2_media | Day-2 + Product Authority (creds/cost) | untested_restore |
-| `b2_d1_catalog_sync` | b2_media | Implementation / Operations | untested_restore |
-| `deployment_runtime` | deployment_runtime | Day-2 + Implementation | untested_restore |
+| `git_source` | source_configuration | Implementation / Operations | tested (#2896) |
+| `github_workflows_config` | source_configuration | Implementation / Ops + CI | tested (#2896) |
+| `wrangler_pages_config` | source_configuration | PMO/Eng + Implementation | tested (#2896) |
+| `pages_functions` | source_configuration | Implementation / Operations | tested (#2896) |
+| `d1_database` | d1_operational_data | Day-2 (activation) + Implementation | tested (#2895) |
+| `d1_migrations` | source_configuration | Implementation / Operations | partial (#2896 path presence) |
+| `b2_media_bucket` | b2_media | Day-2 + Product Authority (creds/cost) | partial (#2895) |
+| `b2_d1_catalog_sync` | b2_media | Implementation / Operations | tested (#2895) |
+| `deployment_runtime` | deployment_runtime | Day-2 + Implementation | tested (#2896 synthetic) |
 | `domains_dns` | source_configuration | Product Authority + Day-2 | untested_restore |
 | `operational_evidence` | source_configuration | Administration & Communications | partial |
 | `secrets_boundary` | source_configuration | Product Authority + Day-2 | untested_restore |
 
-`operational_evidence` is **partial** because #2778 reports are verified present on the
-sibling component ref; restore drills for other assets remain for #2895–#2897.
+`domains_dns` and `secrets_boundary` remain untested for live mutation/rotation.
+`b2_media_bucket` stays **partial** (synthetic catalog only; live ListObjects deferred).
+`d1_migrations` is **partial** (path reconstruct proven; isolated migration apply still debt).
+Qualification / Day-2 handoff remains #2897.
 
 ## Consumed #2778 evidence
 

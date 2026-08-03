@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "synthetic": true,
+  "productionMutation": false,
+  "scenarioId": "SYN-DR-2896-001",
+  "title": "Bounded synthetic integrated disaster-recovery exercise",
+  "authority": {
+    "sourceIssue": "#2896",
+    "parentProject": "#2779",
+    "outageSimulationAuthorized": false,
+    "productionMutationAuthorized": false
+  },
+  "phases": [
+    {
+      "id": "detect",
+      "owner": "Day-2 Operations",
+      "action": "Classify synthetic failure signal; open/record scenario evidence",
+      "stopIf": ["secret_value_required", "production_mutation_requested"]
+    },
+    {
+      "id": "decide",
+      "owner": "Day-2 Operations + Implementation / Operations",
+      "action": "Select recovery path = last-known-good immutable candidate rollback (synthetic)",
+      "stopIf": ["authority_conflict", "paid_dependency_required"]
+    },
+    {
+      "id": "reconstruct_source_config",
+      "owner": "Implementation / Operations",
+      "action": "Prove Git source + wrangler/config reconstruction from repository tree",
+      "stopIf": ["missing_candidate_identity"]
+    },
+    {
+      "id": "rollback_deployment",
+      "owner": "Implementation / Operations (synthetic) / Day-2 (live activation deferred)",
+      "action": "Record exact rollback target SHA + deployment ID; do not call Cloudflare APIs",
+      "stopIf": ["LGFC_FORCE_PRODUCTION_ROLLBACK", "LGFC_FORCE_PRODUCTION_OUTAGE"]
+    },
+    {
+      "id": "data_media_isolation",
+      "owner": "Implementation / Operations",
+      "action": "Re-run #2895 synthetic D1/B2 isolation proof as nested integrated evidence",
+      "stopIf": ["live_d1_restore_requested", "live_b2_mutation_requested"]
+    },
+    {
+      "id": "communications",
+      "owner": "Administration & Communications",
+      "action": "Emit synthetic redacted communications record (no secrets, no Production outage claim)",
+      "stopIf": ["secret_value_in_comms"]
+    },
+    {
+      "id": "monitoring",
+      "owner": "Day-2 Operations",
+      "action": "Record synthetic monitoring observation window and success criteria",
+      "stopIf": []
+    },
+    {
+      "id": "return_to_service",
+      "owner": "Implementation / Operations + Day-2 Operations",
+      "action": "Execute synthetic return-to-service checklist against reconstructed config + rollback target",
+      "stopIf": ["checklist_incomplete"]
+    }
+  ],
+  "communicationsTemplate": {
+    "channels": ["source_issue_comment", "ops_evidence_report"],
+    "mustInclude": [
+      "scenarioId",
+      "candidateSha",
+      "deploymentId",
+      "productionMutation=false",
+      "synthetic=true"
+    ],
+    "mustExclude": ["api_token", "app_key", "password", "secret_value"]
+  },
+  "monitoring": {
+    "observationWindow": "synthetic-15m",
+    "successCriteria": [
+      "rollback_target_identity_stable",
+      "nested_d1_b2_isolation_ok",
+      "return_to_service_checks_pass",
+      "cleanup_complete"
+    ]
+  }
+}
