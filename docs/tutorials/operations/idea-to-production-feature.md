@@ -11,6 +11,26 @@ Last Reviewed: 2026-07-19
 
 # Tutorial — From Idea to Public Production Feature
 
+## Purpose
+
+Teach new human and AI operators how one feature moves through the four-lane, four-profile operating model from idea to public Production use and Day-2 support.
+
+## Scope
+
+- Owns a learning-oriented walkthrough only.
+- Does not own canonical policy, gate configuration, role assignment, or production authorization.
+- Canonical definitions remain in `docs/reference/operations/operating-lanes-and-promotion-profiles.md` and related governance docs.
+
+## Current known truth
+
+- LGFC uses three horizontal lanes (PMO / Engineering, Implementation / Operations, Day-2 Operations) plus vertical Administration & Communications.
+- Promotion profiles are Sandbox → Development → Promotion Candidate → Production; skipping profiles is prohibited.
+- This tutorial is informational and must not be treated as executable authority.
+
+## Intended final state
+
+Operators who complete this tutorial can identify lane ownership and the correct promotion-profile path for a typical feature without inventing alternate lanes or skipped promotions.
+
 ## Goal
 
 Follow one feature from agent entry through planning, optional experimentation, implementation, release qualification, production deployment, and Day-2 support.

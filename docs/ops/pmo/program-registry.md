@@ -30,7 +30,7 @@ This registry records current program issue assignments, launch-state control, c
 - Website Public Launch / Relaunch Readiness (#2039) is **closed complete** for repository work; child task issues #2041 through #2048 are complete, and public launch remains blocked only by operator promotion/smoke-test exceptions.
 - Website Automatic Content Publication Capability has program issue #2040 with child task issues #2049 through #2056. It is the publication authority for work excluded from #2039 and remains blocked until explicit Bill/ChatGPT authorization.
 - Priority #2 Fundraiser / Charity Campaign Operations Buildout has program issue #1700 with child task issues #1701 through #1708. Task 001 assignment guidance is posted on #1701. The program remains queued behind Program #1255/#1259 and parked Priority #1 unless Bill/ChatGPT explicitly reprioritize.
-- Priority #3 PMO Governance / Workflow Automation Completion has program issue #1719 with child task issues #1720 through #1727. **Implementation Active** under continuous reduced-gate serial authorization (2026-07-16). Active child #1720; Task #1725 closed complete.
+- Priority #3 PMO Governance / Workflow Automation Completion has program issue #1719 with child task issues #1720 through #1727. **Construction complete on component branch** (Tasks #1720–#1727 dispositioned; #1725 previously complete), but the resulting Promotion Candidate went stale against current `main` before Production review. **Replacement candidate requalification in progress under #2775** (2026-08-03). Awaiting Bill/ChatGPT acceptance and Bill/ChatGPT-approved promotion to `main`.
 - issue #1500 (CI Post-Merge Closeout Reliability) is **closed complete** and remains reconciliation evidence for Priority #3. Task #1725 reconciliation report: `docs/ops/reports/program-1500-queue-wave-reconciliation.md`.
 - issue #1963 (CI Post-Merge Closeout Automation Hardening) is **closed complete**; implementation queue `docs/ops/trackers/PROGRAM-POST-MERGE-CLOSEOUT-AUTOMATION-IMPLEMENTATION-QUEUE.md`.
 - issue #1411 is completed — a planning/control artifact, not an open blocked program. Issues #1417–#1424 are stale historical evidence only (do not mutate).
@@ -76,7 +76,7 @@ PMO meeting issue → PMO Backlog review/update → program of work → componen
 | Program issue | Name | Historical label | Status | Notes |
 | --- | --- | --- | --- | --- |
 | #1255 | Website Implementation and Content Operations | Program 2 | Active | Cursor owns completion of remaining work |
-| #1719 | PMO Governance / Workflow Automation Completion | none | Implementation Active | Continuous reduced-gate serial chain; active child #1720; #1725 complete |
+| #1719 | PMO Governance / Workflow Automation Completion | none | Requalification in progress (#2775) | Component docs complete #1720–#1727; prior candidate stale; #2775 preparing replacement candidate; promotion to `main` pending Bill/ChatGPT + `PRODUCTION GO` |
 
 ### Program #1255 child projects
 
@@ -96,7 +96,7 @@ Future programs are created as GitHub program issues when ChatGPT/Bill approve a
 | Website Public Launch / Relaunch Readiness | 1 successor | Closed complete | Repo tasks complete; public launch remains operator-controlled by launch checklist, smoke-test, production promotion, and evidence requirements | `docs/ops/pmo/website-public-launch-relaunch-readiness.md` | `docs/ops/implementation-plans/website-public-launch-relaunch-readiness.md` |
 | Website Automatic Content Publication Capability | 1 publication | Planning-ready publication authority | Blocked until #1738 manual workflow evidence and ChatGPT/Bill explicitly authorize Cursor to begin #2049 | `docs/ops/pmo/website-automatic-content-publication-capability.md` | `docs/ops/implementation-plans/website-automatic-content-publication-capability.md` |
 | Fundraiser / Charity Campaign Operations Buildout | 2 | Launch-control ready; queued | Blocked until ChatGPT/Bill explicitly authorize Cursor to begin #1701 | `docs/ops/pmo/fundraiser-charity-campaign-operations-buildout-readiness.md` | `docs/ops/implementation-plans/fundraiser-charity-campaign-operations-buildout.md` |
-| PMO Governance / Workflow Automation Completion | 3 | Implementation Active | Continuous reduced-gate serial execution authorized 2026-07-16; active child #1720; #1725 complete | `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md` | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
+| PMO Governance / Workflow Automation Completion | 3 | Requalification in progress (#2775) | Component docs complete for #1720–#1727; prior candidate went stale before Production review; #2775 prepares replacement candidate; Bill/ChatGPT acceptance + promotion to `main` pending after `PRODUCTION GO` | `docs/ops/pmo/pmo-governance-workflow-automation-completion-readiness.md` | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
 
 ### Priority #1 candidate child projects
 

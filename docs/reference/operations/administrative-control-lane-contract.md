@@ -19,6 +19,21 @@ The lane follows all durable roles, promotion profiles, and the Operations, PMO,
 
 Queue and collaboration semantics are defined by `docs/governance/WORK-QUEUES-AND-COLLABORATION.md` and represented by `docs/reference/operations/work-queue-and-collaboration-contract.md`.
 
+## Scope
+
+- Owns the stable Administration & Communications event, mutation, routing, evidence, acknowledgment, escalation, hold/resume, blocking, and exception contract.
+- Does not own product scope, design, delivery-model selection, implementation authority, PR approval, recovery strategy, production authority, or workflow implementation.
+
+## Current known truth
+
+- Administration & Communications is the vertical lane across all horizontal lanes and promotion profiles.
+- It may record, route, reconcile, and execute authorized state transitions only.
+- It is non-blocking unless an explicit invariant is missing, contradictory, or failed.
+
+## Intended final state
+
+Every authorized repository event has a durable evidence path through Administration & Communications without inventing decision authority that belongs to another role or lane.
+
 ## Core rule
 
 > Administration & Communications may record, route, reconcile, and execute authorized state transitions, but it must not create the underlying decision authority.

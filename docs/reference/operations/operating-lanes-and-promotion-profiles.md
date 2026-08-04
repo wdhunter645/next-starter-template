@@ -11,6 +11,25 @@ Last Reviewed: 2026-07-19
 
 # Operating Lanes and Promotion Profiles
 
+## Purpose
+
+Define the canonical durable roles, lane topology, promotion profiles, allowed transitions, communication, runner placement, and hold-state vocabulary for LGFC operations.
+
+## Scope
+
+- Owns canonical definitions for lanes, roles, promotion profiles, transitions, communication, runner placement, and hold states.
+- Does not own current team-member assignments, workflow implementation details, repository settings, or production credentials.
+
+## Current known truth
+
+- Three horizontal lanes and one vertical Administration & Communications lane are canonical.
+- Promotion profiles are Sandbox → Development → Promotion Candidate → Production; prohibited skips are binding.
+- Durable roles are policy identities; concrete people/tools map through agent-team policy or project manifests.
+
+## Intended final state
+
+All operating docs, controllers, and handoffs use this vocabulary without alternate lane models or direct Sandbox/Development → Production paths.
+
 ## 1. Durable roles
 
 Broad policy refers to roles, not individual people or software products.

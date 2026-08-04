@@ -11,6 +11,26 @@ Last Reviewed: 2026-07-19
 
 # Run Work Through the Promotion Profiles
 
+## Purpose
+
+Provide the operator procedure for moving approved work through Sandbox, Development, Promotion Candidate, Production, and Day-2 Operations under the four-lane model.
+
+## Scope
+
+- Owns procedural steps for allowed profile transitions and handoff checkpoints.
+- Does not own product decisions, role assignments, gate implementation, or production credentials.
+- Canonical definitions remain in `docs/reference/operations/operating-lanes-and-promotion-profiles.md`.
+
+## Current known truth
+
+- Work must enter through repository authority (`Agent.md` and the authority chain) before profile transitions.
+- Sandbox is optional; Development → Promotion Candidate → Production is mandatory for public production use.
+- Administration & Communications records and routes; the active horizontal lane retains decision authority.
+
+## Intended final state
+
+Operators can execute an authorized profile path without skipping profiles, inventing a fifth lane, or treating Administration as a universal decision gate.
+
 ## Procedure
 
 ### 1. Enter through repository authority

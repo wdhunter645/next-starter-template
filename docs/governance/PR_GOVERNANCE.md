@@ -5,7 +5,8 @@ Authority Level: Controlled
 Owns: Supporting PR governance guidance, UI/layout PR references, documentation header compliance
 Does Not Own: Canonical PR-process policy, PR body authority, PR-process CI promotion policy
 Canonical Reference: /docs/governance/PR_PROCESS.md
-Last Reviewed: 2026-07-04
+Related Issues: #1719, #1723
+Last Reviewed: 2026-07-16
 ---
 
 # Website Pull Request Governance
@@ -18,6 +19,24 @@ This document is a supporting governance reference. The canonical pull request p
 2. Use `.github/pull_request_template.md`.
 3. Summarize exact edits with file paths.
 4. Link source issue and any required follow-up issue.
+
+## Merge authority (summary)
+
+- Merge to `main` requires Bill/ChatGPT approval.
+- Non-`main` Model B component integration may follow `/docs/governance/PR_PROCESS.md` when the source issue authorizes `component-auto-integration`.
+- Governance documentation on an authorized project component branch is version-controlled project work; it does not create an intermediate human gate solely because the files live under `docs/governance/**`.
+- Project-branch docs become repository-wide authority only after Bill/ChatGPT-approved promotion to `main` (or a separate early documentation promotion when another active project must consume the rule first).
+- Cursor does not self-approve or self-merge. Cursor does not merge to `main`.
+
+Full matrix: `/docs/ops/reports/pr-readiness-merge-authority-1723.md`.
+
+## Issue mutation (summary)
+
+- Cursor does not close, reopen, or relabel issues unless the active source issue explicitly grants that exact mutation.
+- Merge or component integration is not issue closeout.
+- Atlas/controller closeout mutations require an authorized closeout path after clean verification.
+
+Full matrix: `/docs/ops/reports/issue-mutation-closeout-permission-1724.md`.
 
 ## Source issue accounting
 

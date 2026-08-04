@@ -5,13 +5,13 @@ Authority Level: Operational Authority
 Owns: Priority #3 PMO readiness decision, governance/workflow automation program candidate scope, child-project boundaries, design/readiness state, Cursor launch preconditions
 Does Not Own: Runtime implementation, workflow code, CI script changes, issue creation, merge authority, production secrets, vendor configuration, unauthorized GitHub issue mutation
 Canonical Reference: /docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md
-Related Issues: #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700, #1719, #1720, #1725
-Last Reviewed: 2026-07-16
+Related Issues: #1713, #1411, #1417, #1418, #1419, #1420, #1421, #1422, #1423, #1424, #1500, #1255, #1259, #1685, #1700, #1719, #1720, #1721, #1722, #1725, #1727, #2640, #2647
+Last Reviewed: 2026-07-19
 ---
 
 # PMO Governance / Workflow Automation Completion Readiness
 
-> **Launch state (2026-07-16):** Program #1719 is Implementation Active under continuous reduced-gate serial authorization. Cursor executes remaining child issues in order after predecessor merge and clean post-merge verification. Cursor stops each child at `READY FOR REVIEW` and may not approve, merge, or mutate issues.
+> **Construction state (2026-07-19):** Program #1719 documentation construction on the project component branch is complete through Task #1727. Closeout packet: `docs/ops/reports/pmo-governance-workflow-automation-closeout-1727.md`. Task #2647 synchronizes the accepted component identity with current `main` (including #2640 four-lane/four-profile authority) and prepares an exact Promotion Candidate for Atlas Go/No-Go. Bill/ChatGPT-approved Production promotion to `main` remains a separate successor. Cursor may not approve, merge to `main`, or mutate issues.
 
 ## Purpose
 
@@ -38,11 +38,13 @@ This document does not launch implementation, create child issues, authorize Cur
 
 ## Current known truth
 
-- Program #1719 is **Implementation Active** (Bill continuous reduced-gate authorization, 2026-07-16). Active child #1720; #1725 closed complete.
+- Program #1719 documentation construction is **complete on the component branch** through Task #1727. #1725 closed complete earlier and was not rerun.
+- Accepted component identity before #2647 synchronization: `5a005e9e1c3ccff04192709a833d100e35b5874a` on `component/pmo-governance-workflow-automation`.
+- Task #2647 consumes current `main` (including #2640 four-lane/four-profile authority) to prepare an exact Promotion Candidate; it does not promote or merge to `main`.
 - #1411 is closed and completed as a planning/control artifact (historical evidence only).
 - #1417–#1424 exist as stale historical task issues with older PMO terminology; they are evidence only and must not be mutated or treated as current source issues.
 - Program #1500 closed complete; Task #1725 recorded queue/wave and closeout reconciliation.
-- Cursor is the implementation agent for the authorized serial chain; governance/protected-change work (#1723, #1724) requires independent review before merge.
+- Cursor completed the authorized serial docs chain. Production promotion to `main` remains Bill/ChatGPT authority after Atlas Promotion Candidate Go. Deferred workflow/CI candidates require new source issues (`#1726` / `#1727` reports).
 
 ## Intended final state
 
@@ -64,8 +66,8 @@ The intended final state before implementation launch is:
 | Candidate program name | PMO Governance / Workflow Automation Completion |
 | PMO source | PMO Backlog ranks 3–10 |
 | Source issue | #1719 |
-| Execution agent after launch | Cursor, with human/trusted reviewer gates where protected governance/CI files are touched |
-| Current readiness | Implementation Active — continuous reduced-gate serial execution authorized 2026-07-16 |
+| Execution agent after launch | Cursor, under continuous reduced-gate + Model B `component-auto-integration` on the project component branch; Bill/ChatGPT for promotion to `main` |
+| Current readiness | Construction complete (component); #2647 Promotion Candidate synchronization with current `main` in progress — Production promotion to `main` still Bill/ChatGPT |
 | Primary implementation plan | `docs/ops/implementation-plans/pmo-governance-workflow-automation-completion.md` |
 | Primary governance authority | `docs/ops/pmo/PMO-JULY-2026-OPERATING-MODEL.md` |
 | Product surface | PMO governance, workflow automation design, queue/closeout controls, PR readiness, and execution contracts |
@@ -76,12 +78,12 @@ The intended final state before implementation launch is:
 | Priority item | Project name | Current state | Design authority | Implementation plan state | Readiness decision |
 | --- | --- | --- | --- | --- | --- |
 | 3 | PMO July 2026 authority | Reconciled by Task #1720 | `PMO-JULY-2026-OPERATING-MODEL.md`, `program-registry.md`, `pmo-backlog.md`, `docs/ops/reports/pmo-july-2026-authority-reconciliation-1720.md` | Covered by Tasks 001, 008 | #1720 reconciliation complete; remaining follow-ups deferred |
-| 4 | Workflow Automation Design Migration | Partial docs exist | `workflow-automation.md`, #1411 planning evidence | Covered by Tasks 002, 007, 008 | Needs source migration and gap review |
-| 5 | Cursor Continuation and Queue Contract | Partial contract exists | `lgfc-cursor-execution-contract.md`, current PR process | Covered by Tasks 003, 007, 008 | Needs authoritative continuation/stop matrix |
-| 6 | PR Readiness and Batch Review Control | Partial process exists | `PR_PROCESS.md`, `PR_GOVERNANCE.md` | Covered by Tasks 004, 007, 008 | Needs batch/readiness alignment |
-| 7 | Merge and issue mutation policy | Partial policy exists | `PR_GOVERNANCE.md`, closeout protocol, Cursor contract | Covered by Tasks 004, 005, 007, 008 | Needs mutation-permission matrix |
-| 8 | Queue/Wave Model and Label Planning | Partial planning exists; **#1500 overlap reconciled by Task #1725** | PMO backlog, queue/dependency docs, `docs/ops/reports/program-1500-queue-wave-reconciliation.md` | Covered by Tasks 006, 007, 008 | Wave labels remain planning concepts; implementation candidates scoped in Task 007 |
-| 9 | Post-Merge Closeout Evidence Stabilization | **Baseline satisfied by closed #1500**; remaining gaps documented only | closeout protocol, Program #1500 evidence, Task #1725 reconciliation report | Covered by Tasks 006, 007, 008 | Do not rebuild #1500; deferred items route to future CI source issues |
+| 4 | Workflow Automation Design Migration | Migrated; gap inventory complete (#1721); candidates scoped (#1726) | `workflow-automation.md`, `docs/ops/reports/workflow-automation-design-gap-inventory-1721.md`, `docs/ops/reports/workflow-ci-implementation-candidate-scoping-1726.md`, #1411 historical evidence | Covered by Tasks 002, 007, 008 | #1721/#1726 complete for docs scoping; YAML/script candidates deferred to new issues |
+| 5 | Cursor Continuation and Queue Contract | Hardened by Task #1722 | `lgfc-cursor-execution-contract.md`, `docs/ops/reports/cursor-continuation-contract-matrix-1722.md` | Covered by Tasks 003, 007, 008 | #1722 matrix complete; #1723/#1724 use component-auto-integration (no intermediate human gate for governance docs alone) |
+| 6 | PR Readiness and Batch Review Control | Hardened by Task #1723 | `PR_PROCESS.md`, `PR_GOVERNANCE.md`, `docs/ops/reports/pr-readiness-merge-authority-1723.md` | Covered by Tasks 004, 007, 008 | #1723 complete on component |
+| 7 | Merge and issue mutation policy | Hardened by Task #1724 | `PR_PROCESS.md`, closeout protocol, Cursor contract, `docs/ops/reports/issue-mutation-closeout-permission-1724.md` | Covered by Tasks 004, 005, 007, 008 | Mutation-permission matrix published |
+| 8 | Queue/Wave Model and Label Planning | Partial planning exists; **#1500 overlap reconciled by Task #1725**; label automation candidate C-01 | PMO backlog, queue/dependency docs, `docs/ops/reports/program-1500-queue-wave-reconciliation.md`, `#1726` candidate matrix | Covered by Tasks 006, 007, 008 | Wave labels remain planning concepts until a future Workflow issue accepts C-01 |
+| 9 | Post-Merge Closeout Evidence Stabilization | **Baseline satisfied by closed #1500**; remaining gaps documented as C-02–C-05 | closeout protocol, Program #1500 evidence, Task #1725 reconciliation report, `#1726` candidate matrix | Covered by Tasks 006, 007, 008 | Do not rebuild #1500; deferred items require new CI source issues |
 | 10 | PMO Backlog Promotion and Program #1411 Launch Gate | Partial backlog/promotion rules exist | PMO backlog, PMO July 2026 operating model, registry | Covered by Tasks 001, 007, 008 | Needs promotion gate checklist and issue-chain standardization |
 
 ## Program #1500 overlap reconciliation
@@ -93,7 +95,7 @@ The intended final state before implementation launch is:
 | --- | --- | --- |
 | Post-merge closeout reliability | Closed complete; satisfies stabilization baseline for ranks 8–9 | **No rebuild.** Task #1726 may scope only remaining implementation candidates |
 | Queue/wave model | Partially satisfies closeout sequencing and execution-mode documentation | Task #1725 recorded lane status; wave labels remain planning concepts until Task #1727+ |
-| Issue mutation guardrails | Related but not complete across all PMO program types | Task #005 (#1724) owns mutation-permission matrix; not reopened by #1725 |
+| Issue mutation guardrails | Matrix published for Program #1719 closeout posture | Task #005 (#1724) matrix in `docs/ops/reports/issue-mutation-closeout-permission-1724.md`; not reopened by #1725 |
 | PR readiness gates | Related to closeout; batch review remains distinct | Task #004 (#1723) owns PR readiness reconciliation |
 | Workflow YAML / CI scripts | Protected/sensitive surface | Out of scope for #1725; Task #1726 read-only inventory only unless later authorized |
 
@@ -116,8 +118,8 @@ A later launched Priority #3 program may:
 | Whether #1417–#1424 are reused, superseded, or left historical | Task 001 / Task 008 | **Resolved for Task 001 (#1720):** historical evidence only; no mutation |
 | Whether Program #1500 fully satisfies rank 9 | Task 006 (#1725) | **Resolved:** baseline satisfied; deferred register items are CI maintenance, not incomplete #1500 scope |
 | Whether queue/wave labels become real labels or planning concepts only | Task 006 (#1725) | **Resolved for planning:** concepts only until Task #1727+ explicitly authorizes implementation |
-| Whether Cursor may mutate issues during closeout | Task 005 | No mutation unless current source issue explicitly grants it |
-| Whether workflow automation changes touch `.github/workflows/**` or `scripts/ci/**` | Task 007 | Out of scope until explicit implementation authorization and trusted review |
+| Whether Cursor may mutate issues during closeout | Task 005 (#1724) | **Resolved:** default deny; matrix in `docs/ops/reports/issue-mutation-closeout-permission-1724.md` |
+| Whether workflow automation changes touch `.github/workflows/**` or `scripts/ci/**` | Task 007 (#1726) | **Resolved for scoping:** candidates C-01–C-05 require new source issues; `#1726` docs-only |
 
 ## Launch preconditions
 
@@ -127,12 +129,12 @@ Launch preconditions for Program #1719 were **satisfied on 2026-07-16** by Bill�
 2. After a predecessor PR merges and post-merge verification is clean, Cursor may start the next authorized child without another launch prompt.
 3. Protected workflow/script changes require explicit trusted-reviewer expectations before implementation.
 4. Issue mutation permissions remain denied unless a current source issue explicitly grants them.
-5. #1723 and #1724 remain protected governance review points before merge.
+5. `#1723` and `#1724` are component-branch documentation tasks under `component-auto-integration`; governance-doc edits alone do not create an intermediate human gate. Promotion to `main` remains Bill/ChatGPT authority.
 
 Historical planning-era preconditions (queue behind #1255/#1685/#1700) are superseded for this program by the 2026-07-16 authorization on #1719.
 
 ## Readiness conclusion
 
-Priority #3 is an **Implementation Active** PMO July 2026 program with master issue #1719 and child task issues #1720 through #1727.
+Priority #3 is a **Construction complete (component)** PMO July 2026 program with master issue #1719 and child task issues #1720 through #1727 dispositioned on `component/pmo-governance-workflow-automation`.
 
-Cursor is authorized to execute the remaining serial chain under #1719 continuous reduced-gate rules. Active child: #1720.
+Bill/Atlas should accept the closeout packet in `docs/ops/reports/pmo-governance-workflow-automation-closeout-1727.md`. Repository-wide authority requires Bill/ChatGPT-approved promotion to `main`. Cursor must not close program issues or merge to `main` from this package.
