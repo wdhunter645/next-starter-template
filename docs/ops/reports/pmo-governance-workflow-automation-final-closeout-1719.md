@@ -2,6 +2,10 @@
 Doc Type: Closeout Report
 Audience: Human + AI
 Authority Level: Operational Evidence
+Owns: Final closeout evidence, remaining verification gates, and terminal disposition for Project #1719
+Does Not Own: New implementation authority, Product or Production approval, queue priority, runtime behavior, or future project scope
+Canonical Reference: /docs/reference/pmo/project-documentation-closeout-contract.md
+Related Issues: #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727, #2775, #3018, #3040, #3046, #3048, #3050
 Project: #1719
 Status: CLOSEOUT BLOCKED PENDING REMEDIATION MERGE AND VERIFICATION
 Production Candidate: a68e1390934e7617b7975edc2627a03772fd8e95
@@ -22,7 +26,7 @@ Current disposition:
 CLOSEOUT BLOCKED — DOCUMENTATION INCOMPLETE
 ```
 
-Closure becomes valid only after this remediation package is merged and independently verified.
+Closure becomes valid only after this remediation package and accepted follow-up #3050 are merged and independently verified.
 
 ## Production evidence
 
@@ -36,6 +40,10 @@ Closure becomes valid only after this remediation package is merged and independ
 - Merge date: 2026-08-04
 - Changed files in #3040: 27 documentation paths
 - Recorded checks: 923 tests PASS; typecheck PASS; tracked-ZIP PASS; merge-tree PASS; two unrelated pre-existing documentation-header failures
+- AS-BUILT: `docs/ops/as-built/pmo-governance-workflow-automation-1719.md`
+- Documentation closeout PR: #3046, merge `c98c1cd24cc5c7ae61b4517ef1f7e8cb73007349`
+- Post-merge metadata exception: #3048
+- Accepted non-metadata remediation: #3050
 
 ## Defects discovered after promotion
 
@@ -48,18 +56,18 @@ Closure becomes valid only after this remediation package is merged and independ
 7. Multiple completed child/recovery Issues remained open and distorted the PMO Dashboard.
 8. PMO backlog and registry continued to present #2775/#1719 as active or awaiting promotion.
 9. No atomic repository-and-GitHub reconciliation was performed before the project was closed.
+10. PR #3046 review identified missing controlled headers, provenance identities, explicit reconciliation dispositions, and final closeout linkage; accepted remediation is tracked by #3050.
 
-## Remediation delivered by this package
+## Remediation delivered by PR #3046 and follow-up #3050
 
 - Added `docs/governance/PROJECT-DOCUMENTATION-AND-AS-BUILT.md`.
-- Updated `Agent.md` and `AGENTS.md` to load and enforce the policy.
 - Added `docs/reference/pmo/project-documentation-closeout-contract.md`.
-- Added `docs/templates/project-master-issue-template.md`.
-- Added `docs/templates/as-built-template.md`.
+- Added controlled project-master and AS-BUILT templates.
 - Updated `docs/ops/projects/DIATAXIS-TRANSITION.md` to require per-project DIATAXIS disposition and merged-state reconciliation.
 - Added `docs/ops/as-built/pmo-governance-workflow-automation-1719.md`.
 - Added this final closeout remediation record.
-- Reconciled PMO backlog, program registry, queue/dependency, and Issue state where included in this PR.
+- Reconciled PMO backlog and program registry through PR #3046.
+- Through #3050, completed active-document headers, required AS-BUILT identity/provenance fields, explicit evidence-or-`Not applicable` reconciliation rules, and distinct final closeout evidence linkage.
 
 ## Required independent verification before closure
 
@@ -70,11 +78,12 @@ PMO must verify the remediation PR after merge against current `main`:
 - PMO backlog and program registry do not describe #1719/#2775 as active;
 - queue/dependency and dashboard sources show zero open #1719 implementation tasks;
 - #1719, #1720–#1727, #2775, and #3018 have correct terminal states and labels;
-- the #1719 Issue body links this AS-BUILT and final closeout report;
+- the #1719 Issue body links the AS-BUILT and this final closeout report;
 - no repository search result presents #1719 as awaiting Production promotion;
-- no project template permits documentation deferral;
+- no project template permits documentation deferral, blank reconciliation rows, or omitted required provenance identities;
 - post-merge documentation exceptions route to the originating PR implementer;
-- no required documentation validation fails because of this remediation.
+- no required documentation validation fails because of this remediation;
+- the bounded #3050 PR has independent review and its post-merge verification evidence is linked from #3050 and this report.
 
 ## Closure authority
 
