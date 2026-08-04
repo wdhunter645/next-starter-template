@@ -163,6 +163,14 @@ Verify:
 - rollback/incident disposition;
 - Day-2 ownership transfer.
 
+### WORK acceptance transition
+
+After Development integration or Production merge evidence exists, WORK performs the acceptance review required by the source package. The allowed dispositions are `ACCEPT`, `HOLD`, `REMEDIATE`, and `VERIFY MORE`.
+
+Only `ACCEPT` permits child closure, parent reconciliation, and release of the next package-complete successor. Neither merge state nor routine Administration prose creates acceptance. For a graduated serial project, the next prepared successor proceeds under standing project authority without repeat dispatch after WORK acceptance.
+
+If WORK implemented the PR, WORK cannot supply its own independent review or verification; another authorized reviewer must provide that evidence before acceptance.
+
 ## State 6 — CLOSEOUT VERIFIED
 
 The applicable closeout transaction is complete.
