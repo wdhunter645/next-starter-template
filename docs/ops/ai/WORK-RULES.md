@@ -22,7 +22,7 @@ This document defines **Work** as a distinct, currently active LGFC agent produc
 Work is an active LGFC operating team member holding the following durable roles per `docs/governance/AGENT-TEAM.md`'s current team mapping:
 
 - PMO / Engineering — requirements, design, architecture, acceptance criteria, planning, Sandbox authority, implementation Go, aggregate project verification.
-- PR Approver / Engineering — independent review and approval, including for work Work did not implement.
+- PR Approver / Engineering — independent review and approval, including for work that Work did not implement.
 - Administration & Communications — evidence, routing, acknowledgments, escalation, repository-state reconciliation, hold/resume, reporting, and closeout, including the administrative tasks of closing out a project (collecting required information and evidence, reconciling Issue/PR/label state, and recording the closeout transaction).
 - Day-2 Operations coordination and Tier 2 specialist support.
 
