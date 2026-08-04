@@ -219,6 +219,14 @@ Reviewer state comes from GitHub-native reviews and threads.
 - Administration & Communications may route and report reviewer state but cannot supply independent review.
 - Collaboration may help a reviewer understand evidence but cannot manufacture reviewer authority.
 
+## Standing authority and successor transition
+
+For a graduated project with a complete ordered child graph, PR completion does not consume the project's implementation authority. After integration, WORK evaluates the task against its executable package and records `ACCEPT`, `HOLD`, `REMEDIATE`, or `VERIFY MORE`.
+
+On `ACCEPT`, WORK reconciles the child and parent and releases the next package-complete serial successor without a new Administration or PMO dispatch. A label, wake event, or routing comment may notify the implementation runtime, but it is transport rather than new authority.
+
+A green, approved, mergeable, integrated, or merged PR alone is never task acceptance. Acceptance also requires the source package, implementation evidence, required tests including applicable failure paths, review disposition, integration identity, post-integration verification, documentation, rollback disposition, and absence of unresolved protected stops.
+
 ## Closeout
 
 Closeout rules are profile-aware:

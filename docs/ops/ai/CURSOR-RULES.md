@@ -42,3 +42,10 @@ Detailed Cursor-specific sections (pre-implementation package review steps, thre
 Binding runtime policy: [`docs/governance/standards/CURSOR-RUNTIME-ROUTING.md`](../../governance/standards/CURSOR-RUNTIME-ROUTING.md).
 
 Cursor must not treat narrative prose as Git or PR authority. If section 2A fields are missing from an implementation assignment, stop and request a complete assignment envelope.
+
+
+## Continuous serial implementation (#3055)
+
+For a graduated project, the exact prepared child graph is standing authority. After WORK records predecessor `ACCEPT`, the next package-complete serial child may proceed without a repeat Administration/PMO dispatch. The implementation runtime must record starting SHA, branch, allowlist confirmation, and pre-implementation checkpoint before editing.
+
+Missing package fields produce `PACKAGE-INCOMPLETE`; a substantive dependency or protected boundary produces an evidence-specific `HOLD`. Merge alone is not acceptance. WORK owns acceptance, child/parent reconciliation, and successor release, and cannot independently verify or approve work WORK implemented.

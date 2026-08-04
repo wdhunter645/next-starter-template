@@ -169,6 +169,25 @@ If validation fails or an authorized role records a hold:
 
 - <exact revert, branch discard, feature disablement, containment, or safe halt procedure>
 
+## Executable Child Package Gate
+
+For a `project-child` or `child-remediation`, the live Issue must also define:
+
+- exact ordered sequence, predecessor acceptance, and successor;
+- exact branch naming rule, target branch, and starting-SHA recording;
+- exact writable file/action allowlist and explicit non-goals;
+- observable acceptance criteria;
+- implementation and validation steps;
+- positive tests and applicable negative/failure-path tests;
+- durable evidence location;
+- rollback, disable, or recovery procedure;
+- independent reviewer and prohibition on self-approval/self-merge;
+- protected Product, Production, legal, privacy, rights, cost, provider, credential, destructive-data, and public-claim boundaries;
+- implementation handoff packet;
+- WORK closeout packet and successor-continuation instruction.
+
+If any applicable field is absent, record `PACKAGE-INCOMPLETE` and stop before branch creation or editing. Do not infer the value and do not use a generic `BLOCKED` state.
+
 ## 12. Pre-Implementation Checkpoint
 
 Before edits or mutations, the assigned role holder records:

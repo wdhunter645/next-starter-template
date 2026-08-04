@@ -73,3 +73,10 @@ Detailed prior ChatGPT control-plane behavior (evidence posture, launch-readines
 | Model A / Model B procedures | `docs/how-to/agents/run-model-a.md`, `docs/how-to/agents/run-model-b.md` |
 | Shared execution rules and startup framework | `docs/ops/ai/CORE-RULES.md` |
 | Cursor handoff workflow | `docs/ops/ai/chatgpt-cursor-handoff-workflow.md` |
+
+
+## Continuous serial implementation (#3055)
+
+For a graduated project, the exact prepared child graph is standing authority. After WORK records predecessor `ACCEPT`, the next package-complete serial child may proceed without a repeat Administration/PMO dispatch. The implementation runtime must record starting SHA, branch, allowlist confirmation, and pre-implementation checkpoint before editing.
+
+Missing package fields produce `PACKAGE-INCOMPLETE`; a substantive dependency or protected boundary produces an evidence-specific `HOLD`. Merge alone is not acceptance. WORK owns acceptance, child/parent reconciliation, and successor release, and cannot independently verify or approve work WORK implemented.

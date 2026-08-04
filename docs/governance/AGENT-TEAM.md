@@ -27,13 +27,26 @@ Queue precedence, team priority namespaces, Project Graduation, and the universa
 | --- | --- |
 | Product Authority | Product outcome, priority, cost, business decisions, final completed-product review |
 | PMO / Engineering | Requirements, design, architecture, acceptance criteria, planning, Sandbox authority, implementation Go, aggregate project verification |
-| Implementation / Operations | Development and Promotion Candidate execution, testing, remediation, integration, deployment execution, and eligible assigned task-level closeout after required independent evidence exists |
+| Implementation / Operations | Development and Promotion Candidate execution, testing, remediation, integration, deployment execution, implementation handoff, and closeout-packet evidence; no independent task acceptance |
 | PR Approver / Engineering | Independent validation that work meets design, acceptance, repository, and promotion requirements |
-| Administration & Communications | Evidence, routing, acknowledgments, escalation, repository-state reconciliation, hold/resume, reporting, closeout, and authorized transaction execution |
+| Administration & Communications | Evidence, routing, acknowledgments, escalation, repository-state reconciliation, hold/resume, reporting, WORK-controlled closeout, parent reconciliation, successor release, and authorized transaction execution |
 | Day-2 Operations | Production monitoring, incident classification, containment, recovery strategy, operational hold release |
 | Deterministic CI | Machine-provable checks, evidence, eligible non-main integration, and bounded authorized automation |
 
 No role may self-approve work when independent review is required. Implementation / Operations may perform eligible administrative task closeout only after the required independent review, integration, validation, and post-integration evidence already exist.
+
+## WORK task and project acceptance ownership
+
+WORK holds the PMO / Engineering and Administration & Communications responsibility for evidence-backed task and project acceptance, closeout, parent reconciliation, and successor release.
+
+For every implementation child, WORK independently reviews the live source Issue, final diff, required tests and failure paths, checks, review dispositions, integration identity, post-integration evidence, documentation, rollback readiness, and unresolved exceptions. WORK records one controlling disposition:
+
+- `ACCEPT` — reconcile/close the child, reconcile the parent, and release the next package-complete successor;
+- `HOLD` — record the true dependency or protected stop, owner, evidence needed, and release condition;
+- `REMEDIATE` — return bounded defects to the originating implementer and keep the successor unexecutable;
+- `VERIFY MORE` — identify the missing proof and keep the affected transition fail-closed.
+
+Deterministic CI may execute mechanically provable closeout mutations, but WORK owns the acceptance decision and verifies the resulting repository state. WORK must not independently approve or verify a PR that WORK implemented. In that case, another authorized independent reviewer supplies the review evidence and Bill retains every required protected Product or Production decision.
 
 ## Recognized agent products
 

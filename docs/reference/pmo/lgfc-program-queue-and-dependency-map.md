@@ -113,9 +113,8 @@ one source issue → one PR → READY FOR REVIEW → human review → closeout �
 ```
 
 - Cursor executes exactly one source issue per PR.
-- The next task requires a new explicit authorization (ChatGPT/Bill/controller
-  `@cursor` comment or a new source issue assignment).
-- Cursor must not infer the next task from queue order, labels, or merge state.
+- A one-off or package-incomplete next task requires explicit correction or authorization before execution.
+- Cursor must not infer missing scope, branch, tests, evidence, rollback, acceptance, or protected decisions from queue order, labels, or merge state.
 - The operator must still create an Ops remediation issue if a process failure
   leaves launch work halted without an active next task.
 
@@ -136,9 +135,7 @@ approved dependency map → active task issue → one PR → READY FOR REVIEW �
 
 - Cursor still executes exactly one source issue per PR. Queue mode governs
   **which task is authorized next**, not whether multiple tasks share one PR.
-- Cursor may continue to the next queue item only when the dependency map,
-  predecessor completion, halt/resume conditions, and explicit continuation
-  authorization all permit it.
+- Cursor may continue to the next queue item when the standing Project Graduation authority, dependency map, predecessor WORK `ACCEPT` disposition, package completeness, and halt/resume conditions permit it. No repeat Administration dispatch is required.
 - Cursor must halt when a rebaseline pause, open halt checkpoint, or unresolved
   blocker is documented in the map or active issue.
 - A launched-program queue must have a dispatcher/watch path under
@@ -146,6 +143,12 @@ approved dependency map → active task issue → one PR → READY FOR REVIEW �
   markers are manual-only metadata and must not be described as active watches.
 
 Launched-program queue mode does not grant Cursor merge, close, relabel, queue mutation, or issue-state authority.
+
+## Standing authority rule
+
+In Mode B, the approved project graph is standing authority. A successor release is an evidence-backed state transition controlled by WORK, not a new assignment. The dispatcher may transport a wake event after release, but absence of repeated prose does not block a package-complete successor.
+
+A successor that lacks any executable-package field is `PACKAGE-INCOMPLETE` and fails closed before branch creation or editing. A real dependency or protected boundary is recorded as an evidence-specific `HOLD`, never a generic `BLOCKED` placeholder.
 
 ## Queue watch and dispatcher requirement
 
