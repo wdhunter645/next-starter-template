@@ -171,7 +171,16 @@ describe('admit-environment-pr inline gate fail-closed contract (#2622)', () => 
   it('records APPROVED FOR <ENVIRONMENT> ADMISSION only after required inline gates pass', () => {
     expect(jobSource).toContain('output.admissionApproval');
     expect(jobSource).toContain('gatesPassed && output.admissionApproval');
-    expect(jobSource).toContain('Automatically merged: NO — a required gate failed or was unavailable');
+    expect(jobSource).toContain('formatAdmitMergeEvidenceLine');
+  });
+
+  it('wires merge disposition classification into admit merge + Issue evidence (#3043)', () => {
+    expect(jobSource).toContain('classifyPullsMergeResult');
+    expect(jobSource).toContain('mergeDisposition');
+    expect(jobSource).toContain('MERGE REFUSED');
+    expect(jobSource).toContain('MERGE API FAILURE');
+    expect(jobSource).toContain('formatAdmitMergeEvidenceLine');
+    expect(jobSource).toContain('admit-merge-disposition.mjs');
   });
 
   it('writes post-merge verification evidence onto the source Issue after merge', () => {

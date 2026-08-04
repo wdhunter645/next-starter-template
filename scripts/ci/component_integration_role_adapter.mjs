@@ -28,6 +28,15 @@ function uniqueReasons(reasons = []) {
   });
 }
 
+function normalizeAuthorizedApprovalAccounts(accounts = []) {
+  const normalized = new Set(accounts.map((account) => String(account || '').trim()).filter(Boolean));
+  // GitHub username changed from wdhunter645 to wdhunter465. Preserve the
+  // configured legacy identifier while authorizing evidence from the live
+  // repository-owner account until the workflow env is updated everywhere.
+  if (normalized.has('wdhunter645')) normalized.add('wdhunter465');
+  return [...normalized];
+}
+
 export function applyRoleApprovalToIntegrationResult(result, roleApproval) {
   if (!roleApproval?.required) {
     return { ...result, roleApproval };
@@ -82,7 +91,7 @@ export function evaluateComponentIntegrationWithRoleApproval({
     prNumber,
     headSha,
     implementationActor: resolvedImplementationActor,
-    authorizedAccounts: authorizedApprovalAccounts,
+    authorizedAccounts: normalizeAuthorizedApprovalAccounts(authorizedApprovalAccounts),
   });
 
   return applyRoleApprovalToIntegrationResult(integration, roleApproval);

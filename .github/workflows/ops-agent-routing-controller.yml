@@ -749,15 +749,41 @@ jobs:
           PR_NUMBER: ${{ steps.create.outputs.prNumber }}
         with:
           script: |
-            const { data: merged } = await github.rest.pulls.merge({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: Number(process.env.PR_NUMBER),
-              merge_method: 'squash',
-            });
-            core.setOutput('merged', String(merged.merged === true));
-            core.setOutput('mergeSha', merged.sha || '');
-            console.log(`admit-environment-pr: merged #${process.env.PR_NUMBER} as ${merged.sha}`);
+            const { pathToFileURL } = require('node:url');
+            const { classifyPullsMergeResult } = await import(
+              pathToFileURL(`${process.env.GITHUB_WORKSPACE}/scripts/agent-routing/admit-merge-disposition.mjs`).href
+            );
+            const prNumber = Number(process.env.PR_NUMBER);
+            let classified;
+            try {
+              const { data } = await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                merge_method: 'squash',
+              });
+              classified = classifyPullsMergeResult({
+                merged: data.merged === true,
+                sha: data.sha || '',
+                message: data.message || '',
+              });
+            } catch (error) {
+              // Capture MERGE API FAILURE distinctly from MERGE REFUSED
+              // (HTTP 200 with merged:false). Do not rethrow — evidence
+              // recording must still run with an accurate disposition (#3043).
+              classified = classifyPullsMergeResult({ error });
+            }
+            core.setOutput('merged', String(classified.merged === true));
+            core.setOutput('mergeSha', classified.mergeSha || '');
+            core.setOutput('mergeDisposition', classified.disposition);
+            core.setOutput('mergeMessage', classified.message || '');
+            if (classified.disposition === 'merged') {
+              console.log(`admit-environment-pr: merged #${prNumber} as ${classified.mergeSha}`);
+            } else if (classified.disposition === 'refused') {
+              console.log(`admit-environment-pr: MERGE REFUSED for #${prNumber}: ${classified.message}`);
+            } else {
+              console.log(`admit-environment-pr: MERGE API FAILURE for #${prNumber}: ${classified.message}`);
+            }
 
       - name: Checkout merged environment target for post-merge verification
         id: post_merge_checkout
@@ -885,6 +911,12 @@ jobs:
               const gatesPassed = '${{ steps.gate_outcome.outputs.all_passed }}' === 'true';
               const merged = '${{ steps.merge.outputs.merged }}' === 'true';
               const mergeSha = '${{ steps.merge.outputs.mergeSha }}';
+              const mergeDisposition = '${{ steps.merge.outputs.mergeDisposition }}';
+              const mergeMessage = ${{ toJSON(steps.merge.outputs.mergeMessage) }} || '';
+              const { pathToFileURL } = require('node:url');
+              const { formatAdmitMergeEvidenceLine } = await import(
+                pathToFileURL(`${process.env.GITHUB_WORKSPACE}/scripts/agent-routing/admit-merge-disposition.mjs`).href
+              );
               const lines = [
                 marker,
                 `Environment PR: ${prUrl}`,
@@ -898,11 +930,14 @@ jobs:
               if (gatesPassed && output.admissionApproval) {
                 lines.push(output.admissionApproval);
               }
-              lines.push(
-                merged
-                  ? `Automatically merged: YES (merge SHA ${mergeSha})`
-                  : 'Automatically merged: NO — a required gate failed or was unavailable; the PR remains open for disposition.',
-              );
+              // Keep gate failure, MERGE REFUSED, and MERGE API FAILURE distinct (#3043).
+              lines.push(formatAdmitMergeEvidenceLine({
+                gatesPassed,
+                merged,
+                mergeDisposition,
+                mergeMessage,
+                mergeSha,
+              }));
               if (merged) {
                 lines.push(`Post-merge verification: ${'${{ steps.verify-secret-scan.outcome }}' === 'success' ? 'secret scan passed' : 'secret scan FAILED'}`);
                 if ((output.requiredGates || []).includes('quality')) {

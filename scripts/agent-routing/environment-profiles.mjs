@@ -32,7 +32,8 @@ export const REQUIRED_INLINE_GATES = Object.freeze({
 });
 
 export function requiredGatesForTier(tier) {
-  return REQUIRED_INLINE_GATES[tier] ? [...REQUIRED_INLINE_GATES[tier]] : null;
+  if (!Object.hasOwn(REQUIRED_INLINE_GATES, tier)) return null;
+  return [...REQUIRED_INLINE_GATES[tier]];
 }
 
 const TIER_TITLE_LABEL = Object.freeze({
@@ -41,7 +42,8 @@ const TIER_TITLE_LABEL = Object.freeze({
 });
 
 export function environmentTitleLabel(tier) {
-  return TIER_TITLE_LABEL[tier] || tier;
+  if (!Object.hasOwn(TIER_TITLE_LABEL, tier)) return tier;
+  return TIER_TITLE_LABEL[tier];
 }
 
 /**
@@ -50,9 +52,9 @@ export function environmentTitleLabel(tier) {
  * tier that is not an implemented auto-admission target.
  */
 export function environmentAdmissionApproval(tier) {
-  const label = TIER_TITLE_LABEL[tier];
-  if (!label) return null;
-  return `APPROVED FOR ${label.toUpperCase()} ADMISSION`;
+  // Own-property only — inherited Object.prototype keys must not become labels.
+  if (!Object.hasOwn(TIER_TITLE_LABEL, tier)) return null;
+  return `APPROVED FOR ${TIER_TITLE_LABEL[tier].toUpperCase()} ADMISSION`;
 }
 
 /** Stable equality for ordered required-gate lists. */

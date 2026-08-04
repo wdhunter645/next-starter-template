@@ -35,7 +35,8 @@ describe('component-child-integration.yml role-approval remediation (#2615)', ()
   });
 
   it('materializes an authorized-accounts list and feeds it to the eligibility step', () => {
-    expect(source).toContain('ROLE_APPROVAL_AUTHORIZED_ACCOUNTS: wdhunter645');
+    expect(source).toMatch(/ROLE_APPROVAL_AUTHORIZED_ACCOUNTS:\s*wdhunter645/);
+    expect(source).toContain('wdhunter465');
     expect(source).toContain('role_approval_authorized_accounts.json');
     expect(source).toContain('COMPONENT_INTEGRATION_ROLE_APPROVAL_AUTHORIZED_ACCOUNTS_JSON');
   });
@@ -71,5 +72,18 @@ describe('component-child-integration.yml role-approval remediation (#2615)', ()
     const block = stepBlock(source, 'Publish component integration check');
     expect(block).toContain('Approval-evidence account');
     expect(block).toMatch(/not authenticated reviewer identity/i);
+  });
+
+  it('treats convertPullRequestToDraft as best-effort and never fails the job on FORBIDDEN (#3043)', () => {
+    const block = stepBlock(source, 'Return protected PR without approval to draft');
+    expect(block).toContain('id: draft_hold');
+    expect(block).toContain('set +e');
+    expect(block).toContain('converted=false');
+    expect(block).toContain('exit 0');
+    expect(block).toMatch(/convertPullRequestToDraft is forbidden/i);
+    // Failure path must still exit 0 after logging (not rethrow/fail the step).
+    const failPath = block.slice(block.indexOf('converted=false'));
+    expect(failPath).toContain('exit 0');
+    expect(failPath).not.toMatch(/\n\s*exit 1\b/);
   });
 });

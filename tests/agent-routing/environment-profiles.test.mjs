@@ -42,6 +42,7 @@ describe('requiredGatesForTier / REQUIRED_INLINE_GATES', () => {
     expect(requiredGatesForTier('transition')).toBeNull();
     expect(requiredGatesForTier('production')).toBeNull();
     expect(requiredGatesForTier(undefined)).toBeNull();
+    expect(requiredGatesForTier('toString')).toBeNull();
   });
 
   it('gate lists are monotonic: sandbox is a subset of development', () => {
@@ -78,6 +79,12 @@ describe('environmentAdmissionApproval', () => {
     expect(environmentAdmissionApproval('transition')).toBeNull();
     expect(environmentAdmissionApproval('production')).toBeNull();
     expect(environmentAdmissionApproval(undefined)).toBeNull();
+  });
+
+  it('returns null for inherited Object.prototype keys (fail-closed own-property lookup)', () => {
+    expect(environmentAdmissionApproval('toString')).toBeNull();
+    expect(environmentAdmissionApproval('hasOwnProperty')).toBeNull();
+    expect(environmentAdmissionApproval('constructor')).toBeNull();
   });
 });
 
