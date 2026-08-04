@@ -51,14 +51,16 @@ It does not authorize:
 Canonical HTML:
 
 ```text
-https://wdhunter645.github.io/next-starter-template/pmo-dashboard/
+https://wdhunter465.github.io/next-starter-template/pmo-dashboard/
 ```
 
 Canonical JSON:
 
 ```text
-https://wdhunter645.github.io/next-starter-template/pmo-dashboard/dashboard-data.json
+https://wdhunter465.github.io/next-starter-template/pmo-dashboard/dashboard-data.json
 ```
+
+The former owner URL (`https://wdhunter645.github.io/next-starter-template/pmo-dashboard/`) returns 404 after the repository rename to `wdhunter465/next-starter-template`. Use only the `wdhunter465.github.io` URLs above.
 
 At PMO meeting startup, fetch the JSON first, parse it, validate the expected reporting fields and views, and disclose `generatedAt` freshness. If fetch, parse, validation, or freshness is unacceptable, use GitHub Issues directly. GitHub Issues always override the generated snapshot.
 
