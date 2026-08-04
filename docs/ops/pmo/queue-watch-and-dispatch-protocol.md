@@ -212,6 +212,20 @@ For Cursor implementation:
 
 Do not use team priority on child tasks. Administrative closeout of a prior task is not a universal successor gate.
 
+## Continuous serial release
+
+For a graduated project, steps 4 through 7 above evaluate and transport standing authority; they do not require a new PMO or Administration assignment.
+
+After WORK records predecessor `ACCEPT`, the dispatcher:
+
+1. verifies the next live child is package-complete;
+2. verifies no real dependency, collision, protected stop, numbered Operations interrupt, or failed verification applies;
+3. reconciles the predecessor, parent, and successor states;
+4. sets the successor to executable and emits the applicable runtime wake signal; and
+5. records the successor's required pre-implementation checkpoint.
+
+If fields are missing, set `PACKAGE-INCOMPLETE` and return it to WORK for correction. If a substantive condition blocks execution, set `HOLD` with its owner, required evidence, and release condition. Do not use generic `BLOCKED` or require repeat-dispatch prose.
+
 ## Engineering Pipeline dispatch
 
 For ChatGPT preparation:
