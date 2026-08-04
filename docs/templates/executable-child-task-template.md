@@ -1,0 +1,116 @@
+---
+Doc Type: Template
+Audience: Human + AI
+Authority Level: Operational
+Owns: Package-complete project-child and child-remediation Issue format
+Does Not Own: Project Graduation, priority, Product/Production decisions, PR approval, or merge authority
+Canonical Reference: /docs/governance/WORK-QUEUES-AND-COLLABORATION.md
+Related Issues: #3055
+Last Reviewed: 2026-08-04
+---
+
+# Executable Child Task Template
+
+A child may enter the executable queue only when every applicable field below is complete. Missing fields produce `PACKAGE-INCOMPLETE` before branch creation or editing.
+
+## Authority and sequence
+
+- Primary source Issue: #____
+- Parent project: #____
+- Task ID / sequence: ____
+- Project Graduation GO: ____
+- Predecessor and required WORK acceptance: ____
+- Successor: #____ | terminal
+- Execution relationship: serial | parallel-authorized
+- Parallel collision proof: ____ | not applicable
+- Assigned Implementation / Operations role holder: ____
+- WORK acceptance/closeout owner: WORK
+
+## Objective and deliverable
+
+- One bounded objective: ____
+- Exact observable deliverable: ____
+- Explicit non-goals: ____
+
+## Git and writable scope
+
+- Starting target SHA must be recorded before editing: yes
+- Working-branch naming rule: ____
+- PR target branch: ____
+- Writable files/actions:
+  - ____
+- Prohibited files/actions:
+  - ____
+
+## Acceptance and implementation
+
+- Observable acceptance criteria:
+  - [ ] ____
+- Exact implementation requirements:
+  - ____
+- Positive validation:
+  - command/evidence: ____
+  - expected result: ____
+- Negative/failure-path validation:
+  - command/scenario: ____
+  - expected safe failure/result: ____
+- Durable evidence location: ____
+
+## Safety, rollback, and recovery
+
+- Rollback/disable/recovery procedure: ____
+- Protected Product/Production/legal/privacy/rights/cost/provider/credential/destructive-data/public-claim boundaries: ____
+- Stop conditions: ____
+- HOLD owner, evidence, and release condition when applicable: ____ | not applicable
+
+## Independent review
+
+- Independent reviewer role holder: ____
+- Builder self-approval: prohibited
+- Builder self-merge: prohibited
+- Required review/check evidence: ____
+
+## Pre-implementation checkpoint
+
+Record on the live Issue before branch creation or editing:
+
+- exact starting SHA;
+- working branch;
+- allowlist confirmation;
+- predecessor WORK `ACCEPT` evidence;
+- package-complete confirmation;
+- collision/dependency/hold check;
+- protected-stop check;
+- validation and rollback confirmation.
+
+Result: `PASS` | `PACKAGE-INCOMPLETE` | `HOLD`
+
+## Implementation handoff packet
+
+- final commit/head SHA;
+- exact changed files/actions;
+- implementation summary;
+- tests and failure-path results;
+- check results;
+- unresolved findings/risks;
+- rollback readiness;
+- PR/integration identity;
+- scope confirmation.
+
+## WORK closeout packet
+
+WORK independently reviews the source package, final diff, tests, checks, review dispositions, integration identity, post-integration evidence, documentation, rollback, and unresolved exceptions.
+
+Disposition: `ACCEPT` | `HOLD` | `REMEDIATE` | `VERIFY MORE`
+
+On `ACCEPT`:
+
+- reconcile and close the child;
+- reconcile parent progress;
+- identify the next serial successor;
+- verify successor package completeness and real dependency/collision/hold state;
+- release the successor under standing Project Graduation authority;
+- emit runtime wake transport if applicable;
+- do not require repeat Administration or PMO dispatch.
+
+WORK cannot independently verify or approve a PR implemented by WORK.
