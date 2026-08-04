@@ -74,8 +74,8 @@ Current people, agents, and systems are mapped to these roles in `docs/governanc
 
 | Closeout class | Closeout decision authority | Transaction executor |
 | --- | --- | --- |
-| Assigned project child task | Assigned Implementation / Operations role holder after required independent review and integration evidence exists | Deterministic CI first; assigned Implementation / Operations role holder as fallback under bounded delegated Administration & Communications authority |
-| Assigned child remediation | Assigned Implementation / Operations role holder after required independent review and remediation verification exists | Deterministic CI first; assigned Implementation / Operations role holder as fallback under bounded delegated Administration & Communications authority |
+| Assigned project child task | WORK after required independent review, integration, validation, and post-integration evidence exists | Deterministic CI may attempt first; WORK verifies/reconciles the transaction and releases the successor |
+| Assigned child remediation | WORK after required independent review and remediation verification exists | Deterministic CI may attempt first; WORK verifies/reconciles the transaction |
 | Project/master | PMO / Engineering with independent PR Approver / Engineering verification | Designated Administration & Communications role holder who did not solely implement the underlying child work |
 | Program/umbrella | Product Authority and PMO / Engineering under explicitly recorded program-closeout authority | Administration & Communications role holder |
 | Promotion Candidate | PMO / Engineering, PR Approver / Engineering, and additional roles required by the applicable approval profile | Administration & Communications role holder records the disposition |
@@ -384,3 +384,10 @@ An exception identifies the affected subject, invariant, evidence, blocking scop
 - Day-2 policy: `docs/governance/OPERATIONS-AND-RECOVERY.md`
 - Queue/dispatch procedure: `docs/ops/pmo/queue-watch-and-dispatch-protocol.md`
 - Closeout procedure: `docs/ops/pmo/github-issue-closeout-protocol.md`
+
+
+## WORK acceptance and successor release
+
+WORK owns the controlling `ACCEPT`, `HOLD`, `REMEDIATE`, or `VERIFY MORE` task disposition, child and parent reconciliation, and release of a package-complete serial successor. Transport automation may apply an idempotent mutation but cannot invent acceptance.
+
+A generic `BLOCKED` state is prohibited for prepared project queues. Use `PACKAGE-INCOMPLETE` for missing execution fields or `HOLD` for a named substantive condition with owner, evidence, and release criteria. WORK must not independently verify or approve a PR that WORK implemented.
