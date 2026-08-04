@@ -172,6 +172,10 @@ describe('admit-environment-pr inline gate fail-closed contract (#2622)', () => 
     expect(jobSource).toContain('output.admissionApproval');
     expect(jobSource).toContain('gatesPassed && output.admissionApproval');
     expect(jobSource).toContain('Automatically merged: NO — a required gate failed or was unavailable');
+    expect(jobSource).toContain(
+      'Automatically merged: NO — required inline gates passed, but the merge API did not complete successfully',
+    );
+    expect(jobSource).toContain('} else if (!gatesPassed) {');
   });
 
   it('writes post-merge verification evidence onto the source Issue after merge', () => {

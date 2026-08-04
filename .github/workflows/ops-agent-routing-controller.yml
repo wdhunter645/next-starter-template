@@ -898,11 +898,17 @@ jobs:
               if (gatesPassed && output.admissionApproval) {
                 lines.push(output.admissionApproval);
               }
-              lines.push(
-                merged
-                  ? `Automatically merged: YES (merge SHA ${mergeSha})`
-                  : 'Automatically merged: NO — a required gate failed or was unavailable; the PR remains open for disposition.',
-              );
+              if (merged) {
+                lines.push(`Automatically merged: YES (merge SHA ${mergeSha})`);
+              } else if (!gatesPassed) {
+                lines.push(
+                  'Automatically merged: NO — a required gate failed or was unavailable; the PR remains open for disposition.',
+                );
+              } else {
+                lines.push(
+                  'Automatically merged: NO — required inline gates passed, but the merge API did not complete successfully; the PR remains open for disposition.',
+                );
+              }
               if (merged) {
                 lines.push(`Post-merge verification: ${'${{ steps.verify-secret-scan.outcome }}' === 'success' ? 'secret scan passed' : 'secret scan FAILED'}`);
                 if ((output.requiredGates || []).includes('quality')) {
