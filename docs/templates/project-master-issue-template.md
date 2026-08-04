@@ -1,3 +1,14 @@
+---
+Doc Type: Template
+Audience: Human + AI
+Authority Level: Controlled Template
+Owns: Required project-master Issue structure, authority identities, documentation inventory, validation, and closeout gates
+Does Not Own: Project-specific product decisions, implementation scope, priority, Production approval, or runtime behavior
+Canonical Reference: /docs/reference/pmo/project-documentation-closeout-contract.md
+Related Issues: #1719, #3050
+Last Reviewed: 2026-08-04
+---
+
 # Project Master Issue Template
 
 ## Authority
@@ -24,9 +35,9 @@
 
 ## Documentation inventory
 
-Every row requires a named file or an explicit, justified `Not applicable` disposition.
+Every row requires a named file with completion evidence or an explicit, justified `Not applicable` disposition. Blank rows are not valid closeout evidence.
 
-| Documentation class | Required path(s) | Owner | Completion evidence |
+| Documentation class | Required path(s) or justified `Not applicable` | Owner | Completion evidence |
 | --- | --- | --- | --- |
 | Requirements / decisions |  |  |  |
 | Design |  |  |  |
@@ -54,8 +65,7 @@ The AS-BUILT document must describe the exact final implementation, configuratio
 
 The project must remain open until implementation, all documentation, AS-BUILT, PMO/dashboard/queue reconciliation, GitHub state, promotion evidence, post-merge verification, and final closeout evidence are merged and independently verified.
 
-`CLOSEOUT BLOCKED — DOCUMENTATION INCOMPLETE` applies whenever any required document is missing, stale, contradictory, deferred, or unmerged.
-
+`CLOSEOUT BLOCKED — DOCUMENTATION INCOMPLETE` applies whenever any required document is missing, stale, contradictory, deferred, unmerged, or represented by an unexplained blank inventory row.
 
 ## Standing Project Authority and Execution Graph
 
