@@ -1,13 +1,29 @@
+---
+Doc Type: Template
+Audience: Human + AI
+Authority Level: Controlled Template
+Owns: Required AS-BUILT identity, provenance, reconciliation, validation, rollback, and closeout evidence structure
+Does Not Own: Project-specific implementation, Product or Production decisions, approval, deployment, or runtime behavior
+Canonical Reference: /docs/reference/pmo/project-documentation-closeout-contract.md
+Related Issues: #1719, #3050
+Last Reviewed: 2026-08-04
+---
+
 # AS-BUILT — <Project Name>
 
 ## Record identity
 
+Every identity below requires an exact value or an explicit, justified `Not applicable` disposition.
+
 - Project Issue:
 - Parent program:
+- Child Issues:
 - Product Authority:
+- Production Authority:
 - PMO / Engineering:
 - Implementer(s):
 - Independent reviewer:
+- Implementation PR(s):
 - Final candidate SHA:
 - Production PR:
 - Merge SHA:
@@ -42,7 +58,9 @@
 
 ## Documentation reconciliation inventory
 
-| Surface | Final path / Issue | Verified current | Evidence |
+Every row requires a final path or Issue and evidence, or an explicit, justified `Not applicable` disposition. Blank rows are not valid closeout evidence.
+
+| Surface | Final path / Issue or justified `Not applicable` | Verified current | Evidence |
 | --- | --- | --- | --- |
 | Requirements and decisions |  |  |  |
 | Design |  |  |  |
@@ -55,7 +73,8 @@
 | PMO portfolio / registry / queue / dashboard |  |  |  |
 | Operations / recovery |  |  |  |
 | GitHub parent and child state |  |  |  |
+| Final closeout evidence |  |  |  |
 
 ## Final closeout assertion
 
-This AS-BUILT record is valid only when it matches the merged implementation and every affected repository authority surface is current. Missing or stale documentation blocks project closure.
+This AS-BUILT record is valid only when it matches the merged implementation, all required identity and provenance fields are populated or explicitly not applicable, and every affected repository authority surface is current. Missing, blank, or stale documentation blocks project closure.

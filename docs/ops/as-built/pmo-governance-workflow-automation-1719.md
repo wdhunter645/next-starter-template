@@ -2,6 +2,10 @@
 Doc Type: AS-BUILT
 Audience: Human + AI
 Authority Level: Operational Record
+Owns: Final as-built identity, implementation provenance, documentation reconciliation, and closeout conditions for Project #1719
+Does Not Own: New implementation authority, Product or Production approval, queue priority, runtime behavior, or future project scope
+Canonical Reference: /docs/reference/pmo/project-documentation-closeout-contract.md
+Related Issues: #1719, #1720, #1721, #1722, #1723, #1724, #1725, #1726, #1727, #2775, #3018, #3040, #3046, #3050
 Project: #1719
 Status: CLOSEOUT REMEDIATION IN PROGRESS
 Production Candidate: a68e1390934e7617b7975edc2627a03772fd8e95
@@ -15,16 +19,23 @@ Last Reviewed: 2026-08-04
 ## Record identity
 
 - Project Issue: #1719
-- Child construction Issues: #1720–#1727
+- Parent program: Not applicable — #1719 is the project master for this delivery package.
+- Child Issues: #1720–#1727
 - Candidate requalification: #2775
-- Protected Production review: #3018
-- Production PR: #3040
-- Final accepted candidate: `a68e1390934e7617b7975edc2627a03772fd8e95`
-- Production merge SHA: `d6418d769190d56754f22d2d0d4cb46ef1ce8d49`
-- Product and Production Authority: Bill
+- Product Authority: Bill
+- Production Authority: Bill, recorded through protected Production review #3018
 - PMO / Engineering: ChatGPT / Atlas
 - Construction implementer: Cursor
 - Documentation-closeout remediation owner: ChatGPT / Atlas
+- Independent reviewer: Required on each protected or bounded PR; GitHub-native review evidence is recorded on the applicable PR.
+- Implementation PRs: Child implementation provenance is recorded in #1720–#1727 and the integrated candidate history referenced by #2775; Production promotion occurred through #3040.
+- Documentation closeout PR: #3046
+- Accepted follow-up remediation Issue: #3050
+- Final accepted candidate: `a68e1390934e7617b7975edc2627a03772fd8e95`
+- Production PR: #3040
+- Production merge SHA: `d6418d769190d56754f22d2d0d4cb46ef1ce8d49`
+- Deployment identity: Documentation-only Production repository state on `main`; no external runtime deployment identity applies.
+- Completion date: Pending verified closure after #3050 remediation merges.
 
 ## Delivered outcome
 
@@ -93,17 +104,22 @@ Therefore #1719 must be treated as `CLOSEOUT REMEDIATION IN PROGRESS` until this
 
 ## Documentation reconciliation inventory
 
-| Surface | Required final state | Current remediation |
+Every row below contains evidence or an explicit, justified `Not applicable` disposition; no blank row is accepted as closeout evidence.
+
+| Surface | Required final state | Current remediation / evidence |
 | --- | --- | --- |
-| Agent entry stack | Mandatory read of project documentation/AS-BUILT policy | Updated in this remediation |
-| PMO domain policy | Documentation and AS-BUILT are non-negotiable completion gates | Updated in this remediation |
-| Project templates | Documentation inventory, DIATAXIS disposition, named AS-BUILT path | Added in this remediation |
-| DIATAXIS | Tutorial/how-to/reference/explanation coverage or justified N/A | Enforced by policy and templates |
-| #1719 AS-BUILT | Exact final implementation and closeout state | This document |
-| #1719 final closeout | Candidate, PR, merge, verification, limitations, reconciliation | Added in this remediation |
-| PMO backlog and registry | #1719 closed only after remediation; no stale #2775 active state | Must be reconciled before merge |
-| Queue/dependency/dashboard | Zero open #1719 implementation tasks after verified closeout | Must be verified before merge |
-| GitHub Issue bodies and labels | Match repository truth | Must be reconciled before final closure |
+| Requirements and decisions | Current source-Issue and Production decisions | #1719, #2775, #3018, and PR #3040 |
+| Design | Current governance and workflow architecture | Promoted documentation inventory in PR #3040 |
+| Implementation plan | Final task graph and candidate package | #1719, #1720–#1727, and #2775 |
+| Tutorial | Operator tutorial coverage or justified N/A | Promoted tutorial references recorded by PR #3040 |
+| How-to | Current execution procedures | Promoted how-to references recorded by PR #3040 |
+| Reference | Current contracts and stable identities | Promoted reference contracts recorded by PR #3040 |
+| Explanation | Current operating-model explanation | Promoted explanation references recorded by PR #3040 |
+| Governance | Canonical domain policies current | Promoted governance documents recorded by PR #3040 and closeout policy from PR #3046 |
+| PMO portfolio / registry / queue / dashboard | No stale active or promotion-pending state | Reconciled by PR #3046; final GitHub/dashboard verification required before closure |
+| Operations / recovery | Rollback and ownership recorded | This AS-BUILT rollback and Day-2 sections; no runtime recovery procedure applies to docs-only delivery |
+| GitHub parent and child state | Parent/children agree with merged state | #1719, #1720–#1727, #2775, and #3018 require final terminal-state verification |
+| Final closeout evidence | Merged report and independent verification | `docs/ops/reports/pmo-governance-workflow-automation-final-closeout-1719.md`; #3050 follow-up must merge and be verified |
 
 ## Future work boundary
 
