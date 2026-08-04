@@ -93,8 +93,8 @@ Codex startup must not explore unrelated work, edit files, create branches, comm
 **Stop immediately** and report:
 
 ```text
-Codex is inactive/out for LGFC implementation per LGFC-AI-TEAM-OPERATING-MODEL.md and issue #1754.
-Route implementation to Cursor.
+Codex is inactive/out for LGFC implementation per docs/governance/AGENT-TEAM.md and issue #1754.
+Route implementation to Cursor Local or Claude Code, the current active LGFC implementation executors.
 Do not proceed without Bill-approved governance reauthorization.
 ```
 
