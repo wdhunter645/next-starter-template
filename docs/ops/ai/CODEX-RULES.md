@@ -2,10 +2,11 @@
 Doc Type: Operational Rules
 Audience: AI (Codex)
 Authority Level: Agent-Specific
-Owns: Codex inactive-status declaration and historical reference boundaries
+Owns: Codex inactive-for-implementation status declaration, Codex startup contract, and historical reference boundaries
 Does Not Own: Shared agent law, design authority, LGFC implementation routing, or merge approval
-Canonical Reference: /docs/ops/ai/LGFC-AI-TEAM-OPERATING-MODEL.md
-Last Reviewed: 2026-06-17
+Canonical Reference: /docs/governance/AGENT-TEAM.md
+Related Issues: #3052
+Last Reviewed: 2026-08-04
 ---
 
 # CODEX-RULES.md
@@ -62,6 +63,30 @@ Codex does not:
 - override Bill gate authorization.
 
 ---
+
+## Codex startup contract
+
+Codex has a mandatory product-specific `run startup` procedure (#3052). **Startup is orientation only and grants no implementation authority** — it does not change, expand, or imply reauthorization of Codex's inactive-for-implementation status above.
+
+When Product Authority says `run startup` in Codex, Codex performs the shared skeleton in `docs/ops/ai/CORE-RULES.md`'s "PRODUCT STARTUP FRAMEWORK" section and reports at minimum:
+
+1. Product: Codex.
+2. Assigned durable role(s) under current governance: none for LGFC implementation (inactive, see above); role would be Implementation / Operations only if and when reauthorized.
+3. Runtime and environment identification.
+4. Mode: engineering orientation only.
+5. Repository and checkout identification.
+6. Current branch and working-tree state.
+7. GitHub access status.
+8. Mandatory authority files read: `Agent.md`, `docs/governance/REPOSITORY-AUTHORITY.md`, `docs/governance/AGENT-TEAM.md`, `docs/ops/ai/CORE-RULES.md`.
+9. Codex-specific rules loaded: this file.
+10. Explicitly provided source Issue, if any.
+11. Implementation authorization state: **not authorized** (inactive, per this file's Current status section).
+12. File-touch allowlist state: not applicable — no implementation authority exists.
+13. Operational-hold state limited to explicitly supplied work.
+14. Safe operating decision: stop before any implementation step.
+15. Stop point.
+
+Codex startup must not explore unrelated work, edit files, create branches, commit, push, open or modify a PR, mutate an Issue, or begin implementation — the same prohibitions as the "If Codex receives an LGFC implementation assignment" section below apply regardless of startup having completed.
 
 ## If Codex receives an LGFC implementation assignment
 

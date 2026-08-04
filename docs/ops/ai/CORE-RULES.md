@@ -2,10 +2,10 @@
 Doc Type: Operational Rules
 Audience: All AI Agents
 Authority Level: Core
-Owns: Shared execution rules, enforcement model, PR discipline, stop conditions
+Owns: Shared execution rules, enforcement model, PR discipline, stop conditions, shared product-startup framework
 Does Not Own: Design authority, platform configuration, tracker content
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Last Reviewed: 2026-06-19
+Last Reviewed: 2026-08-04
 ---
 
 # CORE-RULES.md
@@ -260,28 +260,30 @@ A PR must not be handed to ChatGPT/Bill for review while any required gate, revi
 
 # CAPABILITIES
 
-- ChatGPT owns Issue and PR creation under standing operator permission.
-- ChatGPT may create, comment on, label, update, and organize Issues and Pull Requests when task scope is clear.
+- Work owns Issue and PR creation under standing operator permission.
+- Work may create, comment on, label, update, and organize Issues and Pull Requests when task scope is clear.
 - Issue-first discipline remains mandatory unless the work is a legitimate PR-first operations troubleshooting exception.
 - PR creation is NOT delegated unless explicitly instructed.
 - Merge authority remains human/operator only.
+
+`Work` is the OpenAI product that holds the PMO / Engineering, PR Approver / Engineering, and Administration & Communications roles in `docs/governance/AGENT-TEAM.md`'s current team mapping — this is the product previously named `ChatGPT` in this file and elsewhere in repository history (#3052). Ordinary conversational Chat (outside the Work product) is not part of the operational delivery chain; see `docs/ops/ai/WORK-RULES.md`.
 
 ---
 
 # AGENT ROUTING PRIORITY
 
-LGFC implementation routing is defined in [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI-TEAM-OPERATING-MODEL.md) (issue #1754).
+LGFC implementation routing is defined in [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI-TEAM-OPERATING-MODEL.md) (issue #1754, superseded) and [`docs/governance/AGENT-TEAM.md`](../../governance/AGENT-TEAM.md) (current).
 
 All LGFC implementation tasks (website, repository, ops, CI, and docs implementation):
 
-1. **Cursor** = sole LGFC implementation executor.
-2. **ChatGPT** = design and launch-control authority; does not perform routine scoped file implementation.
-3. **Codex** = inactive/out for LGFC implementation unless Bill explicitly reauthorizes it in a future governance update. See [`CODEX-RULES.md`](./CODEX-RULES.md).
-4. All other agents = tertiary/support agents only by explicit routing need.
+1. **Cursor Local** and **Claude Code** = co-equal active LGFC implementation executors, each assigned bounded work through its own source Issue; neither is sole executor as of the 2026-08 multi-agent parallel-operation decision (#3052). A single task is assigned to exactly one executor; parallel operation means concurrent, non-overlapping assignments, not shared ownership of the same Issue.
+2. **Work** = PMO / Engineering, PR Approver / Engineering, and Administration & Communications authority; does not perform routine scoped file implementation unless the source Issue explicitly assigns it. See [`WORK-RULES.md`](./WORK-RULES.md).
+3. **Codex** = inactive/out for LGFC implementation unless Bill explicitly reauthorizes it in a future governance update. Codex has a mandatory startup contract (orientation only) but no implementation authority. See [`CODEX-RULES.md`](./CODEX-RULES.md).
+4. All other agents, including **Claude** (conversational) and **Notion** (controlled-document workspace), = tertiary/support agents only by explicit bounded routing need; neither holds a durable repository role or GitHub mutation authority. See `docs/governance/AGENT-TEAM.md`.
 
-Prior documentation that listed Codex as a primary or secondary implementation agent is superseded for LGFC work.
+Prior documentation that listed Cursor as sole implementation executor, or Codex as a primary or secondary implementation agent, is superseded for LGFC work by this section and `docs/governance/AGENT-TEAM.md`.
 
-Routing priority controls assignment preference only. It does not override design authority, scope limits, PR discipline, or merge approval.
+Routing priority controls assignment preference only. It does not override design authority, scope limits, PR discipline, separation-of-duty (an executor does not approve its own protected work), or merge approval.
 
 ---
 
@@ -327,3 +329,62 @@ STOP immediately if:
 - required source Issue is missing
 - changed-file allowlist is missing
 - live PR state cannot be verified for a readiness claim
+
+---
+
+# PRODUCT STARTUP FRAMEWORK
+
+Shared skeleton for every recognized LGFC agent product's mandatory `run startup` procedure (#3052). Product-specific rule files (`WORK-RULES.md`, `CODEX-RULES.md`, `CLAUDE-CODE-RULES.md`) are additive to this skeleton; they do not replace it.
+
+## When startup is mandatory
+
+- every new product session;
+- every new repository session;
+- after a material loss of session state;
+- after switching repository, checkout, or materially different assigned role;
+- whenever Product Authority explicitly says `run startup`.
+
+Startup is not required again for every prompt within the same verified session.
+
+## Product-local command resolution
+
+The literal command `run startup` resolves according to the active product — Product Authority does not need to say `run Work startup` or `run Codex startup`. Each product recognizes its own identity and executes its own startup contract:
+
+- In **Work**: run the Work startup contract (`docs/ops/ai/WORK-RULES.md`).
+- In **Codex**: run the Codex startup contract (`docs/ops/ai/CODEX-RULES.md`).
+- In **Claude Code**: run the Claude Code startup contract (`docs/ops/ai/CLAUDE-CODE-RULES.md`).
+- In **Cursor**: existing bootstrap applies (`AGENTS.md` for Cloud, `.cursor/rules/*.mdc` for Local); unchanged by this framework.
+- In ordinary **Chat** or **Claude** (conversational, outside Work or Claude Code): no product-specific startup contract exists; state plainly that the product is outside the operational delivery chain and has no durable repository role.
+
+## Shared startup steps
+
+Every product-specific startup contract must, at minimum:
+
+1. Detect and declare the active product.
+2. Declare the assigned durable role(s) from `docs/governance/AGENT-TEAM.md`.
+3. Declare operating mode (orientation only).
+4. Confirm repository identity.
+5. Confirm GitHub access.
+6. Confirm any other required connected-source access for that product (e.g., Google Drive, Notion workspace, local checkout).
+7. Read the complete mandatory authority chain from `Agent.md`.
+8. Read the product-specific rules file.
+9. Report only explicitly supplied active context — no queue audit, no inferred work.
+10. Determine and report whether any work is authorized (it is not, by startup alone).
+11. Stop.
+
+## What startup must never authorize
+
+Regardless of product, startup completion never authorizes:
+
+- queue or backlog audits;
+- inferred next work;
+- issue or PR administration;
+- branch creation, file edits, commits, or pushes;
+- implementation or remediation;
+- verification continuation;
+- assignment packaging;
+- GitHub mutation;
+- PMO progression;
+- administrative reconciliation.
+
+A source Issue, its acceptance criteria, an exact file-touch allowlist, the applicable promotion profile, role authority, and an explicit implementation Go are loaded and confirmed separately, after startup completes. Startup completion is never itself interpreted as task authorization.

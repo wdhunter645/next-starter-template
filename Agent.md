@@ -5,8 +5,8 @@ Authority Level: Navigation
 Owns: Read order, authority routing, lane/profile identification, execution entry point
 Does Not Own: Role policy, execution rules, design authority, communication policy, delivery policy, or governance decisions
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2640, #2641, #2686, #2690
-Last Reviewed: 2026-07-21
+Related Issues: #2640, #2641, #2686, #2690, #3052
+Last Reviewed: 2026-08-04
 ---
 
 # Agent.md
@@ -50,9 +50,10 @@ Before repository work—including exploration, design, Sandbox, implementation,
 4. `docs/ops/ai/SHARED-AGENT-RULES.md`
 5. `docs/ops/ai/CORE-RULES.md`
 6. Applicable tool-specific pointer:
-   - `docs/ops/ai/CHATGPT-RULES.md`
+   - `docs/ops/ai/WORK-RULES.md` (current name for the product formerly referenced as `docs/ops/ai/CHATGPT-RULES.md`, retained as a superseded pointer)
    - `docs/ops/ai/CURSOR-RULES.md`
    - `docs/ops/ai/CODEX-RULES.md`
+   - `docs/ops/ai/CLAUDE-CODE-RULES.md`
    - `docs/ops/ai/COPILOT-RULES.md`
    - `docs/ops/ai/DEVIN-RULES.md`
 7. Applicable domain policy and reference contracts
@@ -160,15 +161,25 @@ Administration & Communications spans all steps.
 
 ## Startup orientation
 
-When Product Authority says `run startup`, ChatGPT performs orientation only and stops.
+When Product Authority says `run startup`, the literal command resolves according to the active product — Product Authority does not need to say `run Work startup` or `run Codex startup`. Each recognized product identifies itself and performs its own product-specific orientation-only startup, then stops:
 
-Startup does not authorize:
+- Work: `docs/ops/ai/WORK-RULES.md`
+- Codex: `docs/ops/ai/CODEX-RULES.md` (orientation only; grants no implementation authority)
+- Claude Code: `docs/ops/ai/CLAUDE-CODE-RULES.md`
+- Cursor: existing bootstrap, unchanged (`AGENTS.md` for Cloud, `.cursor/rules/*.mdc` for Local)
+- Ordinary Chat or Claude (conversational): no product-specific startup contract; state plainly that the product is outside the operational delivery chain
+
+Shared skeleton, session-boundary rules, and the full list of what startup must never authorize: `docs/ops/ai/CORE-RULES.md`, "PRODUCT STARTUP FRAMEWORK." Current product/role inventory: `docs/governance/AGENT-TEAM.md`.
+
+Startup does not authorize, for any product:
 
 - queue audit;
 - inferred next work;
 - implementation resume;
 - administrative reconciliation;
 - GitHub mutation.
+
+Startup and assignment loading are separate phases — startup completion is never itself interpreted as task authorization. A source Issue, its acceptance criteria, an exact file-touch allowlist, the applicable promotion profile, role authority, and an explicit implementation Go are loaded and confirmed separately, after startup.
 
 ## Repository skills
 
