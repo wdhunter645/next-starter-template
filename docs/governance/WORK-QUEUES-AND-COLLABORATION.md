@@ -271,6 +271,24 @@ A child task should identify ordering through Issue-body metadata such as:
 
 Sequence labels may be introduced only when a separate implementation decision proves they improve deterministic routing. Team priority labels are prohibited on child tasks.
 
+## Standing graduated-project authority and continuous serial continuation
+
+Project Graduation `GO` is standing implementation authority for the exact ordered child graph recorded in the project master. It is not consumed after the first child and does not require Administration, PMO, Product Authority, or an agent to restate unchanged authority between prepared serial children.
+
+A serial successor becomes executable when all of the following are true:
+
+- its predecessor has an evidence-backed `ACCEPT` disposition;
+- its live Issue is package-complete under `docs/templates/executable-child-task-template.md`;
+- the starting target, branch rule, writable allowlist, non-goals, tests, failure paths, evidence, rollback, independent review, handoff, closeout, and protected stops are explicit;
+- no technical dependency, collision, numbered Operations interrupt, evidence-specific hold, failed verification, or protected decision blocks it; and
+- the project sequence still identifies it as next.
+
+WORK, acting through PMO / Engineering and Administration & Communications, owns independent task acceptance, child closure/reconciliation, parent progress reconciliation, and successor release. WORK records exactly one disposition: `ACCEPT`, `HOLD`, `REMEDIATE`, or `VERIFY MORE`. Deterministic CI may attempt the idempotent closeout transaction first but does not invent acceptance.
+
+A missing package is `PACKAGE-INCOMPLETE`, not an implementation assignment and not a generic dependency block. WORK corrects the package before it enters the executable queue. A wake event, label, or dispatcher message transports existing authority; it does not recreate it.
+
+Parallel execution is permitted only when the project master explicitly authorizes it and records disjoint writable scopes, collision safety, dependency independence, and separate review/closeout evidence.
+
 ## Daily work precedence
 
 ### Cursor
