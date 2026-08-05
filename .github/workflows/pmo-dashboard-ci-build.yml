@@ -2,6 +2,8 @@ name: PMO dashboard CI build
 
 on:
   workflow_dispatch:
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled, assigned, unassigned]
   schedule:
     - cron: "0 */6 * * *"
   push:
