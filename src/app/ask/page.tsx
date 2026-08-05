@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { apiPost } from '@/lib/api';
 import { isValidEmail } from '@/lib/urlUtils';
 
-const SUCCESS_MESSAGE = "Your question has been submitted. We'll reply by email.";
+const SUCCESS_MESSAGE =
+  'Your question has been submitted. A moderator will reply by email when they review it.';
 const ERROR_MESSAGE = 'Submission failed. Please try again.';
 const CONTACT_MAILTO =
   'mailto:Contact@LouGehrigFanClub.com?subject=Contact%20Needed%20ASK';
@@ -22,6 +23,7 @@ export default function AskPage() {
   const [email, setEmail] = useState('');
   const [question, setQuestion] = useState('');
   const [submitOk, setSubmitOk] = useState(false);
+  const [submitMsg, setSubmitMsg] = useState(SUCCESS_MESSAGE);
   const [submitErr, setSubmitErr] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -43,7 +45,11 @@ export default function AskPage() {
     setBusy(true);
 
     try {
-      const res = await apiPost<{ ok: boolean; error?: string }>('/api/ask', {
+      const res = await apiPost<{
+        ok: boolean;
+        error?: string;
+        email?: { deliveryMessage?: string | null; welcomeSideEffect?: string };
+      }>('/api/ask', {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         screen_name: screenName.trim() || undefined,
@@ -51,6 +57,14 @@ export default function AskPage() {
         question: question.trim(),
       });
       if (!res.ok) throw new Error(res.error || 'submit_failed');
+
+      const welcomeNote =
+        typeof res.email?.deliveryMessage === 'string' && res.email.deliveryMessage.trim()
+          ? res.email.deliveryMessage.trim()
+          : null;
+      setSubmitMsg(
+        welcomeNote ? `${SUCCESS_MESSAGE} ${welcomeNote}` : SUCCESS_MESSAGE,
+      );
 
       setFirstName('');
       setLastName('');
@@ -153,7 +167,7 @@ export default function AskPage() {
 
         {submitOk ? (
           <div className="success" style={{ marginTop: 20 }}>
-            {SUCCESS_MESSAGE}
+            {submitMsg}
           </div>
         ) : null}
         {submitErr ? (

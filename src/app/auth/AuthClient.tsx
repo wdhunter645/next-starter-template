@@ -137,7 +137,15 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
         return;
       }
 
-      setMsg('Joined. Logging you in…');
+      const deliveryNote =
+        isRecord(data) &&
+        isRecord(data.email) &&
+        typeof data.email.deliveryMessage === 'string' &&
+        data.email.deliveryMessage.trim()
+          ? data.email.deliveryMessage.trim()
+          : null;
+      const joinBase = deliveryNote ? `Joined. ${deliveryNote}` : 'Joined.';
+      setMsg(`${joinBase} Logging you in…`);
 
       const res2 = await fetch('/api/login', {
         method: 'POST',
@@ -149,7 +157,14 @@ function InnerAuthClient({ defaultMode }: { defaultMode?: Mode }) {
       const data2: unknown = await res2.json().catch(() => null);
 
       if (!res2.ok) {
-        setMsg(pickServerMsg(data2, 'Joined, but login failed. Try the Login tab.'));
+        setMsg(
+          pickServerMsg(
+            data2,
+            deliveryNote
+              ? `Joined. ${deliveryNote} Login failed — try the Login tab.`
+              : 'Joined, but login failed. Try the Login tab.',
+          ),
+        );
         setMode('login');
         setEmailLogin(emailJoin);
         return;

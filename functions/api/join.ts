@@ -3,7 +3,7 @@
 // - Sends welcome email via MailChannels
 // - Returns 409 for duplicate emails (idempotent)
 
-import { assertEmailEnvOrThrow, sendAdminJoinNotification, sendWelcomeEmail } from "../_lib/email";
+import { assertEmailEnvOrThrow, emailDeliveryUserMessage, sendAdminJoinNotification, sendWelcomeEmail } from "../_lib/email";
 import { requireD1, requireTables, jsonResponse, type Env } from "../_lib/d1";
 
 type EmailLogResult = {
@@ -188,7 +188,14 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
       }
 
       // Email (optional). Join succeeds even if email fails; results are returned and logged.
-      const welcomeResult = await sendWelcomeEmail({ env, toEmail: email, toName: name, introMd: welcomeIntroMd });
+      // Never claim delivery in API fields when sent!==true.
+      const welcomeResult = await sendWelcomeEmail({
+        env,
+        toEmail: email,
+        toName: name,
+        introMd: welcomeIntroMd,
+        idempotencyKey: `welcome:${requestId}`,
+      });
       await logEmailAttempt({
         db,
         requestId,
@@ -202,7 +209,13 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
         .map((s: string) => s.trim())
         .filter(Boolean);
 
-      const adminResult = await sendAdminJoinNotification({ env, name, email, requestId });
+      const adminResult = await sendAdminJoinNotification({
+        env,
+        name,
+        email,
+        requestId,
+        idempotencyKey: `admin:${requestId}`,
+      });
       for (const r of adminRecipients.length ? adminRecipients : [String(env?.MAIL_ADMIN_TO || "").trim()].filter(Boolean)) {
         await logEmailAttempt({
           db,
@@ -221,6 +234,7 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
           email: {
             welcome: welcomeResult,
             admin: adminResult,
+            deliveryMessage: emailDeliveryUserMessage(welcomeResult),
           },
         },
         200
