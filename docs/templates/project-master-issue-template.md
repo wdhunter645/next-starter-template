@@ -79,7 +79,7 @@ Project closeout authority: WORK with required independent verification and prot
 
 | Sequence | Child Issue | Objective | Predecessor acceptance | Successor | Serial/parallel | Writable scope | Collision proof | Package state |
 | ---: | --- | --- | --- | --- | --- | --- | --- | --- |
-| 001 | #____ | ____ | ____ | #____ / terminal | serial | ____ | not applicable | complete / incomplete |
+| 001 | #____ | ____ | ____ | #____ / terminal | serial | ____ | not applicable | package-complete / PACKAGE-INCOMPLETE |
 
 A Project Graduation GO remains standing authority for this exact graph. A package-complete serial successor proceeds after predecessor WORK `ACCEPT` without a repeat Administration or PMO dispatch. Parallel execution requires explicit disjoint scopes and collision proof in this table.
 
