@@ -6,7 +6,11 @@ name: Claude Code Wake Delivery
 # docs/reference/ci/claude-code-wake-contract.md.
 
 on:
-  pull_request:
+  # pull_request_target (not pull_request) so a fork-originated PR still gets
+  # an alert: this workflow checks out no code and only posts a fixed
+  # notification string, so the elevated token pull_request_target grants is
+  # safe here — nothing attacker-controlled reaches a shell or API call.
+  pull_request_target:
     types: [opened, reopened, ready_for_review]
   issue_comment:
     types: [created]
@@ -31,9 +35,8 @@ jobs:
       github.repository == 'wdhunter645/next-starter-template' &&
       (
         (
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.draft == false &&
-          github.event.pull_request.head.repo.full_name == github.repository
+          github.event_name == 'pull_request_target' &&
+          github.event.pull_request.draft == false
         ) ||
         (
           github.event_name == 'issue_comment' &&
@@ -60,7 +63,7 @@ jobs:
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             NUMBER="$INPUT_NUMBER"
-          elif [ "$EVENT_NAME" = "pull_request" ]; then
+          elif [ "$EVENT_NAME" = "pull_request_target" ]; then
             NUMBER="$PR_NUMBER"
           else
             NUMBER="$ISSUE_NUMBER"
@@ -76,7 +79,7 @@ jobs:
         run: |
           set -euo pipefail
           EXISTING=$(gh api "repos/wdhunter645/next-starter-template/issues/${NUMBER}/comments" \
-            --paginate --jq '[.[] | select(.body | contains("CLAUDE CODE WAKE: delivered"))] | length')
+            --paginate --slurp --jq '[.[][] | select(.body | contains("CLAUDE CODE WAKE: delivered"))] | length')
           echo "already_alerted=$EXISTING" >> "$GITHUB_OUTPUT"
 
       - name: Post wake alert comment
