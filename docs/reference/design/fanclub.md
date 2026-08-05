@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: FanClub routes, navigation invariants, UI/UX contracts, and page content contracts as a supporting specification
 Does Not Own: Product and Design Domain Policy; how-to procedures; operational runbooks
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Related Issues: #2687
-Last Reviewed: 2026-07-21
+Related Issues: #2687, #2461, #2661, #2662
+Last Reviewed: 2026-08-05
 ---
 
 # LGFC — FanClub Area Specification
@@ -69,15 +69,9 @@ Notes:
 
 ## FanClub Home Page (Club Home) — section order
 
-The FanClub home must present the following sections in this order:
+Club Home's section order, zone contracts, responsive behavior, and accessibility requirements are owned by `docs/reference/design/fanclub-home.md` (Authority Level: Canonical Design Specification). This document does not duplicate that content.
 
-1. Header (rendered by the global header system)
-2. Welcome Section
-3. Archives Tiles (Photo, Memorabilia, Library) — links to the FanClub subpages
-4. Post Creation / Work Area
-5. Member Discussion Feed
-6. Gehrig Timeline
-7. Admin Dashboard Link (conditional; admins only)
+The dashboard-style layout formerly described here (Welcome Section, Post Creation/Work Area, Member Discussion Feed, Gehrig Timeline as inline sections) was replaced by the newspaper-style Club Home under audit #1962 and no longer reflects the current implementation or design authority — see `fanclub-home.md`'s "Removed from Club Home (audit #1962)" section. Corrected 2026-08-05 per #2661/#2662.
 
 The profile and member card are separate pages (linked), not inline sections.
 
