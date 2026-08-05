@@ -20,12 +20,28 @@ import {
   parseTrustedBotLogins,
   trustedBotSet,
 } from './reviewer_trusted_bots.mjs';
+import { evaluateReviewerCommentDisposition } from './reviewer_comment_disposition.mjs';
 
-export { DEFAULT_TRUSTED_BOT_LOGINS, parseTrustedBotLogins, trustedBotSet } from './reviewer_trusted_bots.mjs';
+export {
+  DEFAULT_TRUSTED_BOT_LOGINS,
+  isTrustedReviewer,
+  parseTrustedBotLogins,
+  trustedBotSet,
+} from './reviewer_trusted_bots.mjs';
 
 export const DEFAULT_EXCEPTION_LABEL = 'reviewer-lifecycle-exception';
 export const BREAK_GLASS_MARKER = /<!--\s*reviewer-lifecycle-break-glass\s*-->/i;
 const LINKED_REVIEW_STATES = new Set(['APPROVED', 'COMMENTED']);
+
+const DISPOSITION_FAILURE_CODE_MAP = {
+  undispositioned_reviewer_comment: 'undispositioned-reviewer-comment',
+  outdated_reviewer_thread_without_disposition: 'outdated-reviewer-thread-without-disposition',
+  late_undispositioned_reviewer_comment: 'late-undispositioned-reviewer-comment',
+};
+
+function mapDispositionFailureCode(code = '') {
+  return DISPOSITION_FAILURE_CODE_MAP[code] || String(code || 'reviewer-disposition-failure').replaceAll('_', '-');
+}
 
 export function isProtectedPath(filePath = '') {
   return filePath.startsWith('.github/workflows/') || filePath.startsWith('scripts/ci/');
@@ -328,6 +344,11 @@ export function assessReviewerLifecycle({
   requireActorIndependentApproval = false,
   enforceFailure = isEnforcingReviewerLifecycleEvent(eventName),
   paginationFailures = [],
+  body = '',
+  reviewComments = [],
+  issueComments = [],
+  headSha = '',
+  readyForReviewAt = '',
 } = {}) {
   const trustedBots = trustedBotSet(trustedBotLogins);
   const scope = classifyProtectedScope(files);
@@ -337,6 +358,20 @@ export function assessReviewerLifecycle({
     labels,
     exceptionLabel,
   });
+  const disposition = evaluateReviewerCommentDisposition({
+    body,
+    issueComments: Array.isArray(issueComments) ? issueComments : [],
+    reviewComments: Array.isArray(reviewComments) ? reviewComments : [],
+    reviews: Array.isArray(reviews) ? reviews : [],
+    headSha,
+    readyForReviewAt,
+    auditPhase: 'pre_merge',
+  });
+  const dispositionBlockers = (disposition.failures || []).map((failure) => ({
+    code: mapDispositionFailureCode(failure.code),
+    message: failure.message,
+    commentId: failure.commentId,
+  }));
   const blockingReasons = [
     ...paginationFailures.filter(Boolean).map((message) => ({ code: 'pagination-incomplete', message })),
     ...assessActorIndependentApproval({
@@ -346,6 +381,7 @@ export function assessReviewerLifecycle({
     }),
     ...humanReviewBlockers.map((review) => ({ code: 'human-changes-requested', message: `${review.author} latest review is CHANGES_REQUESTED.` })),
     ...threadState.blocking.map((thread) => ({ code: 'unresolved-human-review-thread', message: `${thread.author || 'unknown'} unresolved thread${thread.path ? ` on ${thread.path}` : ''}: ${thread.excerpt}` })),
+    ...dispositionBlockers,
   ];
 
   const ok = blockingReasons.length === 0;
@@ -358,9 +394,11 @@ export function assessReviewerLifecycle({
     exceptionActive: hasExceptionLabel(labels, exceptionLabel),
     humanChangesRequested: humanReviewBlockers,
     reviewThreads: threadState,
+    disposition,
     blockingReasons,
     advisoryFindings: threadState.advisory.length,
     enforceFailure,
+    headSha,
     assessment: {
       ok,
       severity: ok ? (threadState.advisory.length > 0 ? 'advisory' : 'none') : 'blocking',
@@ -373,7 +411,7 @@ export function assessReviewerLifecycle({
 export function buildReviewerLifecycleArtifact(result) {
   return {
     gate: 'reviewer-lifecycle',
-    schemaVersion: 1,
+    schemaVersion: 2,
     advisory: !result.enforceFailure,
     ok: result.assessment.ok,
     severity: result.assessment.severity,
@@ -384,6 +422,8 @@ export function buildReviewerLifecycleArtifact(result) {
     advisoryThreads: result.reviewThreads.advisory.length,
     outdatedThreads: result.reviewThreads.outdated.length,
     resolvedThreads: result.reviewThreads.resolved.length,
+    dispositionFailures: result.disposition?.failures?.length || 0,
+    outdatedWithoutDisposition: result.disposition?.outdatedWithoutDispositionCount || 0,
     blockingReasons: result.blockingReasons,
     headSha: result.headSha || '',
   };
@@ -421,6 +461,8 @@ export function buildReviewerLifecycleReport(result) {
     `Trusted/advisory review threads: ${result.reviewThreads.advisory.length}`,
     `Outdated review threads: ${result.reviewThreads.outdated.length}`,
     `Resolved review threads: ${result.reviewThreads.resolved.length}`,
+    `Disposition failures: ${result.disposition?.failures?.length || 0}`,
+    `Outdated without disposition: ${result.disposition?.outdatedWithoutDispositionCount || 0}`,
     `Trusted-bot exception label: ${result.exceptionLabel}`,
     `Trusted-bot exception active: ${result.exceptionActive ? 'yes' : 'no'}`,
     `Assessment severity: ${result.assessment.severity}`,
@@ -551,9 +593,11 @@ export async function runReviewerLifecycleGate({
   exceptionLabel = DEFAULT_EXCEPTION_LABEL,
 }) {
   const pull = await request(`/repos/${owner}/${repo}/pulls/${prNumber}`, token);
-  const [files, nativeState] = await Promise.all([
+  const [files, nativeState, reviewComments, issueComments] = await Promise.all([
     paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/files`, token),
     fetchNativeReviewState({ owner, repo, prNumber, token }),
+    paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/comments`, token),
+    paginate(`/repos/${owner}/${repo}/issues/${prNumber}/comments`, token),
   ]);
 
   const result = assessReviewerLifecycle({
@@ -568,6 +612,11 @@ export async function runReviewerLifecycleGate({
     requireActorIndependentApproval: nativeState.reviews.some(isActorApprovalReview),
     enforceFailure,
     paginationFailures: nativeState.paginationFailures,
+    body: pull.body || '',
+    reviewComments,
+    issueComments,
+    headSha: pull.head?.sha || '',
+    readyForReviewAt: pull.updated_at || pull.created_at || '',
   });
 
   return {

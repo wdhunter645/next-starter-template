@@ -57,9 +57,19 @@ Emergency recovery:
 - Approval profile: <!-- component-auto-integration / chat-bill-production / protected-change-review / emergency-approval -->
 - Gate profile: <!-- component-child / production-candidate / component-promotion / emergency-recovery -->
 - Rollback profile: <!-- one-step / multi-step / emergency-stabilization -->
+- Implementation agent: <!-- required for Model B-child and B-promotion — e.g. Cursor Local -->
 - Component branch: <!-- component/<release-unit> / not-applicable -->
 - Component master: <!-- #<program-issue> / not-applicable -->
 - Promotion PR: <!-- #<promotion-pr-number> / not-applicable -->
+
+<!--
+Delivery-model / Rollback-profile cross-check (enforced by GATE — Quality Checks / delivery_profile.mjs):
+  Model A              -> Rollback profile: one-step
+  Model B-child        -> Rollback profile: multi-step (+ Implementation agent required)
+  Model B-promotion    -> Rollback profile: multi-step (+ Implementation agent required)
+  emergency-recovery   -> Rollback profile: emergency-stabilization
+Do not copy Rollback profile from a different profile example block than the Delivery model you selected.
+-->
 
 ## Scope
 
