@@ -20,6 +20,10 @@ permissions:
 env:
   PMO_DASHBOARD_OUT_DIR: site/pmo-dashboard
 
+concurrency:
+  group: pmo-dashboard-build-${{ github.repository }}
+  cancel-in-progress: true
+
 jobs:
   branch-validation:
     name: Validate PMO dashboard branch changes
@@ -41,7 +45,7 @@ jobs:
         run: |
           echo "## PMO dashboard branch validation" >> "$GITHUB_STEP_SUMMARY"
           echo "Deterministic fixture generation and validation passed." >> "$GITHUB_STEP_SUMMARY"
-          echo "Live issue inventory validation remains reserved for main, scheduled, and manual operational runs." >> "$GITHUB_STEP_SUMMARY"
+          echo "Live issue inventory validation runs on main, scheduled, manual, and issue-triggered operational events." >> "$GITHUB_STEP_SUMMARY"
 
   build:
     name: Build PMO dashboard
