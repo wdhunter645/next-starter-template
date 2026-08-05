@@ -533,9 +533,9 @@ export function evaluateClericalSourceIssueLinkage({
 	}
 	if (declaredIssue) byNumber.set(declared, declaredIssue);
 
-	for (const number of collectClericalSourceIssueCandidateNumbers({ pr, evidenceTexts, repository })) {
-		if (!byNumber.has(number)) byNumber.set(number, { number, title: '', body: '' });
-	}
+	// Do not invent placeholder candidates from review/comment evidence.
+	// Evidence-only citations (for example review prose like "use #1234") must not
+	// enter scoring or trigger clerical body auto-repair (#3092).
 
 	const scored = [];
 	for (const [number, issue] of byNumber.entries()) {

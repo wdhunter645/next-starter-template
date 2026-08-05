@@ -1246,4 +1246,32 @@ describe('clerical source-issue linkage repair (#2532)', () => {
 		// Cap path under test: fetch set must remain body-scoped even when evidence is noisy.
 		expect(bodyOnly.sort()).toEqual(['1719', '2647', '2775', '3018'].sort());
 	});
+
+	it('does not clerical-auto-repair to evidence-only authority_phrase placeholders', async () => {
+		const { evaluateClericalSourceIssueLinkage } = await import('../scripts/ci/post_merge_validator.mjs');
+		const pr = {
+			title: 'fix(#3042): example',
+			headRefName: 'cursor/3042-example',
+			body: '- **Issue:** #3042\nAllowed paths:\n- `scripts/ci/post_merge_validator.mjs`',
+			files: [{ filename: 'scripts/ci/post_merge_validator.mjs', status: 'modified' }],
+		};
+		const declared = {
+			number: 3042,
+			title: 'Post-merge closeout exception for PR #3040',
+			body: 'Allowed paths:\n- `scripts/ci/post_merge_validator.mjs`',
+			state: 'open',
+		};
+		const evaluation = evaluateClericalSourceIssueLinkage({
+			declaredIssueNumber: '3042',
+			declaredIssue: declared,
+			pr,
+			candidateIssues: [declared],
+			evidenceTexts: [
+				'However, evaluateClericalSourceIssueLinkage can still score issue numbers; for example use #1234 as a placeholder.',
+			],
+			repository: 'wdhunter465/next-starter-template',
+		});
+		expect(evaluation.status).toBe('declared_correct');
+		expect(evaluation.correctedIssueNumber).toBe('3042');
+	});
 });
