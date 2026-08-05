@@ -1,6 +1,6 @@
 // POST /api/ask — visitor question intake + optional first-time join side effects
 
-import { sendAdminJoinNotification, sendWelcomeEmail } from '../_lib/email';
+import { assertEmailEnvOrThrow, emailDeliveryUserMessage, sendAdminJoinNotification, sendWelcomeEmail } from '../_lib/email';
 import { jsonResponse, requireD1, requireTables, type Env } from '../_lib/d1';
 
 function isValidEmail(email: string): boolean {
@@ -73,7 +73,7 @@ async function maybeJoinNewVisitor(opts: {
   last_name: string;
   screen_name: string | null;
   email: string;
-}): Promise<void> {
+}): Promise<{ joined: boolean; welcome?: any; admin?: any; deliveryMessage?: string | null }> {
   const { env, db, requestId, first_name, last_name, screen_name, email } = opts;
   const name = `${first_name} ${last_name}${screen_name ? ` (${screen_name})` : ''}`.trim();
 
@@ -85,7 +85,7 @@ async function maybeJoinNewVisitor(opts: {
     screen_name,
   });
 
-  if (!inserted) return;
+  if (!inserted) return { joined: false };
 
   try {
     await db.prepare("INSERT OR IGNORE INTO members (email, role) VALUES (?1, 'member');").bind(email).run();
@@ -106,7 +106,13 @@ async function maybeJoinNewVisitor(opts: {
   }
 
   try {
-    const welcomeResult = await sendWelcomeEmail({ env, toEmail: email, toName: name, introMd: welcomeIntroMd });
+    const welcomeResult = await sendWelcomeEmail({
+      env,
+      toEmail: email,
+      toName: name,
+      introMd: welcomeIntroMd,
+      idempotencyKey: `ask-welcome:${requestId}`,
+    });
     await logEmailAttempt({
       db,
       requestId,
@@ -115,7 +121,13 @@ async function maybeJoinNewVisitor(opts: {
       sendResult: welcomeResult,
     });
 
-    const adminResult = await sendAdminJoinNotification({ env, name, email, requestId });
+    const adminResult = await sendAdminJoinNotification({
+      env,
+      name,
+      email,
+      requestId,
+      idempotencyKey: `ask-admin:${requestId}`,
+    });
     const adminRecipients = String(env?.MAIL_ADMIN_TO || '')
       .split(',')
       .map((s: string) => s.trim())
@@ -129,8 +141,20 @@ async function maybeJoinNewVisitor(opts: {
         sendResult: adminResult,
       });
     }
+
+    return {
+      joined: true,
+      welcome: welcomeResult,
+      admin: adminResult,
+      deliveryMessage: emailDeliveryUserMessage(welcomeResult),
+    };
   } catch (e) {
     console.error('ask join email side effect failed:', e);
+    return {
+      joined: true,
+      deliveryMessage:
+        'Your question was saved. A Fan Club welcome email could not be processed; a moderator can still reply by email.',
+    };
   }
 }
 
@@ -146,6 +170,21 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
   if (!tablesCheck.ok) return jsonResponse(tablesCheck.body, tablesCheck.status);
 
   try {
+    // Fail closed when email is enabled but required secrets/identity are missing.
+    try {
+      assertEmailEnvOrThrow(env);
+    } catch (e: any) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: 'Email is enabled but required configuration is missing.',
+          detail: String(e?.message || e),
+          requestId,
+        },
+        500,
+      );
+    }
+
     const body = await request.json().catch(() => ({}));
     const first_name = String(body?.first_name ?? '').trim();
     const last_name = String(body?.last_name ?? '').trim();
@@ -176,7 +215,7 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
       .bind(first_name, last_name, screen_name, email, question)
       .run();
 
-    await maybeJoinNewVisitor({
+    const joinSideEffect = await maybeJoinNewVisitor({
       env,
       db,
       requestId,
@@ -186,7 +225,25 @@ export async function onRequestPost(context: { env: Env; request: Request }): Pr
       email,
     });
 
-    return jsonResponse({ ok: true }, 200);
+    return jsonResponse(
+      {
+        ok: true,
+        requestId,
+        // Truthful Ask disposition: question is queued for human reply; automated welcome is separate.
+        ask: {
+          queued: true,
+          humanReplyExpected: true,
+        },
+        email: joinSideEffect.joined
+          ? {
+              welcome: joinSideEffect.welcome,
+              admin: joinSideEffect.admin,
+              deliveryMessage: joinSideEffect.deliveryMessage,
+            }
+          : { welcomeSideEffect: 'not_applicable_existing_member' },
+      },
+      200,
+    );
   } catch (err: unknown) {
     console.error('ask submission failed:', err);
     return jsonResponse({ ok: false, error: 'Submission failed.' }, 500);
