@@ -11,13 +11,23 @@ Last Reviewed: 2026-08-05
 
 # Handle a Takedown Request or Member Deletion Request
 
-This document covers the two administrator-controlled evidence controls built for #2919: recording an auditable takedown/suppression against published content, and soft-deleting a member account. Both are reversible-by-design (nothing is hard-deleted) and both leave an audit trail.
+## Purpose
+
+Define the administrator procedure for recording an auditable takedown/suppression against published content, and for soft-deleting a member account, per the #2919 approved Product Decision Record (items 5 and 6).
+
+## Scope
+
+Covers the two administrator-controlled evidence controls built for #2919: `POST /api/admin/editorial/suppress` (content takedown) and `POST /api/admin/member-operations/delete` (member soft-deletion/restore). Both are reversible-by-design (nothing is hard-deleted) and both leave an audit trail. Does not cover a public-facing takedown route (none exists, per the approved decision), session revocation, or any destructive/hard-deletion path.
+
+## Current known truth
+
+Both controls are additive, admin-only, and reversible; no hard-delete path exists in the repository for either content or member records. Soft-deletion does not currently revoke an active session or block login for a soft-deleted account — see "What soft-deletion does not currently do" below.
 
 ## Operational response SLA
 
 Acknowledge a takedown or deletion request received at `Support@LouGehrigFanClub.com` or `admin@lougehrigfanclub.com` within **5 business days**, and complete the recorded action (suppression or soft-deletion) within **30 days** of acknowledgment, consistent with the response window referenced in `docs/reference/content/member-submission-content-model.md`. If a request requires escalation (e.g., disputed ownership, unclear scope), note the delay reason in the resolution field described below rather than leaving the request unacknowledged.
 
-## Takedown / content suppression
+## Procedure: takedown / content suppression
 
 ### When to use this
 
@@ -69,7 +79,7 @@ A member emails Support or Admin asking that their account be deleted.
 
 ### What soft-deletion does not currently do
 
-This control does not currently block an existing session or prevent login for a soft-deleted account — it is a data-lifecycle marker and audit record, not a session-revocation mechanism. If immediate account lockout is required, treat that as a separate, explicitly authorized follow-on task; it was out of this task's bounded envelope.
+This control does not currently block an existing session or prevent login for a soft-deleted account — it is a data-lifecycle marker and audit record, not a session-revocation mechanism. That capability was not authorized by the #2919 Product Decision Record and is out of this task's bounded envelope. It is tracked as a bounded, explicitly held follow-up: #3076.
 
 ### Recovery
 
