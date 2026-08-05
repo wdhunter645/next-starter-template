@@ -41,10 +41,13 @@ jobs:
       - name: Run deterministic dashboard fixture
         run: node scripts/pmo-dashboard/test-label-driven-fixture.mjs
 
+      - name: Verify current repository and owner contract
+        run: node scripts/pmo-dashboard/test-current-repository-contract.mjs
+
       - name: Write branch validation summary
         run: |
           echo "## PMO dashboard branch validation" >> "$GITHUB_STEP_SUMMARY"
-          echo "Deterministic fixture generation and validation passed." >> "$GITHUB_STEP_SUMMARY"
+          echo "Deterministic fixture generation, current-repository identity, owner precedence, and validation passed." >> "$GITHUB_STEP_SUMMARY"
           echo "Live issue inventory validation runs on main, scheduled, manual, and issue-triggered operational events." >> "$GITHUB_STEP_SUMMARY"
 
   build:
@@ -63,7 +66,7 @@ jobs:
       - name: Generate dashboard
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/pmo-dashboard/build-dashboard.mjs
+        run: node scripts/pmo-dashboard/run-dashboard-build.mjs
 
       - name: Validate dashboard
         run: node scripts/pmo-dashboard/validate-dashboard.mjs "$PMO_DASHBOARD_OUT_DIR"
