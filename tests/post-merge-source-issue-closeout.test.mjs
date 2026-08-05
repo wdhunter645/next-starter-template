@@ -1218,4 +1218,32 @@ describe('clerical source-issue linkage repair (#2532)', () => {
 		expect(MAX_CLERICAL_SOURCE_ISSUE_CANDIDATES).toBeGreaterThan(0);
 		expect(MAX_CLERICAL_SOURCE_ISSUE_CANDIDATES).toBeLessThanOrEqual(50);
 	});
+
+	it('bounds clerical fetch candidates to PR title/branch/body, not comment evidence storms', async () => {
+		const { collectClericalSourceIssueCandidateNumbers } = await import('../scripts/ci/post_merge_validator.mjs');
+		const pr = {
+			title: 'promotion(#3018): example',
+			headRefName: 'promote/3018-example',
+			body: [
+				'- **Issue:** #3018',
+				'Component master: #1719',
+				'Related history cites #2775 and #2647.',
+			].join('\n'),
+		};
+		const commentStorm = Array.from({ length: 40 }, (_, i) => `#${2000 + i} note`).join(' ');
+		const bodyOnly = collectClericalSourceIssueCandidateNumbers({
+			pr,
+			evidenceTexts: [],
+			repository: 'wdhunter465/next-starter-template',
+		});
+		const withStorm = collectClericalSourceIssueCandidateNumbers({
+			pr,
+			evidenceTexts: [commentStorm],
+			repository: 'wdhunter465/next-starter-template',
+		});
+		expect(bodyOnly.filter((n) => n !== '3018').length).toBeLessThanOrEqual(15);
+		expect(withStorm.length).toBeGreaterThan(bodyOnly.length);
+		// Cap path under test: fetch set must remain body-scoped even when evidence is noisy.
+		expect(bodyOnly.sort()).toEqual(['1719', '2647', '2775', '3018'].sort());
+	});
 });
