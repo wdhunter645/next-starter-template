@@ -6,7 +6,7 @@ Owns: Task #2919 Product-decision register (remediated), the approved Product De
 Does Not Own: Legal conclusions, public-policy authorship, rights authorizations, runtime/schema implementation, public-copy changes, or Production/Promotion authority
 Canonical Reference: /docs/ops/reports/compliance-readiness-inventory-2918.md
 Related Issues: #2784, #2918, #2919, #2920, #2921
-Last Reviewed: 2026-08-04
+Last Reviewed: 2026-08-05
 ---
 
 # Compliance Product-Decision Register — First Increment (#2919)
@@ -34,7 +34,7 @@ This document makes **no legal conclusion**, approves **no public copy**, and ch
 
 ## Product Decision Record — approved 2026-08-04
 
-Product Authority: Bill. Decision date: 2026-08-04. Disposition: **APPROVED**. Recorded verbatim in substance from Bill's decision comment on #2919 (2026-08-04):
+Product Authority: Bill. Decision date: 2026-08-04. Disposition: **APPROVED**. Recorded verbatim in substance from Bill's decision comment on #2919, `issuecomment-5184402502` (2026-08-04):
 
 1. **F1/F2 — privacy, terms, and proceeds claim:** verify the live D1-composed `/privacy` and `/terms` state. Soften or remove the proceeds claim unless documentary support exists. No unsupported charitable or tax-status representation may remain.
 2. **F3 — analytics:** verify the Production `NEXT_PUBLIC_GA_ID` state through an authorized read-only check. If GA is active, keep it disabled or disable it until the required disclosure and consent control are implemented and approved.
@@ -71,7 +71,7 @@ Where an item has both an evidence/mechanism component and a public-copy compone
   1. Confirm live D1 section state first (read-only query), then route the composed text to legal/Bill review.
   2. Skip confirmation and proactively overwrite `lead_html` for both pages with reviewed copy, making the hybrid-ambiguity question moot regardless of prior seed state.
   3. Leave as-is and accept current risk pending a later review cycle.
-- **Approved disposition (2026-08-04, Product Decision Record item 1):** Verify the live D1-composed `/privacy` state (option 1). Held current behavior remains in force until that verification and any resulting copy change are implemented — this document still makes no `/privacy` copy change itself.
+- **Approved disposition (2026-08-04, Product Decision Record item 1):** Verify the live D1-composed state for **both `/privacy` and `/terms`** (option 1). Held current behavior remains in force until that verification and any resulting copy change are implemented — this document still makes no `/privacy` or `/terms` copy change itself.
 - **#2919 vs #2920 owner:** #2919 owns confirming live D1 section state (evidence step, no copy change) in its separately authorized implementation increment. #2920 owns any resulting copy remediation, after #2919 completes.
 - **Exact proposed writable paths (future, not this increment):** `docs/ops/reports/compliance-privacy-terms-live-state-2919.md` (evidence-confirmation sub-report, #2919); `migrations/00XX_privacy_terms_copy_review.sql`, `src/app/privacy/page.tsx`, `src/app/terms/page.tsx` (#2920, only after Bill approves the specific resulting text).
 - **Required tests/evidence:** A read-only D1 query (or authorized script) confirming which `page_content` rows/sections exist for `privacy` and `terms` slugs; screenshot or rendered-HTML capture of the current composed page for Bill's review.
