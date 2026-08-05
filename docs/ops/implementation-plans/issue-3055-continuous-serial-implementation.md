@@ -19,7 +19,7 @@ Reconcile current governance, role, queue, assignment, closeout, routing, valida
 
 1. Update canonical queue, role, PR, Administration, and closeout authorities.
 2. Update agent entry/rule routing and controlled references.
-3. add the package-complete executable-child template and strengthen project/assignment templates.
+3. Add the package-complete executable-child template and strengthen project/assignment templates.
 4. Update deterministic eligibility and closeout validation with positive and negative fixtures.
 5. Reconcile the allowlisted active project masters and child Issues to `ACTIVE`, `QUEUED`, `PACKAGE-INCOMPLETE`, or evidence-specific `HOLD`.
 6. Run documentation, authority, search, routing, queue, and closeout validation.
