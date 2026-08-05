@@ -105,19 +105,18 @@ One evidentiary item is flagged because it affects whether #2461's repository-ar
 
 ## Exact proposed writable paths for #2662–#2664
 
-- **#2662** (zone/responsive/accessibility contract):
-  - New: `docs/reference/design/club-newspaper-zone-contracts-2662.md` — formal zone IDs, labels, size classes, allowed/prohibited content types, responsive ordering (desktop/tablet/mobile), and accessibility constraints per #2461's "Editorial zone contracts" and "Responsive behavior" sections.
-  - Corrective: `docs/reference/design/fanclub.md` — replace the stale Club Home section-order subsection with a pointer to `fanclub-home.md` (the disposition-table item above).
-- **#2663** (content selection, rotation, media pairing, edition contracts):
-  - New: `docs/reference/architecture/club-newspaper-rotation-and-media-contracts-2663.md` — document-first contract for usage-count tracking, placement-history logging, manual pinning, randomized-least-used selection, and thumbnail/small/medium/large media renditions, before any runtime change.
-  - Future runtime (separately authorized, not this report): `functions/_lib/content-inventory-rotation.ts`, `functions/_lib/content-inventory-club-home.ts`, a new placement-history table via forward-only migration.
-- **#2664** (editorial operations and technical-boundary verification):
-  - New: `docs/ops/reports/club-newspaper-technical-verification-2664.md` — verify the admin/editorial operating model (staging, preview, pinning, exclusion, media substitution, edition regeneration, audit) against #2461's "Admin and editorial operating model" section, tracing each requirement to existing `/admin/editorial` capability or an identified gap.
+These paths are corrected to match each successor task's already-defined `Claude Code execution package` allowlist (verified by reading #2662/#2663/#2664 directly), not invented fresh:
+
+- **#2662** (zone/responsive/accessibility contract) — allowlist already defined as `docs/reference/design/fanclub-home.md` and `docs/ops/reports/club-newspaper-layout-contract-2662.md`. #2662 should use its own `fanclub-home.md` write access to add the formal zone map (IDs, labels, size classes, allowed/prohibited content types, responsive ordering, accessibility constraints per #2461's "Editorial zone contracts" and "Responsive behavior" sections) directly into that canonical doc, per its own instruction not to create parallel canonical authority.
+- **#2663** (content selection, rotation, media pairing, edition contracts) — allowlist already defined as `docs/reference/design/fanclub-home.md`, `docs/explanation/website/content-strategy.md`, and `docs/ops/reports/club-newspaper-selection-rotation-2663.md`. This is the right home for the usage-count/placement-history/manual-pinning/randomized-least-used-selection and media-rendition contract gaps this report identifies; any resulting runtime change (`functions/_lib/content-inventory-rotation.ts`, `functions/_lib/content-inventory-club-home.ts`, a new placement-history table) remains separately authorized, not part of #2663's own documentation-only envelope.
+- **#2664** (editorial operations and technical-boundary verification) — allowlist already defined as `docs/how-to/website/club-home-content-operations-runbook.md`, `docs/ops/reports/club-newspaper-technical-map-2664.md`, and `docs/reference/design/fanclub-home.md`.
+
+**Gap in the current successor chain:** none of #2662/#2663/#2664's defined allowlists include `docs/reference/design/fanclub.md`, so the one concrete document-hygiene fix this report identifies — replacing `fanclub.md`'s stale Club Home section-order subsection with a pointer to `fanclub-home.md` — has no current task owner. This needs either a WORK-approved allowlist addition on one of the three successor tasks (most naturally #2662, since it already owns the zone/section-order contract) or a separate small bounded follow-up. This report does not resolve that gap itself; it is flagged here for WORK disposition.
 
 ## Validation
 
 - `bash scripts/ci/docs_check_headers.sh .` — run against this file (see PR evidence).
-- `node scripts/ci/diataxis_folder_audit.mjs` — run against this file (see PR evidence).
+- `node scripts/ci/diataxis_folder_audit.mjs` — run; passed because `docs/ops/` is outside the audited DIATAXIS folder set (`docs/tutorials`, `docs/how-to`, `docs/reference`, `docs/explanation`), not because the audit validated this file's structure. A direct per-file run against this path would report `OUTSIDE_DIATAXIS_FOLDER` (matching this PR's own non-blocking advisory comment) — expected and non-blocking for `docs/ops/reports/*`, consistent with other accepted reports in this location.
 - `git diff --check` — run (see PR evidence).
 - Every cited path, component, table, and field name in this report was verified against live repository state (`src/app/fanclub/page.tsx`, `ClubHome*.tsx`, `content-inventory-club-home.ts`, `content-inventory-rotation.ts`, `content_inventory` field usage) rather than assumed from documentation alone.
 - The legacy-evidence and PR #397 claim was verified as unconfirmable via `git log --all -i --grep=memberpage`, a full-tree filename search across every commit, and a commit-message search for "#397".
