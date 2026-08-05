@@ -15,6 +15,10 @@ Last Reviewed: 2026-08-05
 
 Record what can and cannot be confirmed about the live, currently-rendered composition of `/privacy` and `/terms`, per Product Decision Record item 1 ("verify the live D1-composed `/privacy` and `/terms` state"). This is read-only evidence gathering; it makes no copy change and no legal conclusion.
 
+## Scope
+
+In scope: repository-only, read-only evidence about how `/privacy` and `/terms` are composed (seed migrations and rendering/fallback code), and an explicit statement of what cannot be confirmed without live Production D1 access. Out of scope: any `/privacy`/`/terms` copy change (owned by #2920), legal conclusions, and Production D1 mutation or credential creation.
+
 ## Current known truth
 
 `/privacy` and `/terms` render per-section (`title`, `lead_html`, `body_html`) via `fetchPageContent()` (`src/lib/pageContent.ts`), each section falling back to hardcoded component copy independently when the corresponding D1 `page_content` row/section is absent. Migration `0009_page_content_seed.sql` seeds only `title` and `body_html` for both slugs — no `lead_html` row is seeded by any migration found in this repository (confirmed by reading every `migrations/*.sql` file for a `lead_html` insert or update targeting the `privacy`/`terms` slugs; none exists).
@@ -38,6 +42,10 @@ Per the #2919 executable package's stop conditions ("credential/Production mutat
 ## Recommended next step
 
 An operator or agent with authenticated `wrangler`/Cloudflare dashboard access to the Production D1 database should run the query above and record the result here (or in a follow-up comment on #2919), after which #2920 can proceed with the exact composed-text review Bill approved.
+
+## Intended final state
+
+The live `page_content` row state for the `privacy` and `terms` slugs is confirmed and recorded here (or in a linked #2919 follow-up comment), resolving whether either page currently renders seeded text, hardcoded fallback, or a section-by-section hybrid. This report does not itself reach that state — it records what remains unconfirmed and exactly why, so #2920's copy review starts from verified evidence rather than an assumption.
 
 ## Rollback
 

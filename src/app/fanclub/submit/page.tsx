@@ -118,17 +118,20 @@ export default function FanclubSubmitPage() {
             rows={2}
             style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.2)', resize: 'vertical' }}
           />
-          <select
-            value={creditPreference}
-            onChange={(e) => setCreditPreference(e.target.value)}
-            style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.2)' }}
-          >
-            <option value="">How should we credit you?</option>
-            <option value="public_credit">Credit me by name</option>
-            <option value="anonymous">Credit as anonymous</option>
-            <option value="private">Do not display my name publicly</option>
-            <option value="custom">Other (note in your submission text)</option>
-          </select>
+          <label style={{ display: 'grid', gap: 6 }}>
+            How should we credit you?
+            <select
+              value={creditPreference}
+              onChange={(e) => setCreditPreference(e.target.value)}
+              style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.2)' }}
+            >
+              <option value="">Select a credit preference…</option>
+              <option value="public_credit">Credit me by name</option>
+              <option value="anonymous">Credit as anonymous</option>
+              <option value="private">Do not display my name publicly</option>
+              <option value="custom">Other (note in your submission text)</option>
+            </select>
+          </label>
 
           <button
             onClick={submit}
