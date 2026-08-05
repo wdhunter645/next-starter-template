@@ -46,7 +46,7 @@ This task documents and proves the Development-safe qualification path. It does 
 | Source | Role |
 | --- | --- |
 | `functions/_lib/email-envelope.ts` | Delivery controls and rollback surface |
-| `functions/_lib/email.ts`, `email-templates.ts` | Launch events (welcome + admin join) |
+| `functions/_lib/email.ts`, `functions/_lib/email-templates.ts` | Launch events (welcome + admin join) |
 | `functions/api/join.ts`, `functions/api/ask.ts` | Callers + `join_email_log` |
 | `src/app/auth/AuthClient.tsx`, `src/app/ask/page.tsx` | Truthful UI |
 | `src/app/admin/audit/page.tsx` | Admin export of `join_email_log` |
