@@ -5,8 +5,8 @@ Authority Level: Agent-Specific
 Owns: Codex inactive-for-implementation status declaration, Codex startup contract, and historical reference boundaries
 Does Not Own: Shared agent law, design authority, LGFC implementation routing, or merge approval
 Canonical Reference: /docs/governance/AGENT-TEAM.md
-Related Issues: #3052
-Last Reviewed: 2026-08-04
+Related Issues: #3052, #3058, #3063
+Last Reviewed: 2026-08-05
 ---
 
 # CODEX-RULES.md
@@ -21,7 +21,7 @@ Canonical team roles and workflow: [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI
 
 Shared agent law: [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md).  
 Detailed shared execution: [`CORE-RULES.md`](./CORE-RULES.md).  
-Active implementation authority: [`CURSOR-RULES.md`](./CURSOR-RULES.md).
+Canonical current-executor role authority: [`docs/governance/AGENT-TEAM.md`](../../governance/AGENT-TEAM.md). Product-specific rules for the current co-equal executors: [`CURSOR-RULES.md`](./CURSOR-RULES.md), [`CLAUDE-CODE-RULES.md`](./CLAUDE-CODE-RULES.md).
 
 Historical prompt summary: [`PROMPTS/Codex-Rules.md`](../../../PROMPTS/Codex-Rules.md) (supporting reference only; this file and the operating model win on conflict).
 
@@ -42,7 +42,7 @@ As of 2026-06-17 (issue #1754):
 - **Do not assign LGFC implementation work to Codex.**
 - **Do not route new product or repository implementation tasks to Codex.**
 - **Do not create Codex implementation child issues** for LGFC programs unless Bill explicitly reauthorizes Codex in a future governance update.
-- **Cursor is the sole LGFC implementation executor.**
+- **Cursor Local and Claude Code are the current active LGFC implementation executors** (co-equal, per `docs/governance/AGENT-TEAM.md`); Codex is not.
 
 Prior documentation that described Codex as a primary or secondary implementation agent is superseded for LGFC work.
 
@@ -125,4 +125,4 @@ Stop if:
 
 ## Final
 
-Codex is **not** an active LGFC implementation agent. Shared law still applies if Codex touches repository surfaces for non-implementation work in the future, but **LGFC implementation belongs to Cursor only** until Bill explicitly reauthorizes Codex in governance.
+Codex is **not** an active LGFC implementation agent. Shared law still applies if Codex touches repository surfaces for non-implementation work in the future, but **LGFC implementation belongs to Cursor Local and Claude Code** (the current co-equal active executors, per `docs/governance/AGENT-TEAM.md`) until Bill explicitly reauthorizes Codex in governance.
