@@ -32,9 +32,19 @@ Covers recurring review against the compliance candidate on `component/complianc
 | Role | Owner | Responsibility |
 | --- | --- | --- |
 | Product Authority | Bill | Accept or defer launch blockers; approve public accessibility wording; authorize Production-facing copy |
-| WORK / independent review | ChatGPT (WORK) | Independent review of qualification and child PRs; do not self-approve Implementation work WORK implemented |
+| WORK / independent review | ChatGPT (WORK) | Independent review of qualification and child PRs; WORK must not independently verify or accept work that WORK itself implemented |
 | Implementation / Operations | Cursor Local (default); Claude when labeled | Bounded code/docs packages only; no self-merge to Production |
 | Production operator | Bill or designated operator with CF access | Live D1/Pages reads; Production env disable/enable when authorized |
+
+## Steps
+
+1. Confirm the tip SHA under review and which #2919 / #2920 increments it includes.
+2. Run the focused control tests listed in Evidence checklist (or equivalent CI jobs).
+3. Spot-check public routes in the authorized target environment.
+4. Confirm takedown/soft-delete SLA docs still match ops practice.
+5. Record protected-item status (live D1 privacy/terms, Production GA, accessibility wording/publication, remaining #2920 copy).
+6. Cite or update the latest qualification report; open follow-up Issues for new gaps.
+7. Escalate per the Escalation table when a protected gate is unknown or conflicted.
 
 ## Cadence
 
