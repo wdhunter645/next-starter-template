@@ -21,7 +21,7 @@ Canonical team roles and workflow: [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI
 
 Shared agent law: [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md).  
 Detailed shared execution: [`CORE-RULES.md`](./CORE-RULES.md).  
-Active implementation authority (current co-equal executors): [`CURSOR-RULES.md`](./CURSOR-RULES.md), [`CLAUDE-CODE-RULES.md`](./CLAUDE-CODE-RULES.md).
+Canonical current-executor role authority: [`docs/governance/AGENT-TEAM.md`](../../governance/AGENT-TEAM.md). Product-specific rules for the current co-equal executors: [`CURSOR-RULES.md`](./CURSOR-RULES.md), [`CLAUDE-CODE-RULES.md`](./CLAUDE-CODE-RULES.md).
 
 Historical prompt summary: [`PROMPTS/Codex-Rules.md`](../../../PROMPTS/Codex-Rules.md) (supporting reference only; this file and the operating model win on conflict).
 
