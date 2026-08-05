@@ -22,6 +22,18 @@ This document is **evidence and decision routing only**. It does not create a Ma
 - In scope: repository as-built on `component/transactional-communications` tip `d220bcde1a20b192b996d14c966ccb251a35113f`; public MailChannels documentation cited below; public pricing/terms evidence available to the agent without signup.
 - Out of scope: paid provider commitment; DNS mutation; secret creation or live secret inspection; runtime/public-copy/workflow edits; Production activation.
 
+## Current known truth
+
+- The sole outbound product-email adapter is `functions/_lib/email.ts`, calling MailChannels `POST https://api.mailchannels.net/tx/v1/send` with `X-Api-Key` when `MAILCHANNELS_ENABLED=1`; otherwise it returns `{ sent: false, provider: 'disabled' }`.
+- The historical free Cloudflare Workers MailChannels integration ended **2024-06-30** and must not be relied on.
+- Current MailChannels Email API docs require an account, API key, and Domain Lockdown DNS; public pricing describes a **free developer plan** (~100 emails/day) before paid monthly tiers.
+- Preview/component isolation keeps MailChannels disabled by default; Production enablement, DNS mutation, credential creation, and paid upgrades remain Bill-owned.
+- Join/Ask preserve D1 requests when email is disabled or fails; UI still does not always surface non-delivery (#2924 gap). Live SPF/DKIM/DMARC/Domain Lockdown state for `lougehrigfanclub.com` was not verified in the agent environment.
+
+## Intended final state
+
+Project #2785 reaches a Product-accepted provider posture (MailChannels Email API free plan **or** an explicit contingency-only path), with DNS/sender authentication complete only under Bill authority, a provider-neutral envelope and truthful disabled/failure UX from #2924, and deliverability/bounce/unsubscribe/monitoring qualification from #2925 — without false delivery claims and without unpaid Production enablement. This task only validates and routes; it does not claim that final state is complete.
+
 ## Evidence sources
 
 | Source | Role |
