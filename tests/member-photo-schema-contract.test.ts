@@ -117,4 +117,44 @@ describe('#3119 member-photo schema contract (migration 0045)', () => {
 
     db.close();
   });
+
+  it('rate-limits by member_email case-insensitively (COLLATE NOCASE)', () => {
+    const db = new DatabaseSync(':memory:');
+    applyAllMigrations(db);
+
+    db.exec(`
+      INSERT INTO photo_upload_attempts (member_email, ip, ok, created_at) VALUES
+        ('Member@Example.com', '1.2.3.4', 0, datetime('now')),
+        ('member@example.com', '1.2.3.4', 0, datetime('now'))
+    `);
+
+    const row = db
+      .prepare(
+        `SELECT COUNT(1) AS n FROM photo_upload_attempts
+         WHERE member_email = ? AND ok = 0 AND datetime(created_at) >= datetime('now', '-1 hour')`
+      )
+      .get('MEMBER@EXAMPLE.COM') as { n: number } | undefined;
+
+    expect(row?.n).toBe(2);
+
+    db.close();
+  });
+
+  it('matches submitted_by/reviewed_by on photos case-insensitively (COLLATE NOCASE)', () => {
+    const db = new DatabaseSync(':memory:');
+    applyAllMigrations(db);
+
+    db.exec(`
+      INSERT INTO photos (url, description, status, submitted_by)
+      VALUES ('quarantine/case-key.jpg', 'case test', 'pending', 'Member@Example.com')
+    `);
+
+    const row = db
+      .prepare(`SELECT id FROM photos WHERE submitted_by = ?`)
+      .get('member@example.com') as { id: number } | undefined;
+
+    expect(row).toBeDefined();
+
+    db.close();
+  });
 });

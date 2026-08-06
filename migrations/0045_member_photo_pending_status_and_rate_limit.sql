@@ -14,14 +14,14 @@
 -- status/consent_confirmed values are enforced at the API layer (#2899).
 
 ALTER TABLE photos ADD COLUMN status TEXT NOT NULL DEFAULT 'published';
-ALTER TABLE photos ADD COLUMN submitted_by TEXT;
+ALTER TABLE photos ADD COLUMN submitted_by TEXT COLLATE NOCASE;
 ALTER TABLE photos ADD COLUMN submitted_at TEXT;
 ALTER TABLE photos ADD COLUMN quarantine_key TEXT;
 ALTER TABLE photos ADD COLUMN consent_confirmed INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE photos ADD COLUMN credit_line TEXT;
 ALTER TABLE photos ADD COLUMN rights_owner TEXT;
 ALTER TABLE photos ADD COLUMN moderation_notes TEXT;
-ALTER TABLE photos ADD COLUMN reviewed_by TEXT;
+ALTER TABLE photos ADD COLUMN reviewed_by TEXT COLLATE NOCASE;
 ALTER TABLE photos ADD COLUMN reviewed_at TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_photos_status
@@ -35,11 +35,11 @@ CREATE INDEX IF NOT EXISTS idx_photos_submitted_by
 -- Keyed primarily by member_email (not just ip) because photo upload is
 -- already member-session-gated, unlike login which is pre-auth.
 CREATE TABLE IF NOT EXISTS photo_upload_attempts (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  member_email TEXT   NOT NULL,
-  ip          TEXT    NOT NULL,
-  ok          INTEGER NOT NULL,
-  created_at  TEXT    NOT NULL DEFAULT CURRENT_TIMESTAMP
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  member_email TEXT    NOT NULL COLLATE NOCASE,
+  ip           TEXT    NOT NULL,
+  ok           INTEGER NOT NULL,
+  created_at   TEXT    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_photo_upload_attempts_member_email_created_at

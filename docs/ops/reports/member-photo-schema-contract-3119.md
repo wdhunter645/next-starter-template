@@ -186,13 +186,22 @@ shape, but the primary rate-limit query should key on `member_email`.
 Confirmed via `tests/member-photo-schema-contract.test.ts`: a row inserted
 with the pre-#3119 column set (no `status` supplied) receives
 `status = 'published'` and `consent_confirmed = 0` automatically. No existing
-query needs to change to keep working; `functions/api/fanclub/photos.ts` and
-`functions/api/photos.ts` continue to return every current row unchanged
-until #2900 adds an explicit `WHERE status = 'published'` filter (required
-so that pending/#2899-submitted rows do **not** leak into the public/member
-gallery before moderation — currently, since those endpoints select all rows
-unconditionally, this filter is a required part of #2899's or #2900's
-schema-dependent work, not optional).
+query needs to change to keep working *as long as no code yet writes a
+non-`'published'` row* — `functions/api/fanclub/photos.ts` and
+`functions/api/photos.ts` currently select every row unconditionally.
+
+**Hard sequencing requirement (corrected after review):** the
+`WHERE status = 'published'` filter on both read endpoints must ship in the
+same change that introduces the first code path capable of writing a
+non-`'published'` row into `photos` — i.e. as part of #2899 itself, not
+deferred to #2900. #2899 and #2900 are independently executable per #3119's
+own non-blocking rule, so if the filter were left solely to #2900, a window
+would exist where #2899 alone is merged and pending member-submitted rows
+(including unmoderated images) are publicly exposed through the
+unauthenticated `functions/api/photos.ts` endpoint. #2899's schema-dependent
+increment is therefore not just "insert pending rows" — it must also add
+the status filter to both read endpoints in the same PR, even though the
+moderation *decision* UI/workflow remains #2900's responsibility.
 
 ## Rollback and backward compatibility
 
@@ -225,15 +234,19 @@ schema-dependent work, not optional).
   (exact query in the Decision 2 section above); reject with a deterministic
   429-style error when the threshold is exceeded (threshold value is #2899's
   to set).
-- Do **not** add a `status = 'published'` filter to any read endpoint —
-  that is #2900's responsibility once moderation exists (added here only to
-  keep #2899's scope to intake, matching its non-blocking execution rule).
+- **Required in the same PR as the first pending-row write** (corrected after
+  review — see "Preservation of existing gallery behavior" above): add
+  `WHERE status = 'published'` (or equivalent) to both
+  `functions/api/fanclub/photos.ts` and `functions/api/photos.ts`. This is
+  not optional or deferrable to #2900 — without it, pending/unmoderated
+  member-submitted rows are publicly exposed the moment #2899 merges,
+  including through the unauthenticated `functions/api/photos.ts` endpoint.
 
 ## Exact implications for #2900 (moderation/detail)
 
-- Add `WHERE status = 'published'` (or equivalent) to both
-  `functions/api/fanclub/photos.ts` and `functions/api/photos.ts` so
-  pending/rejected/quarantined rows do not appear in public/member listings.
+- The read-side `status = 'published'` filter is #2899's responsibility (see
+  above), not #2900's — #2900 only needs to confirm it is already in place
+  before adding moderation UI/workflow on top of it.
 - Moderation transition (`pending` → `published`/`rejected`) sets
   `reviewed_by`, `reviewed_at`, `moderation_notes`; a `published` transition
   additionally requires copying/promoting the object from the quarantine B2
