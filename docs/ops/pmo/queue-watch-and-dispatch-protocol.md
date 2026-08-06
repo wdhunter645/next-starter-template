@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Repository queue watch, Operations interrupt dispatch, peer PMO and Engineering dispatch, source-Issue collaboration routing, local Cursor wake routing, acknowledgment, stale-communication recovery, profile-aware continuation, and bounded administrative reconciliation
 Does Not Own: Product or priority decisions, queue ownership decisions, Engineering design decisions, PR approval, Production authorization, recovery strategy, workflow implementation, credentials, or project objectives
 Canonical Reference: /docs/governance/ADMINISTRATION-AND-COMMUNICATIONS.md
-Related Issues: #2396, #2492, #2640, #2641, #2639, #2695, #2699, #2709
-Last Reviewed: 2026-07-21
+Related Issues: #2396, #2492, #2640, #2641, #2639, #2695, #2699, #2709, #3055, #3113
+Last Reviewed: 2026-08-06
 ---
 
 # Queue Watch and Dispatch Protocol
@@ -23,6 +23,8 @@ Translate current GitHub state into one safe next communication or action while 
 - mandatory promotion-profile boundaries.
 
 Queue semantics are owned by `docs/governance/WORK-QUEUES-AND-COLLABORATION.md`.
+
+PMO defines **sequencing and readiness coordination**, not a general execution gate. PMO and the dispatcher order work, record prerequisites, and release successors; they do not deny otherwise authorized, collision-safe implementation. Ordinary predecessor or advisory conditions are comments, package notes, and order metadata — not queue-wide `HOLD` or `BLOCKED` states.
 
 ## Current truths
 
@@ -212,19 +214,43 @@ For Cursor implementation:
 
 Do not use team priority on child tasks. Administrative closeout of a prior task is not a universal successor gate.
 
+When only part of a task is gated, split bounded increments and continue collision-safe work. A gated final step must not freeze the queue when earlier increments remain executable.
+
+## Dependency and stop taxonomy
+
+Use exactly one classification per condition:
+
+| Class | Meaning | Dispatcher action |
+| --- | --- | --- |
+| Advisory prerequisite | Helpful context or soft ordering; does not deny collision-safe work | Record as comment or package note; do not set queue-wide hold |
+| Ordered predecessor | Serial child sequence; next item waits for predecessor WORK `ACCEPT` | Record predecessor/successor metadata; release successor immediately after verified `ACCEPT` |
+| Real collision | Same branch, file, credential, or deployment surface would conflict | Block only the colliding action; permit disjoint collision-safe work |
+| Protected stop | Legal, privacy, rights, security, credential, cost, destructive-data, Production-authority, unsafe-operation, or independent-review boundary | Block only the affected unsafe action; record owner, evidence, and release condition |
+
+`HOLD` is reserved for evidence-specific protected stops and substantive dependency or collision conditions. It is not for ordinary sequencing, advisory prerequisites, or routine predecessor state. Do not use generic `BLOCKED` placeholders.
+
+### Examples
+
+- **Advisory-dependent work:** Task B references Task A design notes. Task B docs/evidence increments may proceed; only the integration step that consumes unverified A output waits.
+- **Docs/evidence increment:** A child splits implementation (executable now) from Production promotion (protected stop until review). Implementation proceeds; Production dispatch pauses only for the promotion action.
+- **Serial child chain:** After predecessor merge and post-merge verification, WORK records `ACCEPT` or bounded correction, verifies successor package completeness, and releases the next child without idle delay or repeat PMO dispatch (#3055).
+- **Production-only gate:** Development increments merge under standing authority; `PRODUCTION GO` blocks only the Production promotion action, not unrelated collision-safe Development tasks.
+
 ## Continuous serial release
 
 For a graduated project, steps 4 through 7 above evaluate and transport standing authority; they do not require a new PMO or Administration assignment.
 
-After WORK records predecessor `ACCEPT`, the dispatcher:
+While a predecessor is in review or verification, WORK prepares the successor package so implementer idle time does not occur after `ACCEPT`.
 
-1. verifies the next live child is package-complete;
-2. verifies no real dependency, collision, protected stop, numbered Operations interrupt, or failed verification applies;
-3. reconciles the predecessor, parent, and successor states;
-4. sets the successor to executable and emits the applicable runtime wake signal; and
-5. records the successor's required pre-implementation checkpoint.
+After WORK records predecessor `ACCEPT` (or bounded correction and re-verification), the dispatcher must immediately:
 
-If fields are missing, set `PACKAGE-INCOMPLETE` and return it to WORK for correction. If a substantive condition blocks execution, set `HOLD` with its owner, required evidence, and release condition. Do not use generic `BLOCKED` or require repeat-dispatch prose.
+1. verify the next live child is package-complete;
+2. verify no real collision, protected stop, numbered Operations interrupt, or failed verification applies to the successor;
+3. reconcile the predecessor, parent, and successor states;
+4. set the successor to executable and emit the applicable runtime wake signal; and
+5. record the successor's required pre-implementation checkpoint.
+
+Ordered-predecessor conditions are satisfied by verified `ACCEPT`, not by queue-wide freeze. If fields are missing, set `PACKAGE-INCOMPLETE` and return it to WORK for correction. If a substantive protected stop or real collision blocks a specific action, set evidence-specific `HOLD` with owner, required evidence, and release condition — scoped to that action only. Do not use generic `BLOCKED`, queue-wide freeze, or repeat-dispatch prose.
 
 ## Engineering Pipeline dispatch
 
@@ -465,7 +491,10 @@ The dispatcher must prevent:
 - runner or controller invention of authority;
 - self-approval of protected work;
 - Production promotion without approved candidate identity;
-- duplicate assignment, collaboration, hold, resume, integration, closeout, or incident actions.
+- duplicate assignment, collaboration, hold, resume, integration, closeout, or incident actions;
+- queue-wide freeze caused by one gated final step when collision-safe increments remain executable;
+- treating ordinary predecessor or advisory conditions as universal execution denial;
+- delaying successor release after verified integration when the successor package is complete.
 
 ## Required references
 

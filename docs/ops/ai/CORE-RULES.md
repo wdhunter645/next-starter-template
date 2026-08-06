@@ -5,7 +5,8 @@ Authority Level: Core
 Owns: Shared execution rules, enforcement model, PR discipline, stop conditions, shared product-startup framework
 Does Not Own: Design authority, platform configuration, tracker content
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Last Reviewed: 2026-08-04
+Related Issues: #3055, #3113
+Last Reviewed: 2026-08-06
 ---
 
 # CORE-RULES.md
@@ -394,4 +395,6 @@ A source Issue, its acceptance criteria, an exact file-touch allowlist, the appl
 
 For a graduated project, the exact prepared child graph is standing authority. After WORK records predecessor `ACCEPT`, the next package-complete serial child may proceed without a repeat Administration/PMO dispatch. The implementation runtime must record starting SHA, branch, allowlist confirmation, and pre-implementation checkpoint before editing.
 
-Missing package fields produce `PACKAGE-INCOMPLETE`; a substantive dependency or protected boundary produces an evidence-specific `HOLD`. Merge alone is not acceptance. WORK owns acceptance, child/parent reconciliation, and successor release, and cannot independently verify or approve work WORK implemented.
+Missing package fields produce `PACKAGE-INCOMPLETE`; a substantive dependency or protected boundary produces an evidence-specific `HOLD` scoped to the affected action — not queue-wide freeze for ordinary sequencing. Merge alone is not acceptance. WORK owns acceptance, child/parent reconciliation, and successor release, and cannot independently verify or approve work WORK implemented.
+
+PMO defines sequencing and readiness coordination, not a general execution gate (#3113). Ordinary predecessor and advisory conditions are comments, package notes, and order metadata. When only part of a task is gated, split bounded increments and continue collision-safe work. WORK prepares successor packages before implementer idle time and releases the next eligible child immediately after verified integration. Product-authorized agent routing (Cursor Local, Claude Code) is preserved per task assignment.

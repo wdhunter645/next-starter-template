@@ -5,8 +5,8 @@ Authority Level: Controlled Template
 Owns: Required project-master Issue structure, authority identities, documentation inventory, validation, and closeout gates
 Does Not Own: Project-specific product decisions, implementation scope, priority, Production approval, or runtime behavior
 Canonical Reference: /docs/reference/pmo/project-documentation-closeout-contract.md
-Related Issues: #1719, #3050
-Last Reviewed: 2026-08-04
+Related Issues: #1719, #3050, #3055, #3113
+Last Reviewed: 2026-08-06
 ---
 
 # Project Master Issue Template
@@ -30,6 +30,10 @@ Last Reviewed: 2026-08-04
 ## Acceptance criteria
 
 ## Dependencies and protected boundaries
+
+Record each condition with taxonomy class: advisory prerequisite | ordered predecessor | real collision | protected stop. Ordinary prerequisites are comments or sequencing metadata — not queue-wide `HOLD` or `BLOCKED`.
+
+When only part of a task is gated, define bounded increments so collision-safe work can proceed.
 
 ## Ordered task graph
 
@@ -77,17 +81,18 @@ Default implementation role holder by child: ____
 Task acceptance and closeout authority: WORK  
 Project closeout authority: WORK with required independent verification and protected Product/Production decisions
 
-| Sequence | Child Issue | Objective | Predecessor acceptance | Successor | Serial/parallel | Writable scope | Collision proof | Package state |
-| ---: | --- | --- | --- | --- | --- | --- | --- | --- |
-| 001 | #____ | ____ | ____ | #____ / terminal | serial | ____ | not applicable | package-complete / PACKAGE-INCOMPLETE |
+| Sequence | Child Issue | Objective | Predecessor acceptance | Successor | Serial/parallel | Writable scope | Collision proof | Prerequisite class | Package state |
+| ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 001 | #____ | ____ | ____ | #____ / terminal | serial | ____ | not applicable | ordered predecessor / advisory / protected stop | package-complete / PACKAGE-INCOMPLETE |
 
-A Project Graduation GO remains standing authority for this exact graph. A package-complete serial successor proceeds after predecessor WORK `ACCEPT` without a repeat Administration or PMO dispatch. Parallel execution requires explicit disjoint scopes and collision proof in this table.
+A Project Graduation GO remains standing authority for this exact graph. A package-complete serial successor proceeds after predecessor WORK `ACCEPT` without a repeat Administration or PMO dispatch. WORK prepares each successor package before implementer idle time. Parallel execution requires explicit disjoint scopes and collision proof in this table.
 
 ## Protected Stops and Continuation
 
-Protected decisions: ____  
-True dependencies: ____  
-Operations interruption behavior: ____  
-Package-incomplete correction owner: WORK  
-Successor release rule: WORK reconciles the child and parent and releases the next package-complete task after `ACCEPT`.  
-No generic `BLOCKED` state or repeat-dispatch requirement is permitted.
+Protected decisions: ____
+True dependencies (ordered predecessor / real collision only): ____
+Advisory prerequisites (comments; do not deny collision-safe work): ____
+Operations interruption behavior: ____
+Package-incomplete correction owner: WORK
+Successor release rule: WORK records `ACCEPT` or bounded correction immediately after verified integration, reconciles the child and parent, and releases the next package-complete task without idle delay.
+No generic `BLOCKED` state, queue-wide freeze, or repeat-dispatch requirement is permitted.
