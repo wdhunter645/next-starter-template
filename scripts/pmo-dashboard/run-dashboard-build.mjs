@@ -6,16 +6,23 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CURRENT_REPOSITORY = 'wdhunter465/next-starter-template';
-const [currentOwner, currentRepo] = CURRENT_REPOSITORY.split('/');
+const [currentOwner] = CURRENT_REPOSITORY.split('/');
 const outDir = process.env.PMO_DASHBOARD_OUT_DIR || 'site/pmo-dashboard';
 
-function runCoreBuilder() {
+function resolveRepositoryIdentity() {
+  const repository = process.env.GITHUB_REPOSITORY || CURRENT_REPOSITORY;
+  const [repositoryOwner] = repository.split('/');
+  const owner = process.env.GITHUB_REPOSITORY_OWNER || repositoryOwner || currentOwner;
+  return { repository, owner };
+}
+
+function runCoreBuilder(repositoryIdentity) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [path.join(__dirname, 'build-dashboard.mjs')], {
       env: {
         ...process.env,
-        GITHUB_REPOSITORY_OWNER: process.env.GITHUB_REPOSITORY_OWNER || currentOwner,
-        GITHUB_REPOSITORY: process.env.GITHUB_REPOSITORY || CURRENT_REPOSITORY
+        GITHUB_REPOSITORY_OWNER: repositoryIdentity.owner,
+        GITHUB_REPOSITORY: repositoryIdentity.repository
       },
       stdio: 'inherit'
     });
@@ -40,11 +47,12 @@ function reconcileOwner(row) {
 }
 
 async function main() {
-  await runCoreBuilder();
+  const repositoryIdentity = resolveRepositoryIdentity();
+  await runCoreBuilder(repositoryIdentity);
 
   const dataPath = path.join(outDir, 'dashboard-data.json');
   const data = JSON.parse(await readFile(dataPath, 'utf8'));
-  data.repository = process.env.GITHUB_REPOSITORY || CURRENT_REPOSITORY;
+  data.repository = repositoryIdentity.repository;
 
   for (const rows of Object.values(data.views || {})) {
     for (const row of rows || []) reconcileOwner(row);
