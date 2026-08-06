@@ -120,9 +120,9 @@ Neither path deletes data or media associations; both are simple status-field tr
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
-| `POST /publish` with `status: "published"` returns 400 | Row is missing `source_name` or `credit_line` | Set both via `POST /api/admin/editorial/inventory` before publishing |
+| `POST /api/admin/editorial/publish` with `status: "published"` returns 400 | Row is missing `source_name` or `credit_line` | Set both via `POST /api/admin/editorial/inventory` before publishing |
 | `POST /api/admin/editorial/review` with `action: "approve"` returns 409 "canonical content record already exists for that tag" | A published or draft row already owns that `tag` as canonical | Either pick a different `tag`, or submit with `canonical: false` and a `perspective_label` to create an alternate-perspective row instead |
-| `POST /media-associations` returns 400 "media_id values do not match approved photo records" | One or more `media_id` values are not real `photos.id` rows | Confirm the photo exists and use its `photos.id`, not an external reference string |
+| `POST /api/admin/editorial/media-associations` returns 400 "media_id values do not match approved photo records" | One or more `media_id` values are not real `photos.id` rows | Confirm the photo exists and use its `photos.id`, not an external reference string |
 | A submission stuck in `under_review` never resolves | No explicit timeout/expiry exists in `review.ts` today | Manually call `approve`, `reject`, or `merge`; there is no automatic escalation |
 
 ### Not yet available — explicit gaps (#2663/#2664 evidence)

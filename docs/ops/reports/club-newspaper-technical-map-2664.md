@@ -46,9 +46,9 @@ Out of scope: implementing any of the identified gaps, #2662/#2663's own charter
 | `tests/admin-editorial-archive.test.tsx` | Admin editorial UI archive/publish-state behavior |
 | `tests/content-inventory-club-home.test.ts` | `fetchClubHomeContent` selection logic |
 | `tests/content-inventory-media.test.ts` | `content_inventory_media` normalization/association helpers |
-| `tests/content-inventory-public.test.ts`, `content-inventory-public-surface-validation.test.ts` | Public-surface eligibility/exposure rules |
+| `tests/content-inventory-public.test.ts`, `tests/content-inventory-public-surface-validation.test.ts` | Public-surface eligibility/exposure rules |
 | `tests/content-inventory-rotation.test.ts` | Rotation scoring (`computeRotationScore` and related) |
-| `tests/content-inventory-search.test.ts`, `content-inventory-seed.test.ts` | Search indexing and seed data |
+| `tests/content-inventory-search.test.ts`, `tests/content-inventory-seed.test.ts` | Search indexing and seed data |
 | `tests/fanclub-home-dynamic.test.tsx`, `fanclub-home-shell.test.tsx` | `/fanclub` page rendering and session gate |
 
 No test file targets `functions/api/admin/editorial/review.ts`, `inventory.ts`, `publish.ts`, or `media-associations.ts` directly by name (searched `tests/` for `editorial-review`, `editorial-publish`, `editorial-inventory`, `editorial-media` — none exist). This is a real test-coverage gap on the admin-write side of the editorial system, distinct from the read-side coverage above, which is thorough.
