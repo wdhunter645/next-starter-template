@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Content strategy rationale, editorial model, source reconciliation, and architecture decisions for the website content inventory
 Does Not Own: D1 migrations, runtime implementation, route behavior, or final factual editorial approval
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Related issues: #1256, #824, #819, #1137, #1689, #1685
-Last Reviewed: 2026-06-23
+Related issues: #1256, #824, #819, #1137, #1689, #1685, #2461, #2662, #2663
+Last Reviewed: 2026-08-05
 ---
 
 # Content Strategy / Editorial Inventory
@@ -182,6 +182,110 @@ by selecting published content based on:
 
 Rotation assists placement but does not override publication status, canonical
 rules, source requirements, or editorial holds.
+
+### Club Newspaper rotation, media-pairing, and edition contract (#2663)
+
+This subsection defines the `club_home` section's rotation, article/media
+pairing, and edition-history contract, consuming the CC-001 (#2433) and CC-002
+(#2434) frozen contracts and the zone identities defined in
+`docs/reference/design/fanclub-home.md` (#2662) rather than creating a
+competing content model. It is a documentation-only contract; the runtime gaps
+it identifies remain future, separately authorized work.
+
+**Zone eligibility.** Only rows with `status: published` and `club_home` in
+`allowed_sections` are eligible for any `club_home` zone, per the base rule
+above. Within that eligible pool, per-zone filters apply using the zone IDs
+from `fanclub-home.md`:
+
+| Zone ID | Eligible `story_type` | Negative filter |
+| --- | --- | --- |
+| `lead-story` | `primary` preferred, any type as fallback | None beyond the base rule |
+| `story-rail` | `secondary`, `brief` | Excludes whatever row `lead-story` selected |
+| `archive-spotlight` | Any type | Excludes rows already used by `lead-story` and `story-rail` in the same selection pass |
+
+**Rights/privacy/publication gate (CC-002).** No `club_home` zone may render a
+row whose `rights_status`, `privacy_status`/`privacy_flag`,
+`publication_status`/`review_status`, or suppression state matches CC-002's
+blocking-value table (`docs/ops/implementation-plans/content-collection/packages/cc-002-provenance-rights-contract-package.md`).
+This is stricter than, and takes precedence over, the rotation-score ranking
+below — a row that scores highest but fails a CC-002 blocking check must never
+render.
+
+**Article/media pairing.** Media association for `club_home` rows uses the
+existing `content_inventory_media` model
+(`docs/reference/website/content-inventory-model.md`'s "Media Association
+Model"): `media_role`, `display_order`, `caption`, `alt_text`, `source_name`,
+`source_url`, `credit_line` per association. `media-feature`'s pairing rule is:
+prefer the `lead-story` row's `primary_image`-role association; if none
+resolves, fall back to the most recent `photos` row with a non-empty URL.
+Orientation/crop constraints and a formal "avoid prior pairing" rule are not
+yet defined — both are open items in the current-state evidence report, not
+resolved by this contract.
+
+**Rotation scoring (current mechanism, unchanged by this contract).** Selection
+uses the existing deterministic score
+(`functions/_lib/content-inventory-rotation.ts`): editorial priority, feature
+weight, event-date/event-year proximity boost, a recency penalty that decays
+over a 90-day window, and a rotation-group penalty. This contract does not
+replace that mechanism; it defines the requirements a future runtime change
+would need to satisfy to close the gaps below.
+
+**Fairness, cooldown, and duplicate prevention.**
+
+- *Current:* the recency penalty is a soft, decaying score adjustment, not a
+  hard exclusion window; a single row with a sufficiently higher priority or
+  feature weight can be selected repeatedly. Duplicate prevention exists only
+  within one page-render (`lead-story`/`story-rail`/`archive-spotlight` IDs are
+  excluded from each other in the same request), not across requests or a
+  formal "edition."
+- *Required for #2461 conformance:* a hard recent-use exclusion window (not
+  merely a score penalty), preference for the least-used eligible row within a
+  zone (requiring a persistent usage-count field, which does not exist today —
+  `last_featured` is the only per-row rotation-history field), and near-full
+  eligible-pool rotation before any row repeats.
+
+**Recurring and time-sensitive content.** `event_date`/`event_year` proximity
+boosting already exists in the current scoring mechanism and satisfies #2461's
+anniversary/recurring-content requirement (e.g., MLB Lou Gehrig Day on June 2)
+without further contract change, provided the underlying `content_inventory`
+rows exist with correct `event_date`/`event_year` values — populating those
+specific rows is a content-operations task, not a contract gap.
+
+**Manual pinning and emergency override.** No mechanism exists today. Required:
+an admin-settable pin per zone that overrides rotation scoring for a bounded
+time window, and an emergency-override path that does not corrupt rotation
+history when released. Neither is authorized to be built by this contract.
+
+**Edition generation, persistence, regeneration, rollback, and audit.** No
+"edition" concept exists today; `club_home` content is recomputed fresh on
+every `GET /api/fanclub/home` request from the live score ranking. Required for
+#2461 conformance: a persisted edition record (the exact set of rows selected
+per zone, generated on a defined cadence rather than per-request), a
+regeneration path that supersedes rather than silently overwrites a prior
+edition, a rollback path to the previous edition, and a placement-history log
+recording asset ID, zone, size, timestamp, edition ID, automatic-vs-pinned
+selection, and media rendition used per placement — none of which exist today
+(only `last_featured`, a single timestamp per row, is recorded).
+
+**Media renditions.** #2461 requires thumbnail/small/medium/large renditions,
+generated once and requested by size rather than scaling a full-resolution
+image in the browser. No rendition generation or size-specific URL field
+exists anywhere in `functions/_lib/` today (verified by search); `photos.url`
+and `content_inventory_media` both store a single URL per media item.
+
+**Required D1/B2/API implications (future, not authorized here).** A
+placement-history table (or equivalent event log); a usage-count field or
+derivable equivalent on `content_inventory` (or the history table); an
+edition-record table; admin-pin fields or an admin-pin table; rendition
+generation (worker or build-time) plus size-specific URL storage or naming
+convention on B2/`photos`/`content_inventory_media`. None of these are D1
+migrations, API routes, or B2 changes performed by this task.
+
+**Explicit non-goals of this contract.** No runtime code, migration, or API
+change. No change to the existing deterministic scoring formula. No new public
+route. No change to CC-001/CC-002's own field contracts — this section
+consumes them. No decision on the open `recognition`/`submission-cta` side-rail
+placement question left open by #2662.
 
 ### Submission queue before publication
 

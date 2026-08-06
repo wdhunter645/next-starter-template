@@ -5,7 +5,7 @@ Authority Level: Canonical Design Specification
 Owns: FanClub home route purpose, section/zone contracts, responsive breakpoints, accessibility requirements, data dependencies
 Does Not Own: FanClub subpage specs; API schema details; implementation internals
 Canonical Reference: /docs/reference/design/fanclub.md
-Related issues: #1685, #1688, #1690, #1962, #2461, #2661, #2662
+Related issues: #1685, #1688, #1690, #1962, #2461, #2661, #2662, #2663
 Last Reviewed: 2026-08-05
 ---
 
@@ -143,6 +143,7 @@ Current known truth: no CSS transition, animation, or `prefers-reduced-motion` h
 
 - Member session state from `useMemberSession`
 - Dynamic Club Home inventory: `GET /api/fanclub/home` (`club_home` section in `content_inventory`)
+- Rotation, media-pairing, and edition contract: `docs/explanation/website/content-strategy.md`, "Club Newspaper rotation, media-pairing, and edition contract (#2663)"
 - Feature-link card targets: `/fanclub/photo`, `/fanclub/library`, `/fanclub/memorabilia`
 - Discussion workflows: `/fanclub/chat` and discussion APIs
 - Editorial submission intake: `/fanclub/submit` → `submission_queue`
