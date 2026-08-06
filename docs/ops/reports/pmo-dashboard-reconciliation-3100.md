@@ -23,6 +23,10 @@ This report records WORK-owned remediation for the PMO dashboard repository iden
   - a closed direct child is counted as completed;
   - generated output passes the existing dashboard validator.
 
+## Pre-gate remediation
+
+The initial PR run failed before code-quality execution because the PR description did not use the repository's canonical stable template and delivery-profile enums. The description was corrected to declare the source Issue, exact file allowlist, valid delivery profile, stable verification and acceptance sections, and reviewer/bot attestation. This report update retriggers the full current-head gate set against that corrected metadata.
+
 ## Boundaries
 
 - No generated PMO status, owner, percentage, or timestamp is hand-edited.
