@@ -5,7 +5,7 @@ Authority Level: Operational
 Owns: Club Newspaper Phase 1 master Issue specification, ordered child graph, proposed branches/scopes/dependencies/collision controls, migration/test/rollout/rollback/Production-verification/operator-handoff envelopes, minimum visible runtime slice, and serial release sequence
 Does Not Own: Phase 0 acceptance decision, #2464 advisory recommendations, #2934 disposition, canonical Phase 0 contracts (#2662/#2663/#2664), runtime implementation authorization before WORK release, or Production Go
 Canonical Reference: /docs/ops/reports/club-newspaper-phase0-acceptance-2665.md
-Related Issues: #2461, #2463, #2464, #2661, #2662, #2663, #2664, #2934, #2665
+Related Issues: #2461, #2463, #2464, #2661, #2662, #2663, #2664, #2934, #2665, #3055
 Last Reviewed: 2026-08-06
 ---
 
