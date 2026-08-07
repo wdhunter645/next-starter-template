@@ -225,11 +225,11 @@ describe('generateQuarantineKey', () => {
 // tests/content-pipeline-candidate-repository.test.ts.
 // ---------------------------------------------------------------------------
 
-function applyCurrentBranchMigrations(db: DatabaseSync) {
+function applyCurrentBranchMigrations(db: DatabaseSync, { excludeFiles = [] as string[] } = {}) {
   const migrationsDir = path.join(process.cwd(), 'migrations');
   const files = fs
     .readdirSync(migrationsDir)
-    .filter((file) => file.endsWith('.sql'))
+    .filter((file) => file.endsWith('.sql') && !excludeFiles.includes(file))
     .sort();
   for (const file of files) {
     db.exec(fs.readFileSync(path.join(migrationsDir, file), 'utf8'));
@@ -237,27 +237,16 @@ function applyCurrentBranchMigrations(db: DatabaseSync) {
 }
 
 /**
- * Applies the #3119 schema contract (migrations/0045_..., unmerged into
- * this branch as of #2899) inline, so the schema-available code paths can
- * be tested here without depending on PR #3121 having merged.
+ * #3119's schema contract (photos.status/submitted_by/etc. and
+ * photo_upload_attempts) now ships as migrations/0045_...sql. Excluding it
+ * reproduces the pre-#3121 schema so the schema-absent/partial code paths
+ * stay covered without hand-duplicating the migration's DDL (which would
+ * drift from it and double-apply once 0045 exists on this branch).
  */
-function applyPendingPhotoSchemaContract(db: DatabaseSync) {
-  db.exec(`
-    ALTER TABLE photos ADD COLUMN status TEXT NOT NULL DEFAULT 'published';
-    ALTER TABLE photos ADD COLUMN submitted_by TEXT COLLATE NOCASE;
-    ALTER TABLE photos ADD COLUMN submitted_at TEXT;
-    ALTER TABLE photos ADD COLUMN quarantine_key TEXT;
-    ALTER TABLE photos ADD COLUMN consent_confirmed INTEGER NOT NULL DEFAULT 0;
-    ALTER TABLE photos ADD COLUMN credit_line TEXT;
+const PENDING_PHOTO_SCHEMA_MIGRATION = '0045_member_photo_pending_status_and_rate_limit.sql';
 
-    CREATE TABLE IF NOT EXISTS photo_upload_attempts (
-      id           INTEGER PRIMARY KEY AUTOINCREMENT,
-      member_email TEXT    NOT NULL COLLATE NOCASE,
-      ip           TEXT    NOT NULL,
-      ok           INTEGER NOT NULL,
-      created_at   TEXT    NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+function applyMigrationsBeforePendingPhotoSchema(db: DatabaseSync) {
+  applyCurrentBranchMigrations(db, { excludeFiles: [PENDING_PHOTO_SCHEMA_MIGRATION] });
 }
 
 function wrapSqliteAsD1(sqlite: DatabaseSync) {
@@ -293,9 +282,9 @@ function wrapSqliteAsD1(sqlite: DatabaseSync) {
 }
 
 describe('hasPendingPhotoSchema', () => {
-  it('is false on the current branch (0045 not yet merged)', async () => {
+  it('is false before the #3119 schema contract (migration 0045) is applied', async () => {
     const sqlite = new DatabaseSync(':memory:');
-    applyCurrentBranchMigrations(sqlite);
+    applyMigrationsBeforePendingPhotoSchema(sqlite);
     const db = wrapSqliteAsD1(sqlite);
     expect(await hasPendingPhotoSchema(db)).toBe(false);
     sqlite.close();
@@ -304,7 +293,6 @@ describe('hasPendingPhotoSchema', () => {
   it('is true once the #3119 contract columns are present', async () => {
     const sqlite = new DatabaseSync(':memory:');
     applyCurrentBranchMigrations(sqlite);
-    applyPendingPhotoSchemaContract(sqlite);
     const db = wrapSqliteAsD1(sqlite);
     expect(await hasPendingPhotoSchema(db)).toBe(true);
     sqlite.close();
@@ -315,7 +303,7 @@ describe('hasPendingPhotoSchema', () => {
     // at insert time with a generic PERSIST_FAILED instead of a
     // deterministic SCHEMA_UNAVAILABLE.
     const sqlite = new DatabaseSync(':memory:');
-    applyCurrentBranchMigrations(sqlite);
+    applyMigrationsBeforePendingPhotoSchema(sqlite);
     sqlite.exec(`ALTER TABLE photos ADD COLUMN status TEXT NOT NULL DEFAULT 'published';`);
     sqlite.exec(`ALTER TABLE photos ADD COLUMN quarantine_key TEXT;`);
     // submitted_by, submitted_at, consent_confirmed, credit_line intentionally omitted.
@@ -328,7 +316,7 @@ describe('hasPendingPhotoSchema', () => {
 describe('checkUploadRateLimit', () => {
   it('fails open when photo_upload_attempts does not exist yet', async () => {
     const sqlite = new DatabaseSync(':memory:');
-    applyCurrentBranchMigrations(sqlite);
+    applyMigrationsBeforePendingPhotoSchema(sqlite);
     const db = wrapSqliteAsD1(sqlite);
     const result = await checkUploadRateLimit(db, 'member@example.com');
     expect(result).toEqual({ allowed: true, schemaAvailable: false });
@@ -338,7 +326,6 @@ describe('checkUploadRateLimit', () => {
   it('allows uploads under the threshold once the table exists', async () => {
     const sqlite = new DatabaseSync(':memory:');
     applyCurrentBranchMigrations(sqlite);
-    applyPendingPhotoSchemaContract(sqlite);
     const db = wrapSqliteAsD1(sqlite);
     await recordUploadAttempt(db, 'member@example.com', '1.2.3.4', false);
     const result = await checkUploadRateLimit(db, 'member@example.com');
@@ -349,7 +336,6 @@ describe('checkUploadRateLimit', () => {
   it('blocks uploads at/over the threshold within the 1-hour window', async () => {
     const sqlite = new DatabaseSync(':memory:');
     applyCurrentBranchMigrations(sqlite);
-    applyPendingPhotoSchemaContract(sqlite);
     const db = wrapSqliteAsD1(sqlite);
     for (let i = 0; i < 10; i++) {
       await recordUploadAttempt(db, 'member@example.com', '1.2.3.4', false);
@@ -363,7 +349,6 @@ describe('checkUploadRateLimit', () => {
   it('does not count a different member toward the same limit', async () => {
     const sqlite = new DatabaseSync(':memory:');
     applyCurrentBranchMigrations(sqlite);
-    applyPendingPhotoSchemaContract(sqlite);
     const db = wrapSqliteAsD1(sqlite);
     for (let i = 0; i < 10; i++) {
       await recordUploadAttempt(db, 'other-member@example.com', '9.9.9.9', false);
@@ -378,7 +363,6 @@ describe('insertPendingPhotoRecord', () => {
   it('inserts a pending row once the schema contract is present', async () => {
     const sqlite = new DatabaseSync(':memory:');
     applyCurrentBranchMigrations(sqlite);
-    applyPendingPhotoSchemaContract(sqlite);
     const db = wrapSqliteAsD1(sqlite);
 
     const result = await insertPendingPhotoRecord(db, {
@@ -402,7 +386,7 @@ describe('insertPendingPhotoRecord', () => {
 
   it('fails closed (returns ok:false) when the schema contract is absent', async () => {
     const sqlite = new DatabaseSync(':memory:');
-    applyCurrentBranchMigrations(sqlite);
+    applyMigrationsBeforePendingPhotoSchema(sqlite);
     const db = wrapSqliteAsD1(sqlite);
 
     const result = await insertPendingPhotoRecord(db, {
