@@ -19,6 +19,14 @@ This standard eliminates the recurring failure mode where discussion produces an
 
 This is **execution failure**, not partial success.
 
+## Current known truth
+
+Before this standard, no single canonical document defined what "approved action" means once Product Authority and an agent agree on a formulated action. Assignment packaging (`docs/templates/agent-assignment-template.md`) and shared execution rules (`docs/ops/ai/CORE-RULES.md`) covered stop conditions, protected stops, and handoff mechanics, but not execution fidelity itself — so agents had no shared, binding definition distinguishing legitimate implementation discretion from an unapproved substitution, and no required end-state reconciliation step before claiming completion. This gap produced the recurring failure mode described in Purpose: an agreed `1-2-3-4-5` action delivered as `X-Y-Z`.
+
+## Intended final state
+
+This standard is the single, stable source of the execution-fidelity contract for every LGFC agent and runtime (`## Scope`). It is not phased and has no planned future revisions beyond ordinary maintenance: routing from `Agent.md`, `docs/ops/ai/CORE-RULES.md`, and `docs/templates/agent-assignment-template.md` all point here as the canonical doctrine (`## Routing (single owner)`), and agent-specific rule files remain additive only, never duplicating or weakening it. Steady state is reached once every assignment that carries an approved multi-element action records it as an Execution Contract (template section 9a) and every completion claim is backed by element-by-element `Agreed → Delivered → PASS/FAIL` verification (template section 15a).
+
 ## Scope
 
 Applies to every LGFC agent and runtime that executes repository work under the mandatory authority chain, including WORK, Cursor (local/cloud), Claude Code, Codex, Copilot, Devin, and future members mapped in `docs/governance/AGENT-TEAM.md`.
