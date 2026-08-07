@@ -47,7 +47,7 @@ Emergency recovery:
 
 # PR Summary
 
-- **Issue:** #____
+- **Issue:** #____  <!-- REQUIRED: open same-repo governing Issue that PREDATES this branch/PR (issue-first hard gate; #3117). No PR-first exceptions. -->
 - Intent label: <!-- intent:docs / intent:feature / intent:fix / intent:chore / intent:config / intent:ci / intent:ops -->
 - PR class: <!-- docs-governance / docs-content / code / config / ci / release / ops / mixed-approved -->
 - Size: <!-- medium-provisional / small / medium / large -->
