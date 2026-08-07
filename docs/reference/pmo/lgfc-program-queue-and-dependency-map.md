@@ -5,8 +5,8 @@ Authority Level: Operational Authority
 Owns: Launched-program queue mode, dependency-map requirements, execution-mode selection, continue/halt decision rules, and dispatcher requirements for PMO-governed programs
 Does Not Own: Workflow YAML implementation, GitHub merge authority, issue mutation authority, ChatGPT account-level scheduled automation, or uncontrolled orchestrator label automation
 Canonical Reference: /docs/reference/pmo/lgfc-program-portfolio-model.md
-Related Issues: #2391, #2386, #2360, #2361, #2363, #2364, #1449, #1448, #1411, #1255, #1256, #1258, #1259, #1501, #1500, #1719, #1720, #1721, #1725, #2775
-Last Reviewed: 2026-07-16
+Related Issues: #2391, #2386, #2360, #2361, #2363, #2364, #1449, #1448, #1411, #1255, #1256, #1258, #1259, #1501, #1500, #1719, #1720, #1721, #1725, #2775, #3055, #3113
+Last Reviewed: 2026-08-06
 ---
 
 # LGFC Program Queue and Dependency Map
@@ -148,7 +148,25 @@ Launched-program queue mode does not grant Cursor merge, close, relabel, queue m
 
 In Mode B, the approved project graph is standing authority. A successor release is an evidence-backed state transition controlled by WORK, not a new assignment. The dispatcher may transport a wake event after release, but absence of repeated prose does not block a package-complete successor.
 
-A successor that lacks any executable-package field is `PACKAGE-INCOMPLETE` and fails closed before branch creation or editing. A real dependency or protected boundary is recorded as an evidence-specific `HOLD`, never a generic `BLOCKED` placeholder.
+A successor that lacks any executable-package field is `PACKAGE-INCOMPLETE` and fails closed before branch creation or editing. A real collision or protected stop is recorded as an evidence-specific `HOLD` scoped to the affected action — never a generic `BLOCKED` placeholder or queue-wide freeze.
+
+Ordinary predecessor and advisory conditions are ordering metadata (comments, package notes, dependency-map rows). They do not deny otherwise authorized, collision-safe work. When only part of a task is gated, split bounded increments and continue collision-safe work.
+
+## Dependency and stop taxonomy
+
+| Class | Map / Issue representation | Continue rule |
+| --- | --- | --- |
+| Advisory prerequisite | Comment or soft dependency row | Collision-safe work continues |
+| Ordered predecessor | Predecessor/successor fields; WORK `ACCEPT` required | Successor releases immediately after verified `ACCEPT` |
+| Real collision | Halt condition scoped to colliding surface | Disjoint collision-safe tasks continue |
+| Protected stop | Halt condition for Production, credential, security, etc. | Only the unsafe action halts; earlier increments may proceed |
+
+### Examples
+
+- **Advisory-dependent work:** Task notes "prefer upstream design doc." Docs increments proceed; integration waits only for the unverified design consumption step.
+- **Docs/evidence increment:** Task 001 delivers governance alignment; Task 002 implements runtime — both may be prepared; runtime editing waits only on allowlist authority, not queue-wide block.
+- **Serial child chain:** Predecessor `ACCEPT` triggers immediate successor release when package-complete (#3055); no repeat dispatch prose required.
+- **Production-only gate:** Dependency map marks Production promotion as protected stop; Development queue items continue until the promotion action itself.
 
 ## Queue watch and dispatcher requirement
 
@@ -158,11 +176,12 @@ The responsible ChatGPT/operator path must verify:
 
 1. the predecessor issue state and terminal labels;
 2. the successor or dependent issues named by the issue body, parent issue, PR body, or dependency map;
-3. whether each successor is unblocked, queued, still blocked, or explicitly halted;
+3. whether each successor is unblocked, queued, awaiting predecessor `ACCEPT`, or subject to a scoped protected stop;
 4. whether Cursor has exactly one next active source issue unless parallel work is authorized;
-5. whether an Ops remediation issue exists for any silent-stall or dispatcher failure.
+5. whether WORK has prepared the successor package before implementer idle time;
+6. whether an Ops remediation issue exists for any silent-stall or dispatcher failure.
 
-If a predecessor closes and any successor still says blocked by that predecessor, the dispatcher must correct the successor state or create/update a remediation issue. Do not treat stale blocked text as harmless documentation drift.
+If a predecessor closes and any successor still says blocked by that predecessor without a real collision or protected stop, the dispatcher must correct the successor state or create/update a remediation issue. Do not treat stale blocked text as harmless documentation drift. Correct advisory or ordered-predecessor metadata to comments and sequencing fields instead of queue-wide freeze.
 
 Regression case for this requirement:
 
@@ -187,8 +206,8 @@ Required map fields per task or checkpoint:
 | Predecessor | Prior task, checkpoint, or `none` |
 | Successor | Next task, checkpoint, or `terminal` |
 | Stage-before-merge | `yes` or `no` — whether upstream stage gate must pass before this task's PR may merge |
-| Halt condition | What blocks execution or continuation |
-| Resume condition | What must be true before the next item may start |
+| Halt condition | What blocks execution or continuation — use protected stop or real collision only; advisory prerequisites belong in comments |
+| Resume condition | What must be true before the next item may start — normally predecessor WORK `ACCEPT` for serial chains |
 
 Approval:
 
@@ -228,7 +247,7 @@ Every executable task issue in launched-program queue mode must state:
 | Predecessor | `#1401` or `Task 003` |
 | Successor | `#1403` or `Task 005` |
 | Stage-before-merge | `yes` / `no` |
-| Halt/resume condition | Rebaseline complete; `#1448` closed; predecessor PR merged |
+| Halt/resume condition | Rebaseline complete; `#1448` closed; predecessor WORK `ACCEPT`; scoped protected stop for Production only |
 | Dispatcher path | manual / scheduled ChatGPT watch / repo-native automation / not configured |
 
 Partial overlap with dependency/blocking criteria is not sufficient. Use the field names above in the issue body.
@@ -261,8 +280,8 @@ Cursor may **continue** (prepare or update the current task PR) when:
 Cursor must **halt** (stop at `READY FOR REVIEW` or report without implementing) when:
 
 1. a rebaseline pause is active (for example `#1448` while open);
-2. the dependency map marks the next item blocked;
-3. predecessor, stage-before-merge, or halt/resume conditions are unmet or unclear;
+2. the dependency map marks the next item blocked by a real collision or protected stop (not an ordinary ordered predecessor or advisory prerequisite);
+3. predecessor WORK `ACCEPT`, stage-before-merge, or halt/resume conditions are unmet or unclear;
 4. the task would require merge, close, relabel, queue advancement, or child
    issue creation without explicit authorization;
 5. more than one source issue would be needed for the PR body.

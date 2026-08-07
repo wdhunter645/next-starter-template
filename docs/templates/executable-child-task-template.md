@@ -5,8 +5,8 @@ Authority Level: Operational
 Owns: Package-complete project-child and child-remediation Issue format
 Does Not Own: Project Graduation, priority, Product/Production decisions, PR approval, or merge authority
 Canonical Reference: /docs/governance/WORK-QUEUES-AND-COLLABORATION.md
-Related Issues: #3055
-Last Reviewed: 2026-08-04
+Related Issues: #3055, #3113
+Last Reviewed: 2026-08-06
 ---
 
 # Executable Child Task Template
@@ -19,11 +19,12 @@ A child may enter the executable queue only when every applicable field below is
 - Parent project: #____
 - Task ID / sequence: ____
 - Project Graduation GO: ____
-- Predecessor and required WORK acceptance: ____
+- Predecessor and required WORK acceptance: ____ (ordered predecessor — not queue-wide block)
 - Successor: #____ | terminal
 - Execution relationship: serial | parallel-authorized
 - Parallel collision proof: ____ | not applicable
-- Assigned Implementation / Operations role holder: ____
+- Advisory prerequisites (comments only; do not deny collision-safe work): ____
+- Assigned Implementation / Operations role holder: ____ (preserve Product-authorized routing)
 - WORK acceptance/closeout owner: WORK
 
 ## Objective and deliverable
@@ -61,7 +62,8 @@ A child may enter the executable queue only when every applicable field below is
 - Rollback/disable/recovery procedure: ____
 - Protected Product/Production/legal/privacy/rights/cost/provider/credential/destructive-data/public-claim boundaries: ____
 - Stop conditions: ____
-- HOLD owner, evidence, and release condition when applicable: ____ | not applicable
+- Bounded increment split (when only part is gated): ____ | not applicable
+- HOLD owner, evidence, and release condition when applicable (protected stop or real collision only): ____ | not applicable
 
 ## Independent review
 
@@ -79,11 +81,11 @@ Record on the live Issue before branch creation or editing:
 - allowlist confirmation;
 - predecessor WORK `ACCEPT` evidence;
 - package-complete confirmation;
-- collision/dependency/hold check;
+- collision/dependency/hold check (distinguish advisory prerequisite, ordered predecessor, real collision, protected stop);
 - protected-stop check;
 - validation and rollback confirmation.
 
-Result: `PASS` | `PACKAGE-INCOMPLETE` | `HOLD`
+Result: `PASS` | `PACKAGE-INCOMPLETE` | `HOLD` (evidence-specific protected stop or real collision only)
 
 ## Implementation handoff packet
 
@@ -101,9 +103,9 @@ Result: `PASS` | `PACKAGE-INCOMPLETE` | `HOLD`
 
 WORK independently reviews the source package, final diff, tests, checks, review dispositions, integration identity, post-integration evidence, documentation, rollback, and unresolved exceptions.
 
-Disposition: `ACCEPT` | `HOLD` | `REMEDIATE` | `VERIFY MORE`
+Disposition: `ACCEPT` | `HOLD` (protected stop or real collision only) | `REMEDIATE` | `VERIFY MORE`
 
-On `ACCEPT`:
+On `ACCEPT` (record immediately after verified integration — no idle delay):
 
 - reconcile and close the child;
 - reconcile parent progress;
@@ -112,5 +114,7 @@ On `ACCEPT`:
 - release the successor under standing Project Graduation authority;
 - emit runtime wake transport if applicable;
 - do not require repeat Administration or PMO dispatch.
+
+While predecessor is in review, WORK prepares the successor package before implementer idle time.
 
 WORK cannot independently verify or approve a PR implemented by WORK.

@@ -5,8 +5,8 @@ Authority Level: Domain Policy
 Owns: Repository work-queue classification, queue precedence, team-assignment and priority namespaces, Active and Pipeline priority semantics, Project Graduation, queue-state transitions, universal agent collaboration, and collaboration interaction with pull requests
 Does Not Own: Product outcome, final priority decisions, project design, implementation methods, recovery strategy, PR approval decisions, Production authorization, dashboard runtime implementation, or label-migration execution
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2695, #2699
-Last Reviewed: 2026-07-21
+Related Issues: #2695, #2699, #3055, #3113
+Last Reviewed: 2026-08-06
 ---
 
 # Work Queues and Collaboration
@@ -25,6 +25,8 @@ Operations interrupt queue
 ```
 
 Operations has precedence while numbered Operations work is actionable. PMO and Engineering are peer queues with mutually exclusive meanings and priority namespaces.
+
+PMO defines **sequencing and readiness coordination**, not a general execution gate. PMO orders launched projects and records prerequisites; it does not deny otherwise authorized, collision-safe work. Dependencies and prerequisites are normally comments, package notes, and order metadata — not queue-wide `HOLD` or `BLOCKED` states for ordinary predecessor or advisory conditions.
 
 ## Authority boundary
 
@@ -58,7 +60,7 @@ Cursor is the normal primary remediation implementer. ChatGPT may participate as
 
 ### PMO
 
-PMO is the Active queue for launched projects being implemented, validated, promoted, deployed, verified, and closed.
+PMO is the Active queue for launched projects being implemented, validated, promoted, deployed, verified, and closed. PMO coordinates **when** work runs and **in what order**; it is not a blanket deny gate for authorized implementation.
 
 PMO priority answers:
 
@@ -271,6 +273,26 @@ A child task should identify ordering through Issue-body metadata such as:
 
 Sequence labels may be introduced only when a separate implementation decision proves they improve deterministic routing. Team priority labels are prohibited on child tasks.
 
+## Dependency and stop taxonomy
+
+Every recorded condition must use exactly one class:
+
+| Class | Meaning | Representation |
+| --- | --- | --- |
+| Advisory prerequisite | Soft ordering or helpful context; does not deny collision-safe work | Comment, package note, or dependency-map row |
+| Ordered predecessor | Serial child waits for predecessor WORK `ACCEPT` | Predecessor/successor metadata in Issue body or task graph |
+| Real collision | Overlapping branch, file, credential, or deployment surface | Evidence-specific hold scoped to the colliding action |
+| Protected stop | Legal, privacy, rights, security, credential, cost, destructive-data, Production-authority, unsafe-operation, or independent-review boundary | Evidence-specific `HOLD` scoped to the affected unsafe action only |
+
+Ordinary predecessor or advisory conditions are **not** `HOLD` or `BLOCKED`. When only part of a task is gated, split bounded increments and continue collision-safe work. A gated final step must not freeze the queue.
+
+### Examples
+
+- **Advisory-dependent work:** A child notes "prefer Task 003 design context." Docs and validation increments proceed; only the integration step requiring unverified design waits.
+- **Docs/evidence increment:** Split "implement feature" (executable) from "Production promotion" (protected stop until `PRODUCTION GO`).
+- **Serial child chain:** After merge and post-merge verification, WORK records `ACCEPT` or bounded correction and immediately releases the package-complete successor (#3055).
+- **Production-only gate:** Development tasks continue under standing authority; Production dispatch pauses only for the promotion action.
+
 ## Standing graduated-project authority and continuous serial continuation
 
 Project Graduation `GO` is standing implementation authority for the exact ordered child graph recorded in the project master. It is not consumed after the first child and does not require Administration, PMO, Product Authority, or an agent to restate unchanged authority between prepared serial children.
@@ -283,9 +305,13 @@ A serial successor becomes executable when all of the following are true:
 - no technical dependency, collision, numbered Operations interrupt, evidence-specific hold, failed verification, or protected decision blocks it; and
 - the project sequence still identifies it as next.
 
-WORK, acting through PMO / Engineering and Administration & Communications, owns independent task acceptance, child closure/reconciliation, parent progress reconciliation, and successor release. WORK records exactly one disposition: `ACCEPT`, `HOLD`, `REMEDIATE`, or `VERIFY MORE`. Deterministic CI may attempt the idempotent closeout transaction first but does not invent acceptance.
+WORK, acting through PMO / Engineering and Administration & Communications, owns independent task acceptance, child closure/reconciliation, parent progress reconciliation, and successor release. After verified integration, WORK records exactly one disposition without idle delay: `ACCEPT`, bounded correction via `REMEDIATE`, evidence-specific `HOLD` (protected stop or real collision only), or `VERIFY MORE`. Deterministic CI may attempt the idempotent closeout transaction first but does not invent acceptance.
+
+While a predecessor is in review or verification, WORK prepares the successor package so implementer idle time does not occur after `ACCEPT`. On `ACCEPT`, WORK immediately releases the next package-complete serial successor under standing Project Graduation authority.
 
 A missing package is `PACKAGE-INCOMPLETE`, not an implementation assignment and not a generic dependency block. WORK corrects the package before it enters the executable queue. A wake event, label, or dispatcher message transports existing authority; it does not recreate it.
+
+Product-authorized agent routing is preserved: each task assigns exactly one implementation executor (Cursor Local or Claude Code per `docs/ops/ai/CORE-RULES.md`); PMO sequencing does not reroute executors.
 
 Parallel execution is permitted only when the project master explicitly authorizes it and records disjoint writable scopes, collision safety, dependency independence, and separate review/closeout evidence.
 
@@ -439,4 +465,7 @@ This policy supersedes lower-level or legacy instructions that:
 - allow a priority change without accountable preparation work;
 - create a second Issue merely to enable agent collaboration;
 - require collaborators to take over branch or PR work when bounded Issue-based guidance is sufficient;
-- treat advisory collaboration as formal PR approval.
+- treat advisory collaboration as formal PR approval;
+- use queue-wide `HOLD` or `BLOCKED` for ordinary predecessor or advisory conditions;
+- freeze an entire project or queue because one final step requires a protected stop;
+- delay successor release after verified integration when the successor package is complete.
