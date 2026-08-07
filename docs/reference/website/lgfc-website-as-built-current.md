@@ -34,6 +34,12 @@ Evidence used:
 
 Repository and live GitHub evidence supersede historical tracker/queue snapshots.
 
+## Intended final state
+
+This reference remains a current-state reconciliation layer rather than a competing Product/design authority. The intended final state is that canonical design, current runtime behavior, and maintained website reference documentation agree on the approved route and disclosure model; bounded discrepancies such as #3148 and #3149 are completed or explicitly accepted; and historical snapshots remain clearly historical rather than being used as current queue or implementation authority.
+
+When those conditions change materially, update this reference with verified evidence and a new review date instead of creating another competing current-state owner.
+
 ## Approved Product behavior
 
 - Homepage `ABOUT` section is approved and is the Lou Gehrig biography location.
