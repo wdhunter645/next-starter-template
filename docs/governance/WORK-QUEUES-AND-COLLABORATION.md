@@ -5,7 +5,7 @@ Authority Level: Domain Policy
 Owns: Repository work-queue classification, queue precedence, team-assignment and priority namespaces, Active and Pipeline priority semantics, Project Graduation, queue-state transitions, universal agent collaboration, and collaboration interaction with pull requests
 Does Not Own: Product outcome, final priority decisions, project design, implementation methods, recovery strategy, PR approval decisions, Production authorization, dashboard runtime implementation, or label-migration execution
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2695, #2699, #3055, #3113, #3145
+Related Issues: #2695, #2699, #3055, #3113, #3145, #3152
 Last Reviewed: 2026-08-07
 ---
 
@@ -15,16 +15,17 @@ Last Reviewed: 2026-08-07
 
 This document defines how LGFC work is classified, prioritized, interrupted, prepared, executed, and collaboratively supported across the repository.
 
-It establishes one Operations interrupt queue above two peer normal-work queues:
+It establishes one Operations interrupt queue above three peer normal-work queues:
 
 ```text
 Operations interrupt queue
         |
+        +-- Governance stewardship queue
         +-- PMO Active implementation queue
         +-- Engineering Pipeline-preparation queue
 ```
 
-Operations has precedence while numbered Operations work is actionable. PMO and Engineering are peer queues with mutually exclusive meanings and priority namespaces.
+Operations has precedence while numbered Operations work is actionable. Governance, PMO, and Engineering are peer normal-work queues with mutually exclusive meanings and priority namespaces. Governance is **not** an Operations interrupt queue and is **not** an Active PMO Project queue.
 
 PMO defines **sequencing and readiness coordination**, not a general execution gate. PMO orders launched projects and records prerequisites; it does not deny otherwise authorized, collision-safe work. Dependencies and prerequisites are normally comments, package notes, and order metadata — not queue-wide `HOLD` or `BLOCKED` states for ordinary predecessor or advisory conditions.
 
@@ -56,7 +57,23 @@ A qualifying standalone Operations Issue:
 - receives the next available capacity required for remediation;
 - remains subject to scope, validation, independent review, Production authority, rollback, and recovery controls.
 
-Cursor is the normal primary remediation implementer. ChatGPT may participate as Tier 2 Operations support when design, architecture, acceptance, recovery planning, or independent Engineering judgment is needed.
+Cursor is the normal primary remediation implementer. WORK may participate as Tier 2 Operations support when design, architecture, acceptance, recovery planning, or independent Engineering judgment is needed.
+
+### Governance
+
+Governance is the repository-stewardship queue for standards, authority integrity, governance/documentation audits, policy and process-contract maintenance, Diátaxis/placement audits, agent-routing/authority-stack audits, documentation-drift reconciliation, and isolated repository-governance improvements (#3152).
+
+Typical Governance Issues may be bounded and standalone. They do **not** require Project Graduation merely to be executable.
+
+Governance is not:
+
+- an Operations interrupt over PMO/Engineering;
+- an Active PMO Project/Program delivery queue;
+- a bypass around Engineering preparation or PMO delivery for substantial future product/system implementation.
+
+If Governance work discovers or grows into a substantial future implementation Project, keep the stewardship finding on Governance and route the implementation candidate into Engineering preparation / PMO delivery under normal graduation rules.
+
+Cursor Local is the normal implementation executor for bounded Governance documentation/repository changes unless the source Issue says otherwise. Claude Code may perform Governance work when explicitly assigned. WORK may own Governance analysis, policy decisions, and independent assurance according to durable-role mapping.
 
 ### PMO
 
@@ -85,6 +102,7 @@ ChatGPT is the normal Engineering preparation owner. Cursor may collaborate for 
 A source Issue belongs to at most one work queue at a time:
 
 - `team:operations`;
+- `team:governance`;
 - `team:pmo`;
 - `team:engineering`.
 
@@ -92,13 +110,24 @@ An Issue must never carry more than one `team:*` assignment.
 
 Priority and state labels must match the assigned team. Cross-namespace combinations are prohibited because they create dual ownership and contradictory routing.
 
+Classification rule:
+
+- accepted capability failed/degraded/unsafe → Operations;
+- repository governance/standards/documentation stewardship or isolated policy/audit → Governance;
+- already-launched Project/Program being delivered → PMO;
+- future Project/Program being designed/prepared → Engineering.
+
+Active Project children that edit documentation remain on the PMO parent graph (`team:pmo` parent / `pmo:task` child) — they are not moved to Governance merely because they edit docs.
+
 Examples of invalid state:
 
 ```text
 team:engineering + pmo:priority:1
 team:pmo + eng:priority:1
 team:operations + team:pmo
+team:governance + ops:priority:1
 ops:priority:2 + eng:priority:2
+gov:priority:1 + pmo:priority:1
 ```
 
 Collaboration labels or collaborator assignments do not change the queue owner.
@@ -139,6 +168,33 @@ Monitoring and Hold do not block PMO or Engineering work. Each must record:
 - condition for returning to a numbered priority or closing.
 
 When a numbered Operations Issue has been worked as far as possible, it must move to Monitoring or Hold rather than remain falsely actionable.
+
+### Governance labels
+
+Governance source Issues use:
+
+```text
+team:governance
+```
+
+and exactly one Governance priority or non-blocking state:
+
+```text
+gov:priority:1
+gov:priority:2
+gov:priority:3
+gov:priority:4
+gov:review
+gov:hold
+```
+
+Numbered Governance priorities order stewardship work. They do **not** interrupt PMO or Engineering the way numbered Operations priorities do.
+
+`gov:review` means the stewardship task is awaiting recorded independent/governance review or assurance evidence on a defined interval.
+
+`gov:hold` means the stewardship task cannot progress until specified information, authority, access, or another release condition is satisfied.
+
+Review and Hold must record reason, owner, update interval or next-review time, expected evidence, and return/close condition.
 
 ### PMO labels
 
@@ -308,7 +364,7 @@ A serial successor becomes claimable when all of the following are true:
 - its live Issue is package-complete under `docs/templates/executable-child-task-template.md`;
 - the starting target, branch rule, writable allowlist, non-goals, tests, failure paths, evidence, rollback, independent review, handoff, closeout, and protected stops are explicit;
 - no technical dependency, collision, numbered Operations interrupt, evidence-specific hold, failed verification, or protected decision blocks it; and
-- the claiming agent is eligible for the Issue's owning Team (`team:operations`, `team:pmo`, or `team:engineering`).
+- the claiming agent is eligible for the Issue's owning Team (`team:operations`, `team:governance`, `team:pmo`, or `team:engineering`).
 
 Before each claim, the agent evaluates recorded order, predecessor evidence, factual dependencies, active claims and repository collisions, protected stops, required Product/Production/privacy/security/cost/rights authority, Operations precedence, and Team eligibility.
 
@@ -330,21 +386,24 @@ Parallel execution is permitted only when the project master explicitly authoriz
 
 1. Actionable `team:operations` Issues (self-claim by queue priority and eligibility).
 2. Active `team:pmo` project/program children under standing parent authority (self-claim next eligible child).
-3. Engineering collaboration only when explicitly requested and bounded — Cursor is not a normal Engineering executor.
+3. Actionable `team:governance` stewardship Issues (self-claim by `gov:*` priority/eligibility).
+4. Engineering collaboration only when explicitly requested and bounded — Cursor is not a normal Engineering executor.
 
-Operations Monitoring and Hold Issues receive their required interval updates but do not block PMO work. An actionable Operations Issue interrupts ordinary PMO implementation at the nearest safe checkpoint; Cursor resumes the PMO graph after the interrupt clears.
+Operations Monitoring and Hold Issues receive their required interval updates but do not block PMO, Governance, or Engineering work. An actionable Operations Issue interrupts ordinary PMO and Governance implementation at the nearest safe checkpoint; Cursor resumes after the interrupt clears. Governance does not interrupt PMO or Engineering.
 
 ### Claude Code
 
 1. Active `team:pmo` project/program children under standing parent authority (self-claim when eligible).
 2. `team:engineering` Pipeline and Active Engineering work (self-claim by Engineering priority and eligibility).
-3. Bounded `team:operations` support only when an Operations Issue is explicitly escalated beyond normal Cursor-only handling — Claude does not normally self-claim the Operations queue, and escalation does not create a fourth Team or change Team ownership.
+3. `team:governance` stewardship work when explicitly assigned.
+4. Bounded `team:operations` support only when an Operations Issue is explicitly escalated beyond normal Cursor-only handling — Claude does not normally self-claim the Operations queue, and escalation does not create a fifth Team or change Team ownership.
 
 ### Work
 
 1. Numbered Operations Issues when assigned for Tier 2 support, Engineering judgment, review, or coordination.
-2. PMO preparation, graduation, monitoring, assurance, substantive acceptance, exception handling, and closeout.
-3. Engineering Pipeline preparation and portfolio reconciliation.
+2. Governance analysis, policy/design decisions, repository-governance review, and independent assurance when assigned.
+3. PMO preparation, graduation, monitoring, assurance, substantive acceptance, exception handling, and closeout.
+4. Engineering Pipeline preparation and portfolio reconciliation.
 
 ## Universal collaboration method
 

@@ -397,7 +397,7 @@ For a graduated Project or Program, the exact prepared child graph is standing a
 
 Missing package fields produce `PACKAGE-INCOMPLETE`; a substantive dependency or protected boundary produces an evidence-specific `HOLD` scoped to the affected action — not queue-wide freeze for ordinary sequencing. Merge alone is not substantive acceptance. WORK owns preparation, monitoring, assurance, exception handling, and parent/program acceptance where judgment is required; WORK is not a routine per-task dispatcher. Deterministic CI remains the single automatic source-Issue closeout owner and cannot independently verify or approve work WORK implemented.
 
-PMO defines sequencing and readiness coordination, not a general execution gate (#3113 / #3145). Ordinary predecessor and advisory conditions are comments, package notes, and order metadata. When only part of a task is gated, split bounded increments and continue collision-safe work. WORK prepares successor packages before implementer idle time. Product-authorized agent routing (Cursor Local for Operations + PMO; Claude Code for PMO + Engineering) is preserved per Team eligibility and claim.
+PMO defines sequencing and readiness coordination, not a general execution gate (#3113 / #3145). Ordinary predecessor and advisory conditions are comments, package notes, and order metadata. When only part of a task is gated, split bounded increments and continue collision-safe work. WORK prepares successor packages before implementer idle time. Product-authorized agent routing (Cursor Local for Operations + PMO + Governance; Claude Code for PMO + Engineering, and Governance when assigned) is preserved per Team eligibility and claim (#3152).
 
 ## Execution Contract Fidelity (#3138)
 

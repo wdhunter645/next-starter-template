@@ -232,6 +232,7 @@ Formal PR review is separate. It requires reviewer authority and uses GitHub-nat
 A source Issue may carry at most one team assignment:
 
 - `team:operations`;
+- `team:governance`;
 - `team:pmo`;
 - `team:engineering`.
 
@@ -241,7 +242,7 @@ Administration & Communications must reject or route correction for:
 
 - multiple team labels;
 - cross-team priority combinations;
-- PMO or Engineering priority on a project child task;
+- PMO, Engineering, Operations, or Governance priority/state on a project child task;
 - an Engineering preparation assignment using `pmo:task` or `Parent Project:`;
 - Project Graduation that retains Engineering priority or automatically maps it to PMO priority;
 - collaboration metadata that is interpreted as second ownership;
@@ -250,6 +251,8 @@ Administration & Communications must reject or route correction for:
 Active PMO parent priority selects the project. Project-defined order and dependencies select the child task.
 
 Pipeline Engineering priority orders preparation and is independent of Pipeline stage.
+
+Governance priority orders stewardship work and does not interrupt PMO or Engineering.
 
 ## Operations state contract
 
@@ -271,6 +274,19 @@ Numbered priorities are actionable interrupts. Monitoring and Hold are non-block
 - condition for numbered reactivation or closeout.
 
 A numbered Issue that cannot progress must move to Monitoring or Hold rather than remain falsely actionable.
+
+## Governance state contract
+
+A standalone Governance Issue uses one of:
+
+- `gov:priority:1`;
+- `gov:priority:2`;
+- `gov:priority:3`;
+- `gov:priority:4`;
+- `gov:review`;
+- `gov:hold`.
+
+Numbered Governance priorities order stewardship work and are not Operations interrupts. Review and Hold are non-blocking and require owner, reason, interval/next-review, expected evidence, and return/close condition.
 
 ## Allowed mutations
 
