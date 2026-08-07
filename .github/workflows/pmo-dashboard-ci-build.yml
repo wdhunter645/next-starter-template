@@ -2,10 +2,9 @@ name: PMO dashboard CI build
 
 on:
   workflow_dispatch:
-  issues:
-    types: [opened, edited, closed, reopened, labeled, unlabeled, assigned, unassigned]
   schedule:
-    - cron: "0 */6 * * *"
+    # Freshness floor: Pages lag at most ~30 minutes unless manually dispatched.
+    - cron: "*/30 * * * *"
   push:
     paths:
       - ".github/workflows/pmo-dashboard-ci-build.yml"
@@ -48,7 +47,7 @@ jobs:
         run: |
           echo "## PMO dashboard branch validation" >> "$GITHUB_STEP_SUMMARY"
           echo "Deterministic fixture generation, current-repository identity, owner precedence, and validation passed." >> "$GITHUB_STEP_SUMMARY"
-          echo "Live issue inventory validation runs on main, scheduled, manual, and issue-triggered operational events." >> "$GITHUB_STEP_SUMMARY"
+          echo "Live issue inventory validation runs on main, scheduled, and manual operational events only (no issue-event triggers)." >> "$GITHUB_STEP_SUMMARY"
 
   build:
     name: Build PMO dashboard
@@ -83,3 +82,4 @@ jobs:
         run: |
           echo "## PMO dashboard CI build" >> "$GITHUB_STEP_SUMMARY"
           echo "Validated live GitHub issue inventory output at \`$PMO_DASHBOARD_OUT_DIR/\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "Publish path: deploy workflow consumes this artifact via workflow_run (no issue-event fan-out)." >> "$GITHUB_STEP_SUMMARY"
