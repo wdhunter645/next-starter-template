@@ -11,9 +11,27 @@ Last Reviewed: 2026-08-07
 
 # Issue #3145 — Continuous parent-level execution reconciliation
 
+## Purpose
+
+Record the reconciliation from mandatory per-task WORK release/dispatch semantics to continuous parent-level agent execution under standing Project/Program ACTIVE authority, including Team vs agent label separation, Cursor/Claude Team eligibility, and CI bookkeeping opportunities that preserve the single post-merge closeout owner.
+
+## Scope
+
+In scope: documentation/governance reconciliation for #3145 and identification of deterministic CI bookkeeping opportunities.
+
+Out of scope: new closeout mutation owners; workflow implementation; absorbing #3134 HOLD taxonomy ownership; rewriting historical closed Issues solely for process alignment.
+
+## Current known truth
+
+Before this reconciliation, graduated-project docs still required WORK `ACCEPT` plus WORK/Administration “release” as the normal gate before a package-complete successor could proceed, which idled eligible executors even when deterministic predecessor completion already satisfied the prepared graph. `team:*` and `agent:*` were easy to conflate in practice. Claude precedence still listed Operations assignment ahead of normal Engineering self-claim.
+
+## Intended final state
+
+PMO prepares and activates a complete Project or Program, assigns eligible implementation agents at the parent, and those agents self-claim the next eligible child one task at a time under standing parent authority. Routine PMO redispatch / WORK “release” between already-authorized tasks is not required. WORK performs preparation, monitoring, assurance, substantive acceptance where judgment is required, exception handling, and portfolio reconciliation. Deterministic CI remains the single automatic source-Issue closeout owner.
+
 ## Decision summarized
 
-PMO prepares and activates a complete Project or Program, assigns eligible implementation agents at the parent, and those agents self-claim the next eligible child one task at a time under standing parent authority. Routine PMO redispatch / WORK “release” between already-authorized tasks is not required.
+Parent ACTIVE + prepared child graph = standing implementation authority. Eligible agents self-claim; WORK is not a routine per-task dispatcher.
 
 ## Canonical owners after this reconciliation
 
