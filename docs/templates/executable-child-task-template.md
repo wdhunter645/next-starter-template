@@ -79,9 +79,10 @@ Record on the live Issue before branch creation or editing:
 - exact starting SHA;
 - working branch;
 - allowlist confirmation;
-- predecessor WORK `ACCEPT` evidence;
+- predecessor deterministic-completion evidence (validated merge + post-merge closeout, or WORK `ACCEPT` when a substantive gate is defined);
 - package-complete confirmation;
 - collision/dependency/hold check (distinguish advisory prerequisite, ordered predecessor, real collision, protected stop);
+- Team eligibility and `agent:*` claim confirmation (`team:*` ownership unchanged);
 - protected-stop check;
 - validation and rollback confirmation.
 
@@ -101,17 +102,17 @@ Result: `PASS` | `PACKAGE-INCOMPLETE` | `HOLD` (evidence-specific protected stop
 
 ## WORK closeout packet
 
-WORK independently reviews the source package, final diff, tests, checks, review dispositions, integration identity, post-integration evidence, documentation, rollback, and unresolved exceptions.
+WORK independently reviews the source package, final diff, tests, checks, review dispositions, integration identity, post-integration evidence, documentation, rollback, and unresolved exceptions when substantive assurance is required or a discrepancy appears.
 
 Disposition: `ACCEPT` | `HOLD` (protected stop or real collision only) | `REMEDIATE` | `VERIFY MORE`
 
-On `ACCEPT` (record immediately after verified integration — no idle delay):
+On deterministic predecessor completion (and on `ACCEPT` when a substantive gate applies):
 
-- reconcile and close the child;
+- reconcile and close the child when mechanically or judgmentally authorized;
 - reconcile parent progress;
 - identify the next serial successor;
 - verify successor package completeness and real dependency/collision/hold state;
-- release the successor under standing Project Graduation authority;
+- allow an eligible agent to self-claim the successor under standing Project Graduation authority;
 - emit runtime wake transport if applicable;
 - do not require repeat Administration or PMO dispatch.
 

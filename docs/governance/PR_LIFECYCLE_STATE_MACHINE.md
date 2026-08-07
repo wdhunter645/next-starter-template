@@ -165,11 +165,9 @@ Verify:
 
 ### WORK acceptance transition
 
-After Development integration or Production merge evidence exists, WORK performs the acceptance review required by the source package. The allowed dispositions are `ACCEPT`, `HOLD`, `REMEDIATE`, and `VERIFY MORE`.
+After Development integration or Production merge evidence exists, WORK performs the acceptance review required by the source package when a substantive assurance gate applies or a discrepancy appears. The allowed dispositions are `ACCEPT`, `HOLD`, `REMEDIATE`, and `VERIFY MORE`.
 
-Only `ACCEPT` permits child closure, parent reconciliation, and release of the next package-complete successor. Neither merge state nor routine Administration prose creates acceptance. For a graduated serial project, the next prepared successor proceeds under standing project authority without repeat dispatch after WORK acceptance.
-
-If WORK implemented the PR, WORK cannot supply its own independent review or verification; another authorized reviewer must provide that evidence before acceptance.
+For a graduated serial project, the next prepared package-complete successor may be self-claimed under standing parent authority after deterministic predecessor completion without repeat dispatch (#3145). WORK `ACCEPT` is required for child closure and parent reconciliation when the project defines a substantive acceptance gate on that edge, and for exception/HOLD/REMEDIATE decisions. Neither merge state nor routine Administration prose invents acceptance. If WORK implemented the PR, WORK cannot supply its own independent review or verification; another authorized reviewer must provide that evidence before acceptance.
 
 ## State 6 — CLOSEOUT VERIFIED
 

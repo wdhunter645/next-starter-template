@@ -146,7 +146,7 @@ Launched-program queue mode does not grant Cursor merge, close, relabel, queue m
 
 ## Standing authority rule
 
-In Mode B, the approved project graph is standing authority. A successor release is an evidence-backed state transition controlled by WORK, not a new assignment. The dispatcher may transport a wake event after release, but absence of repeated prose does not block a package-complete successor.
+In Mode B, the approved project graph is standing authority. Eligible agents self-claim the next package-complete successor under that authority after deterministic predecessor completion (#3145). WORK may record substantive `ACCEPT`/`HOLD`/`REMEDIATE`/`VERIFY MORE` when judgment is required; the dispatcher may transport a wake event, but absence of repeated prose does not block a package-complete successor.
 
 A successor that lacks any executable-package field is `PACKAGE-INCOMPLETE` and fails closed before branch creation or editing. A real collision or protected stop is recorded as an evidence-specific `HOLD` scoped to the affected action — never a generic `BLOCKED` placeholder or queue-wide freeze.
 
@@ -157,7 +157,7 @@ Ordinary predecessor and advisory conditions are ordering metadata (comments, pa
 | Class | Map / Issue representation | Continue rule |
 | --- | --- | --- |
 | Advisory prerequisite | Comment or soft dependency row | Collision-safe work continues |
-| Ordered predecessor | Predecessor/successor fields; WORK `ACCEPT` required | Successor releases immediately after verified `ACCEPT` |
+| Ordered predecessor | Predecessor/successor fields; deterministic completion required | Successor becomes claimable after validated merge + post-merge closeout (or WORK `ACCEPT` when a substantive gate is defined) |
 | Real collision | Halt condition scoped to colliding surface | Disjoint collision-safe tasks continue |
 | Protected stop | Halt condition for Production, credential, security, etc. | Only the unsafe action halts; earlier increments may proceed |
 
@@ -165,7 +165,7 @@ Ordinary predecessor and advisory conditions are ordering metadata (comments, pa
 
 - **Advisory-dependent work:** Task notes "prefer upstream design doc." Docs increments proceed; integration waits only for the unverified design consumption step.
 - **Docs/evidence increment:** Task 001 delivers governance alignment; Task 002 implements runtime — both may be prepared; runtime editing waits only on allowlist authority, not queue-wide block.
-- **Serial child chain:** Predecessor `ACCEPT` triggers immediate successor release when package-complete (#3055); no repeat dispatch prose required.
+- **Serial child chain:** Deterministic predecessor completion enables eligible-agent self-claim of the next package-complete successor (#3055 / #3145); no repeat dispatch prose required.
 - **Production-only gate:** Dependency map marks Production promotion as protected stop; Development queue items continue until the promotion action itself.
 
 ## Queue watch and dispatcher requirement
@@ -176,7 +176,7 @@ The responsible ChatGPT/operator path must verify:
 
 1. the predecessor issue state and terminal labels;
 2. the successor or dependent issues named by the issue body, parent issue, PR body, or dependency map;
-3. whether each successor is unblocked, queued, awaiting predecessor `ACCEPT`, or subject to a scoped protected stop;
+3. whether each successor is unblocked, queued, awaiting deterministic predecessor completion, or subject to a scoped protected stop;
 4. whether Cursor has exactly one next active source issue unless parallel work is authorized;
 5. whether WORK has prepared the successor package before implementer idle time;
 6. whether an Ops remediation issue exists for any silent-stall or dispatcher failure.

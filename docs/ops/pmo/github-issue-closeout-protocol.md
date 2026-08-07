@@ -32,7 +32,7 @@ Closeout is an Administration & Communications function. It records what happene
 
 | Closeout class | Closeout decision authority | Transaction executor |
 | --- | --- | --- |
-| Assigned project child task | WORK after required independent review, integration, validation, and post-integration evidence exists | Deterministic CI may attempt the idempotent transaction first; WORK verifies/reconciles the result and controls successor release |
+| Assigned project child task | WORK when substantive assurance is required after independent review, integration, validation, and post-integration evidence exists | Deterministic CI may attempt the idempotent transaction first; WORK verifies/reconciles when judgment is required; eligible agents self-claim successors under standing parent authority (#3145) |
 | Assigned child remediation | WORK after required independent review and remediation verification exists | Deterministic CI may attempt the idempotent transaction first; WORK verifies/reconciles the result |
 | Project/master | PMO / Engineering with independent PR Approver / Engineering verification | Designated Administration & Communications role holder who did not solely implement the underlying child work |
 | Program/umbrella | Product Authority and PMO / Engineering under explicitly recorded program-closeout authority | Administration & Communications role holder |
@@ -143,7 +143,7 @@ WORK independently reviews the complete task package and evidence and records ex
 - `REMEDIATE`; or
 - `VERIFY MORE`.
 
-Only `ACCEPT` authorizes child terminal reconciliation, parent progress reconciliation, and release of the next package-complete successor. A merge by itself is insufficient. When WORK implemented the change, WORK must obtain independent review/verification from another authorized reviewer before recording acceptance.
+WORK records `ACCEPT`, `HOLD`, `REMEDIATE`, or `VERIFY MORE` when substantive assurance or discrepancy handling is required. Deterministic CI remains the single automatic source-Issue closeout owner and may reconcile mechanically provable child/parent bookkeeping. Eligible agents self-claim the next package-complete successor under standing parent authority after deterministic predecessor completion (#3145). A merge by itself is not substantive acceptance. When WORK implemented the change, WORK must obtain independent review/verification from another authorized reviewer before recording acceptance.
 
 ## Assigned task-closeout sequence
 

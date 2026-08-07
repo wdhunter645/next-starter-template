@@ -254,16 +254,17 @@ When numbered remediation has progressed as far as possible, the Issue must move
 
 An explicit incident or protected hold may continue to block covered work independently of the queue state — scoped to the affected action only, not the entire queue.
 
-## PMO sequencing and successor release
+## PMO sequencing and continuous parent-level continuation
 
 After verified integration of a project child:
 
-1. WORK records `ACCEPT` or bounded correction (`REMEDIATE` / `VERIFY MORE`) without idle delay;
-2. WORK verifies the successor package is complete before implementer idle time;
-3. Administration & Communications releases the next package-complete serial successor under standing Project Graduation authority;
-4. a wake event transports existing authority; it does not recreate it or require repeat PMO dispatch.
+1. Deterministic CI attempts mechanically provable source-Issue closeout first (single automatic closeout owner);
+2. WORK records `ACCEPT` or bounded correction (`REMEDIATE` / `VERIFY MORE`) when substantive assurance is required, without idle delay;
+3. WORK verifies the successor package is complete before implementer idle time;
+4. an eligible agent self-claims the next package-complete serial successor under standing Project Graduation authority (#3145);
+5. a wake event may transport existing authority; it does not recreate it or require repeat PMO dispatch.
 
-While a predecessor is in review, WORK prepares the successor package. Ordered-predecessor conditions are satisfied by WORK `ACCEPT`, not by queue-wide freeze.
+While a predecessor is in review, WORK prepares the successor package. Ordered-predecessor conditions are satisfied by deterministic predecessor completion (or WORK `ACCEPT` when a substantive gate is defined), not by queue-wide freeze or routine administrative release.
 
 ## Non-blocking rule
 
