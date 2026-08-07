@@ -5,8 +5,8 @@ Authority Level: Core
 Owns: Shared execution rules, enforcement model, PR discipline, stop conditions, shared product-startup framework
 Does Not Own: Design authority, platform configuration, tracker content
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Related Issues: #3055, #3113
-Last Reviewed: 2026-08-06
+Related Issues: #3055, #3113, #3138
+Last Reviewed: 2026-08-07
 ---
 
 # CORE-RULES.md
@@ -398,3 +398,14 @@ For a graduated project, the exact prepared child graph is standing authority. A
 Missing package fields produce `PACKAGE-INCOMPLETE`; a substantive dependency or protected boundary produces an evidence-specific `HOLD` scoped to the affected action — not queue-wide freeze for ordinary sequencing. Merge alone is not acceptance. WORK owns acceptance, child/parent reconciliation, and successor release, and cannot independently verify or approve work WORK implemented.
 
 PMO defines sequencing and readiness coordination, not a general execution gate (#3113). Ordinary predecessor and advisory conditions are comments, package notes, and order metadata. When only part of a task is gated, split bounded increments and continue collision-safe work. WORK prepares successor packages before implementer idle time and releases the next eligible child immediately after verified integration. Product-authorized agent routing (Cursor Local, Claude Code) is preserved per task assignment.
+
+## Execution Contract Fidelity (#3138)
+
+Approved assignments and Product Authority–approved actions are governed by the canonical standard `docs/governance/standards/AGENT-EXECUTION-FIDELITY.md`.
+
+- Agreed `1-2-3-4-5` means execute `1-2-3-4-5`. Do not silently substitute `X-Y-Z`.
+- Do not summarize, compress, expand, narrow, reinterpret, redesign, optimize, or replace agreed elements without new Product Authority approval.
+- Before reporting completion, verify each agreed requirement against the actual resulting state (`Agreed → Delivered → PASS/FAIL`).
+- If exact execution becomes impossible, stop the affected action, report the specific blocker, and obtain approval before any alternative.
+- Bounded technical discretion remains allowed only inside intentionally open contract details that do not change meaning, scope, source, destination, or required end state.
+- Agent-specific rule files are additive and must not weaken or reinterpret this shared rule.
