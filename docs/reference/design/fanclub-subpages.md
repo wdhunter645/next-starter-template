@@ -5,7 +5,8 @@ Authority Level: Canonical Design Specification
 Owns: Routes, navigation invariants, UI/UX contracts, page content contracts
 Does Not Own: How-to procedures; operational runbooks; governance policies
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-04-01
+Related issues: #2857, #2898, #2899, #2900, #2901
+Last Reviewed: 2026-08-06
 ---
 
 # FanClub Sub-Page Specifications — LGFC
@@ -92,13 +93,22 @@ Below the grid:
 
 > “Have a photo to share? [Submit a Photo →]”
 
-Submission flow: member uploads a photo; admin approval/publishing workflow is implementation detail.
+**Current known truth (#2898):** this CTA links to `/fanclub/submit`, which is a text-article form (title/content/rights fields) with no file input. No binary photo upload path exists anywhere in the repository today, and the `photos` table has no `status`/pending column — every existing row is implicitly treated as already approved. Member photo upload with moderation is deferred, tracked under #2857/#2899–#2901; this document records the intended end state below, not current behavior.
+
+**Intended final state:** member uploads a photo with required rights/ownership metadata; the submission persists privately (non-public) pending admin moderation approval; only approved photos appear in the gallery above.
+
+## Photo Detail
+
+**Current known truth (#2898):** clicking a thumbnail in the Photo Grid above does nothing today — no modal or dedicated detail route exists. The "may include" list below is the intended #2900 scope, not current behavior.
+
+**Intended final state (#2900):** a detail view (modal or dedicated route) showing the larger image, full title/description, tags, credit/source, and navigation between photos.
 
 ## Data
 
 - `GET /api/fanclub/photos?q=keyword&tags=tag1,tag2&page=N`
 - Permission: member session required
 - Backed by D1 table: `photos`
+- Full reconciliation evidence: `docs/ops/reports/member-photo-reconciliation-2898.md`
 
 ---
 
