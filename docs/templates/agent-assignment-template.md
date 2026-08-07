@@ -5,8 +5,8 @@ Authority Level: Operational
 Owns: Standard role-based format for assigning scoped work to current and future LGFC agents and systems
 Does Not Own: Source Issue scope, design authority, current team mapping, implementation decisions, PR approval, merge authority, or closeout policy
 Canonical Reference: /docs/governance/AGENT-TEAM.md
-Related Issues: #1449, #2700
-Last Reviewed: 2026-07-21
+Related Issues: #1449, #2700, #3138
+Last Reviewed: 2026-08-07
 ---
 
 # Agent Assignment Template
@@ -61,6 +61,7 @@ Do not use this template to:
 | Implementation Go or action authority | Exact role decision and durable reference authorizing execution |
 | Stop conditions | Protected stops, holds, scope conflicts, or missing evidence that require escalation |
 | Handoff | Changed files/actions, validation, risks, scope confirmation, and next target role |
+| Execution Contract | Explicit agreed-action elements when Product Authority (or equivalent) has approved a formulated action; see `docs/governance/standards/AGENT-EXECUTION-FIDELITY.md` |
 | Closeout packet | Required when task-closeout delegation is `delegated` |
 | Dependency fields | Predecessor, successor, stage-before-merge, collision, halt/resume condition when applicable |
 
@@ -150,6 +151,31 @@ This assignment is complete when:
 - [ ] <criterion 1>
 - [ ] <criterion 2>
 - [ ] <criterion 3>
+- [ ] Every Execution Contract element (when present) is verified `Agreed → Delivered → PASS`
+
+The agreed deliverable itself is an acceptance criterion. Useful-but-substituted outcomes do not satisfy the contract (`docs/governance/standards/AGENT-EXECUTION-FIDELITY.md`).
+
+## 9a. Execution Contract (required when an action was explicitly approved)
+
+When Product Authority (or another explicitly authorized decision role) has approved a formulated action, record it here. Omit this section only when the assignment has no separately approved multi-element action beyond the Objective/Deliverable fields above.
+
+```text
+AGREED ACTION
+
+1. ____________________
+2. ____________________
+3. ____________________
+4. ____________________
+5. ____________________
+
+Execution fidelity:
+- Execute every numbered element exactly as approved.
+- No substitution, summarization, expansion, reduction, reinterpretation, optimization, or redesign without new approval.
+- If any element cannot be completed exactly, STOP and identify that element and blocker.
+- Bounded technical discretion is allowed only for details the contract intentionally leaves open, without changing meaning, scope, source, destination, or required end state.
+```
+
+Canonical doctrine: `docs/governance/standards/AGENT-EXECUTION-FIDELITY.md`.
 
 ## 10. Verification Plan
 
@@ -202,9 +228,14 @@ Before edits or mutations, the assigned role holder records:
 - [ ] Acceptance criteria verifiable
 - [ ] Verification and rollback plans present
 - [ ] Protected stops reviewed
+- [ ] Agreed-action contract loaded (or N/A — no separate Execution Contract)
+- [ ] Every agreed element is executable as written
+- [ ] No substitution or interpretation is required to begin
 - [ ] Checkpoint: PASS | FAIL — <blockers>
 
 Do not begin until checkpoint PASS and required action authority are recorded.
+
+If interpretation or substitution is required to begin, stop and route before execution rather than deciding unilaterally.
 
 ## 13. Implementation Go or Action Authority
 
@@ -233,7 +264,32 @@ When implementation, review, or remediation is complete, report:
 - unresolved risks or blockers;
 - confirmation that scope did not expand;
 - target role and requested next action;
-- PR, commit, deployment, or incident identity.
+- PR, commit, deployment, or incident identity;
+- Execution Contract Verification (section 15a) when an Execution Contract was present.
+
+## 15a. Execution Contract Verification
+
+Required before claiming completion when section 9a was used. Completion requires every applicable element to PASS.
+
+```text
+EXECUTION CONTRACT VERIFICATION
+
+1. Agreed: __________
+   Delivered: ________
+   Result: PASS | FAIL
+
+2. Agreed: __________
+   Delivered: ________
+   Result: PASS | FAIL
+
+3. Agreed: __________
+   Delivered: ________
+   Result: PASS | FAIL
+
+Overall: PASS | FAIL
+```
+
+Do not report `complete`, `done`, `accepted`, or equivalent terminal success when any required element is FAIL, missing, substituted, or unverifiable.
 
 ## 16. Task Closeout Packet
 
@@ -319,6 +375,7 @@ Do not:
 - Constitution and authority order: `Agent.md`, `docs/governance/REPOSITORY-AUTHORITY.md`
 - Durable roles and current mappings: `docs/governance/AGENT-TEAM.md`
 - Shared execution rules: `docs/ops/ai/SHARED-AGENT-RULES.md`, `docs/ops/ai/CORE-RULES.md`
+- Execution fidelity: `docs/governance/standards/AGENT-EXECUTION-FIDELITY.md`
 - Implementation role contract: `docs/reference/agents/implementation-authority-contract.md`
 - Administration executor matrix: `docs/reference/operations/administrative-control-lane-contract.md`
 - Issue closeout procedure: `docs/ops/pmo/github-issue-closeout-protocol.md`

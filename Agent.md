@@ -5,8 +5,8 @@ Authority Level: Navigation
 Owns: Read order, authority routing, lane/profile identification, execution entry point
 Does Not Own: Role policy, execution rules, design authority, communication policy, delivery policy, or governance decisions
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2640, #2641, #2686, #2690, #3052
-Last Reviewed: 2026-08-04
+Related Issues: #2640, #2641, #2686, #2690, #3052, #3138
+Last Reviewed: 2026-08-07
 ---
 
 # Agent.md
@@ -127,6 +127,7 @@ Read the files that match the current task:
 | Runner/controller behavior | `docs/reference/ci/repository-runner-contract.md`; applicable routing contract/procedure |
 | PR work | `.agents/skills/lgfc-pr-governance/SKILL.md`; `.github/pull_request_template.md`; `docs/how-to/cursor/open-task-pr.md`; `docs/governance/PR_PROCESS.md`; `docs/governance/PR_LIFECYCLE_STATE_MACHINE.md` |
 | Model A/B execution | `docs/how-to/agents/run-model-a.md` or `docs/how-to/agents/run-model-b.md` |
+| Approved assignment or Product Authority action (execution fidelity) | `docs/governance/standards/AGENT-EXECUTION-FIDELITY.md`; `docs/ops/ai/CORE-RULES.md` (Execution Contract Fidelity); `docs/templates/agent-assignment-template.md` |
 
 ## Communication routing
 
@@ -233,6 +234,7 @@ Routine bounded correction, deterministic administrative reconciliation, and non
 - Day-2 Operations: `docs/governance/OPERATIONS-AND-RECOVERY.md`
 - Lane/profile reference: `docs/reference/operations/operating-lanes-and-promotion-profiles.md`
 - Shared execution detail: `docs/ops/ai/CORE-RULES.md`
+- Execution fidelity (approved-action contracts): `docs/governance/standards/AGENT-EXECUTION-FIDELITY.md`
 
 Legacy person-specific or serialized instructions must not be cited when they conflict with these canonical sources.
 
