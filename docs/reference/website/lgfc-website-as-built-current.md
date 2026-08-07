@@ -40,6 +40,10 @@ This reference remains a current-state reconciliation layer rather than a compet
 
 When those conditions change materially, update this reference with verified evidence and a new review date instead of creating another competing current-state owner.
 
+## Review boundary
+
+This document may record implementation evidence and bounded follow-up, but it does not self-accept the work that produced it. The actor performing the documentation increment must not serve as the independent closeout reviewer for the same increment; closeout must use the repository's independent review and acceptance path.
+
 ## Approved Product behavior
 
 - Homepage `ABOUT` section is approved and is the Lou Gehrig biography location.
@@ -107,4 +111,4 @@ For website current-state decisions use, in order:
 
 ## Closeout condition for #3074
 
-#3074 may close only after independent review confirms this reconciliation and the canonical design/runtime discrepancies routed to #3148/#3149 are either completed or explicitly accepted as bounded open follow-up without leaving contradictory canonical documentation. The actor performing this documentation increment must not serve as the independent closeout reviewer for the same work.
+#3074 may close only after independent review confirms this reconciliation and the canonical design/runtime discrepancies routed to #3148/#3149 are either completed or explicitly accepted as bounded open follow-up without leaving contradictory canonical documentation.
