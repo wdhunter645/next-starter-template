@@ -391,13 +391,13 @@ Regardless of product, startup completion never authorizes:
 A source Issue, its acceptance criteria, an exact file-touch allowlist, the applicable promotion profile, role authority, and an explicit implementation Go are loaded and confirmed separately, after startup completes. Startup completion is never itself interpreted as task authorization.
 
 
-## Continuous serial implementation (#3055)
+## Continuous parent-level execution (#3055 / #3145)
 
-For a graduated project, the exact prepared child graph is standing authority. After WORK records predecessor `ACCEPT`, the next package-complete serial child may proceed without a repeat Administration/PMO dispatch. The implementation runtime must record starting SHA, branch, allowlist confirmation, and pre-implementation checkpoint before editing.
+For a graduated Project or Program, the exact prepared child graph is standing authority. Eligible agents self-claim the next package-complete serial child one task at a time without routine Administration/PMO redispatch. The implementation runtime must record starting SHA, branch, allowlist confirmation, and pre-implementation checkpoint before editing.
 
-Missing package fields produce `PACKAGE-INCOMPLETE`; a substantive dependency or protected boundary produces an evidence-specific `HOLD` scoped to the affected action — not queue-wide freeze for ordinary sequencing. Merge alone is not acceptance. WORK owns acceptance, child/parent reconciliation, and successor release, and cannot independently verify or approve work WORK implemented.
+Missing package fields produce `PACKAGE-INCOMPLETE`; a substantive dependency or protected boundary produces an evidence-specific `HOLD` scoped to the affected action — not queue-wide freeze for ordinary sequencing. Merge alone is not substantive acceptance. WORK owns preparation, monitoring, assurance, exception handling, and parent/program acceptance where judgment is required; WORK is not a routine per-task dispatcher. Deterministic CI remains the single automatic source-Issue closeout owner and cannot independently verify or approve work WORK implemented.
 
-PMO defines sequencing and readiness coordination, not a general execution gate (#3113). Ordinary predecessor and advisory conditions are comments, package notes, and order metadata. When only part of a task is gated, split bounded increments and continue collision-safe work. WORK prepares successor packages before implementer idle time and releases the next eligible child immediately after verified integration. Product-authorized agent routing (Cursor Local, Claude Code) is preserved per task assignment.
+PMO defines sequencing and readiness coordination, not a general execution gate (#3113 / #3145). Ordinary predecessor and advisory conditions are comments, package notes, and order metadata. When only part of a task is gated, split bounded increments and continue collision-safe work. WORK prepares successor packages before implementer idle time. Product-authorized agent routing (Cursor Local for Operations + PMO; Claude Code for PMO + Engineering) is preserved per Team eligibility and claim.
 
 ## Execution Contract Fidelity (#3138)
 

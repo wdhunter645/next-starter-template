@@ -180,8 +180,8 @@ After Go:
 - PMO / Engineering remains available for lightweight problem adjustment;
 - material plan changes return to PMO / Engineering authority;
 - when only part of a task is gated, split bounded increments and continue collision-safe work;
-- WORK prepares successor packages before implementer idle time and releases the next eligible child immediately after verified `ACCEPT`;
-- Product-authorized agent routing (Cursor Local, Claude Code) is preserved per task assignment.
+- WORK prepares successor packages before implementer idle time; eligible agents self-claim the next package-complete child under standing parent authority after deterministic predecessor completion (#3145);
+- Product-authorized agent routing (Cursor Local, Claude Code) is preserved per Team eligibility and claim.
 
 Active parent priority selects which project receives focus. The selected project's own task sequence and dependencies select the next executable child task. Child tasks do not carry team-level priority.
 
@@ -190,17 +190,17 @@ Active parent priority selects which project receives focus. The selected projec
 PMO records conditions using the taxonomy in `docs/governance/WORK-QUEUES-AND-COLLABORATION.md`:
 
 - **Advisory prerequisite** — comment or package note; does not deny collision-safe work.
-- **Ordered predecessor** — serial sequence metadata; successor releases after WORK `ACCEPT`.
+- **Ordered predecessor** — serial sequence metadata; successor becomes claimable after deterministic predecessor completion (or WORK `ACCEPT` when a substantive gate is defined on that edge).
 - **Real collision** — hold scoped to the colliding action only.
 - **Protected stop** — legal, privacy, rights, security, credential, cost, destructive-data, Production-authority, unsafe-operation, or independent-review boundary; blocks only the affected unsafe action.
 
-Ordinary predecessor or advisory conditions are not queue-wide `HOLD` or `BLOCKED`. A gated final step must not freeze the queue when earlier increments remain executable.
+Ordinary predecessor or advisory conditions are not queue-wide `HOLD` or `BLOCKED`. A gated final step must not freeze the queue when earlier increments remain executable. Routine administrative confirmation is not a valid parent blocker.
 
 ### Examples
 
 - **Advisory-dependent work:** Pipeline preparation notes a dependency on external design review. Bounded repository documentation may proceed; only the step consuming unapproved design waits.
 - **Docs/evidence increment:** A child delivers governance docs now and defers Production promotion until protected review completes.
-- **Serial child chain:** Standing Project Graduation authority carries the prepared graph; WORK releases each package-complete successor immediately after predecessor `ACCEPT` without repeat PMO dispatch.
+- **Serial child chain:** Standing Project Graduation authority carries the prepared graph; eligible agents self-claim each package-complete successor after deterministic predecessor completion without routine PMO redispatch (#3055 / #3145).
 - **Production-only gate:** Development increments merge under standing authority; only the Production promotion action requires `PRODUCTION GO`.
 
 ## Active priority decisions

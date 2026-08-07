@@ -5,8 +5,8 @@ Authority Level: Domain Policy
 Owns: Durable LGFC roles, recognized agent product inventory, current member mapping, approval authority, protected stops, operating modes, launch-control workflow boundaries, member work-precedence mapping, and delegated task-closeout role boundaries
 Does Not Own: Queue and priority semantics, shared execution detail, tool-specific runtime behavior, PMO sizing, promotion-profile policy, communication mutation taxonomy, or production mechanics
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2494, #2640, #2641, #2648, #2699, #2700, #3052
-Last Reviewed: 2026-08-04
+Related Issues: #2494, #2640, #2641, #2648, #2699, #2700, #3052, #3145
+Last Reviewed: 2026-08-07
 ---
 
 # Agent Team
@@ -37,16 +37,18 @@ No role may self-approve work when independent review is required. Implementatio
 
 ## WORK task and project acceptance ownership
 
-WORK holds the PMO / Engineering and Administration & Communications responsibility for evidence-backed task and project acceptance, closeout, parent reconciliation, and successor release.
+WORK holds the PMO / Engineering and Administration & Communications responsibility for evidence-backed task and project acceptance, closeout, parent reconciliation, and exception handling.
 
-For every implementation child, WORK independently reviews the live source Issue, final diff, required tests and failure paths, checks, review dispositions, integration identity, post-integration evidence, documentation, rollback readiness, and unresolved exceptions. WORK records one controlling disposition:
+For every implementation child that requires judgment, WORK independently reviews the live source Issue, final diff, required tests and failure paths, checks, review dispositions, integration identity, post-integration evidence, documentation, rollback readiness, and unresolved exceptions. WORK records one controlling disposition when assurance is required:
 
-- `ACCEPT` — reconcile/close the child, reconcile the parent, and release the next package-complete successor;
+- `ACCEPT` — reconcile/close the child and reconcile the parent when a substantive acceptance gate applies;
 - `HOLD` — record the true dependency or protected stop, owner, evidence needed, and release condition;
-- `REMEDIATE` — return bounded defects to the originating implementer and keep the successor unexecutable;
+- `REMEDIATE` — return bounded defects to the originating implementer and keep the affected transition fail-closed;
 - `VERIFY MORE` — identify the missing proof and keep the affected transition fail-closed.
 
-Deterministic CI may execute mechanically provable closeout mutations, but WORK owns the acceptance decision and verifies the resulting repository state. WORK must not independently approve or verify a PR that WORK implemented. In that case, another authorized independent reviewer supplies the review evidence and Bill retains every required protected Product or Production decision.
+After a Project or Program is Active with a prepared child graph, eligible agents self-claim the next package-complete child under standing parent authority (#3145). WORK does not act as a routine per-task dispatcher or mandatory “release” gate between already-authorized children. Deterministic CI may execute mechanically provable closeout mutations, but WORK owns substantive acceptance decisions and verifies resulting repository state when judgment is required. WORK must not independently approve or verify a PR that WORK implemented. In that case, another authorized independent reviewer supplies the review evidence and Bill retains every required protected Product or Production decision.
+
+`team:*` labels are durable Team ownership. `agent:*` labels are current execution claims only and must not be added merely to make an Issue visible.
 
 ## Recognized agent products
 
@@ -118,25 +120,25 @@ Lanes define authority. The separate Operations, PMO, and Engineering work queue
 
 ### Cursor Local
 
-1. Numbered Operations Issues requiring remediation.
-2. Active PMO project tasks selected by parent PMO priority and project-defined task sequence.
-3. Bounded Engineering collaboration only when explicitly requested.
+1. Actionable `team:operations` Issues requiring remediation (normal Operations executor; self-claim by eligibility).
+2. Active `team:pmo` project/program children under standing parent authority (self-claim next eligible child).
+3. Bounded Engineering collaboration only when explicitly requested — Cursor is not a normal `team:engineering` executor.
 
-Operations Monitoring and Hold Issues receive required interval updates but do not block Active PMO work.
+Operations Monitoring and Hold Issues receive required interval updates but do not block Active PMO work. An actionable Operations Issue interrupts ordinary PMO implementation at the nearest safe checkpoint.
 
 ### Claude Code
 
-1. Numbered Operations Issues requiring remediation, when explicitly assigned.
-2. Active PMO project tasks selected by parent PMO priority and project-defined task sequence, when explicitly assigned — operating in parallel with, not in place of, Cursor Local; each task has exactly one assigned executor.
+1. Active `team:pmo` project/program children under standing parent authority (self-claim when eligible) — operating in parallel with, not in place of, Cursor Local; each claimed task has exactly one executor.
+2. `team:engineering` Pipeline and Active Engineering work (normal Engineering executor; self-claim by eligibility).
 3. Independent PR review (PR Approver / Engineering) for work Claude Code did not itself implement, when requested.
-4. Bounded Engineering collaboration only when explicitly requested.
+4. Bounded `team:operations` support only when an Operations Issue is explicitly escalated beyond normal Cursor-only handling — Claude does not normally self-claim the Operations queue; escalation does not create a fourth Team or change Team ownership.
 
 Operations Monitoring and Hold Issues receive required interval updates but do not block Active PMO work.
 
 ### Work
 
 1. Numbered Operations Issues when assigned for Tier 2 specialist support, Engineering judgment, independent review, or coordination.
-2. PMO work when assigned for design adjustment, review, promotion, Production decision preparation, verification, or closeout — including project-closeout administrative tasks (collecting required information/evidence and recording the closeout transaction).
+2. PMO preparation, graduation, monitoring, assurance, substantive acceptance, exception handling, and closeout — including project-closeout administrative tasks.
 3. Engineering Pipeline preparation selected by Engineering priority.
 
 This precedence orders each member's available capacity. It does not merge team queues or transfer source-Issue ownership.

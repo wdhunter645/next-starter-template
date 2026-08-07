@@ -223,7 +223,7 @@ Use exactly one classification per condition:
 | Class | Meaning | Dispatcher action |
 | --- | --- | --- |
 | Advisory prerequisite | Helpful context or soft ordering; does not deny collision-safe work | Record as comment or package note; do not set queue-wide hold |
-| Ordered predecessor | Serial child sequence; next item waits for predecessor WORK `ACCEPT` | Record predecessor/successor metadata; release successor immediately after verified `ACCEPT` |
+| Ordered predecessor | Serial child sequence; next item waits for deterministic predecessor completion | Record predecessor/successor metadata; eligible agent self-claims after validated merge + post-merge closeout (or WORK `ACCEPT` when a substantive gate is defined) |
 | Real collision | Same branch, file, credential, or deployment surface would conflict | Block only the colliding action; permit disjoint collision-safe work |
 | Protected stop | Legal, privacy, rights, security, credential, cost, destructive-data, Production-authority, unsafe-operation, or independent-review boundary | Block only the affected unsafe action; record owner, evidence, and release condition |
 
@@ -233,24 +233,24 @@ Use exactly one classification per condition:
 
 - **Advisory-dependent work:** Task B references Task A design notes. Task B docs/evidence increments may proceed; only the integration step that consumes unverified A output waits.
 - **Docs/evidence increment:** A child splits implementation (executable now) from Production promotion (protected stop until review). Implementation proceeds; Production dispatch pauses only for the promotion action.
-- **Serial child chain:** After predecessor merge and post-merge verification, WORK records `ACCEPT` or bounded correction, verifies successor package completeness, and releases the next child without idle delay or repeat PMO dispatch (#3055).
+- **Serial child chain:** After predecessor merge and post-merge verification, an eligible agent self-claims the next package-complete child under standing parent authority without idle delay or repeat PMO dispatch (#3055 / #3145). WORK records `ACCEPT` or bounded correction when substantive assurance is required.
 - **Production-only gate:** Development increments merge under standing authority; `PRODUCTION GO` blocks only the Production promotion action, not unrelated collision-safe Development tasks.
 
-## Continuous serial release
+## Continuous parent-level continuation
 
 For a graduated project, steps 4 through 7 above evaluate and transport standing authority; they do not require a new PMO or Administration assignment.
 
-While a predecessor is in review or verification, WORK prepares the successor package so implementer idle time does not occur after `ACCEPT`.
+While a predecessor is in review or verification, WORK prepares the successor package so implementer idle time does not occur after deterministic completion.
 
-After WORK records predecessor `ACCEPT` (or bounded correction and re-verification), the dispatcher must immediately:
+After deterministic predecessor completion (validated merge + successful post-merge closeout, or WORK `ACCEPT` when a substantive gate is defined), the dispatcher must immediately:
 
 1. verify the next live child is package-complete;
 2. verify no real collision, protected stop, numbered Operations interrupt, or failed verification applies to the successor;
-3. reconcile the predecessor, parent, and successor states;
-4. set the successor to executable and emit the applicable runtime wake signal; and
+3. reconcile the predecessor, parent, and successor states as mechanically provable;
+4. allow an eligible agent to self-claim the successor and emit the applicable runtime wake signal; and
 5. record the successor's required pre-implementation checkpoint.
 
-Ordered-predecessor conditions are satisfied by verified `ACCEPT`, not by queue-wide freeze. If fields are missing, set `PACKAGE-INCOMPLETE` and return it to WORK for correction. If a substantive protected stop or real collision blocks a specific action, set evidence-specific `HOLD` with owner, required evidence, and release condition — scoped to that action only. Do not use generic `BLOCKED`, queue-wide freeze, or repeat-dispatch prose.
+Ordered-predecessor conditions are satisfied by deterministic completion (or WORK `ACCEPT` when a substantive gate is defined), not by queue-wide freeze. If fields are missing, set `PACKAGE-INCOMPLETE` and return it to WORK for correction. If a substantive protected stop or real collision blocks a specific action, set evidence-specific `HOLD` with owner, required evidence, and release condition — scoped to that action only. Do not use generic `BLOCKED`, queue-wide freeze, or repeat-dispatch prose.
 
 ## Engineering Pipeline dispatch
 
@@ -494,7 +494,7 @@ The dispatcher must prevent:
 - duplicate assignment, collaboration, hold, resume, integration, closeout, or incident actions;
 - queue-wide freeze caused by one gated final step when collision-safe increments remain executable;
 - treating ordinary predecessor or advisory conditions as universal execution denial;
-- delaying successor release after verified integration when the successor package is complete.
+- delaying eligible-agent self-claim after deterministic predecessor completion when the successor package is complete.
 
 ## Required references
 

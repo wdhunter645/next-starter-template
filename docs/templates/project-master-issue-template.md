@@ -81,11 +81,11 @@ Default implementation role holder by child: ____
 Task acceptance and closeout authority: WORK  
 Project closeout authority: WORK with required independent verification and protected Product/Production decisions
 
-| Sequence | Child Issue | Objective | Predecessor acceptance | Successor | Serial/parallel | Writable scope | Collision proof | Prerequisite class | Package state |
+| Sequence | Child Issue | Objective | Predecessor completion | Successor | Serial/parallel | Writable scope | Collision proof | Prerequisite class | Package state |
 | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 001 | #____ | ____ | ____ | #____ / terminal | serial | ____ | not applicable | ordered predecessor / advisory / protected stop | package-complete / PACKAGE-INCOMPLETE |
 
-A Project Graduation GO remains standing authority for this exact graph. A package-complete serial successor proceeds after predecessor WORK `ACCEPT` without a repeat Administration or PMO dispatch. WORK prepares each successor package before implementer idle time. Parallel execution requires explicit disjoint scopes and collision proof in this table.
+A Project Graduation GO remains standing authority for this exact graph. Eligible agents self-claim the next package-complete serial successor after deterministic predecessor completion without a repeat Administration or PMO dispatch (#3055 / #3145). WORK prepares each successor package before implementer idle time and records substantive ACCEPT/HOLD only when judgment is required. Parallel execution requires explicit disjoint scopes and collision proof in this table.
 
 ## Protected Stops and Continuation
 
@@ -94,5 +94,5 @@ True dependencies (ordered predecessor / real collision only): ____
 Advisory prerequisites (comments; do not deny collision-safe work): ____
 Operations interruption behavior: ____
 Package-incomplete correction owner: WORK
-Successor release rule: WORK records `ACCEPT` or bounded correction immediately after verified integration, reconciles the child and parent, and releases the next package-complete task without idle delay.
+Successor claim rule: after deterministic predecessor completion (validated merge + post-merge closeout, or WORK `ACCEPT` when a substantive gate is defined on that edge), an eligible agent self-claims the next package-complete task under standing parent authority. `team:*` ownership remains; `agent:*` is the execution claim only.
 No generic `BLOCKED` state, queue-wide freeze, or repeat-dispatch requirement is permitted.

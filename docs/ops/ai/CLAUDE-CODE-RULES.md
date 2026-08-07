@@ -78,8 +78,8 @@ Claude Code must never approve, review-approve, or merge a PR it authored or mat
 | PR governance | `.agents/skills/lgfc-pr-governance/SKILL.md`, `docs/governance/PR_PROCESS.md` |
 
 
-## Continuous serial implementation (#3055)
+## Continuous parent-level execution (#3055 / #3145)
 
-For a graduated project, the exact prepared child graph is standing authority. After WORK records predecessor `ACCEPT`, the next package-complete serial child may proceed without a repeat Administration/PMO dispatch. The implementation runtime must record starting SHA, branch, allowlist confirmation, and pre-implementation checkpoint before editing.
+For a graduated Project or Program, the exact prepared child graph is standing authority. Claude Code self-claims the next eligible `team:pmo` or `team:engineering` child one task at a time without routine Administration/PMO redispatch. Record starting SHA, branch, allowlist confirmation, and pre-implementation checkpoint before editing.
 
-Missing package fields produce `PACKAGE-INCOMPLETE`; a substantive dependency or protected boundary produces an evidence-specific `HOLD`. Merge alone is not acceptance. WORK owns acceptance, child/parent reconciliation, and successor release, and cannot independently verify or approve work WORK implemented.
+Missing package fields produce `PACKAGE-INCOMPLETE`; a substantive dependency or protected boundary produces an evidence-specific `HOLD`. Merge alone is not substantive acceptance. WORK owns assurance and exception handling, not routine per-task dispatch. Claude Code does not normally self-claim `team:operations`; join Operations only when explicitly escalated.

@@ -199,7 +199,7 @@ If validation fails or an authorized role records a hold:
 
 For a `project-child` or `child-remediation`, the live Issue must also define:
 
-- exact ordered sequence, predecessor acceptance, and successor;
+- exact ordered sequence, predecessor deterministic-completion rule, and successor;
 - exact branch naming rule, target branch, and starting-SHA recording;
 - exact writable file/action allowlist and explicit non-goals;
 - observable acceptance criteria;
@@ -210,7 +210,8 @@ For a `project-child` or `child-remediation`, the live Issue must also define:
 - independent reviewer and prohibition on self-approval/self-merge;
 - protected Product, Production, legal, privacy, rights, cost, provider, credential, destructive-data, and public-claim boundaries;
 - implementation handoff packet;
-- WORK closeout packet and successor-continuation instruction.
+- WORK assurance packet when a substantive acceptance gate applies, plus eligible-agent self-claim continuation under standing parent authority (#3145);
+- Team ownership (`team:*`) versus execution claim (`agent:*`) — claim does not transfer Team ownership.
 
 If any applicable field is absent, record `PACKAGE-INCOMPLETE` and stop before branch creation or editing. Do not infer the value and do not use a generic `BLOCKED` state.
 

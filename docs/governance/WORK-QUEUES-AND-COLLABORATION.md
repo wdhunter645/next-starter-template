@@ -5,8 +5,8 @@ Authority Level: Domain Policy
 Owns: Repository work-queue classification, queue precedence, team-assignment and priority namespaces, Active and Pipeline priority semantics, Project Graduation, queue-state transitions, universal agent collaboration, and collaboration interaction with pull requests
 Does Not Own: Product outcome, final priority decisions, project design, implementation methods, recovery strategy, PR approval decisions, Production authorization, dashboard runtime implementation, or label-migration execution
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2695, #2699, #3055, #3113
-Last Reviewed: 2026-08-06
+Related Issues: #2695, #2699, #3055, #3113, #3145
+Last Reviewed: 2026-08-07
 ---
 
 # Work Queues and Collaboration
@@ -280,7 +280,7 @@ Every recorded condition must use exactly one class:
 | Class | Meaning | Representation |
 | --- | --- | --- |
 | Advisory prerequisite | Soft ordering or helpful context; does not deny collision-safe work | Comment, package note, or dependency-map row |
-| Ordered predecessor | Serial child waits for predecessor WORK `ACCEPT` | Predecessor/successor metadata in Issue body or task graph |
+| Ordered predecessor | Serial child waits for deterministic predecessor completion (validated merge + post-merge closeout, or WORK `ACCEPT` only when the project defines a substantive acceptance gate on that edge) | Predecessor/successor metadata in Issue body or task graph |
 | Real collision | Overlapping branch, file, credential, or deployment surface | Evidence-specific hold scoped to the colliding action |
 | Protected stop | Legal, privacy, rights, security, credential, cost, destructive-data, Production-authority, unsafe-operation, or independent-review boundary | Evidence-specific `HOLD` scoped to the affected unsafe action only |
 
@@ -290,28 +290,37 @@ Ordinary predecessor or advisory conditions are **not** `HOLD` or `BLOCKED`. Whe
 
 - **Advisory-dependent work:** A child notes "prefer Task 003 design context." Docs and validation increments proceed; only the integration step requiring unverified design waits.
 - **Docs/evidence increment:** Split "implement feature" (executable) from "Production promotion" (protected stop until `PRODUCTION GO`).
-- **Serial child chain:** After merge and post-merge verification, WORK records `ACCEPT` or bounded correction and immediately releases the package-complete successor (#3055).
+- **Serial child chain:** After deterministic predecessor completion, an eligible agent self-claims the next package-complete successor under standing parent authority without routine PMO redispatch (#3055 / #3145).
 - **Production-only gate:** Development tasks continue under standing authority; Production dispatch pauses only for the promotion action.
 
-## Standing graduated-project authority and continuous serial continuation
+## Standing graduated-project authority and continuous parent-level execution
 
-Project Graduation `GO` is standing implementation authority for the exact ordered child graph recorded in the project master. It is not consumed after the first child and does not require Administration, PMO, Product Authority, or an agent to restate unchanged authority between prepared serial children.
+Project or Program Graduation to Active, with a complete prepared child graph and eligible implementation agents recorded at the parent, is standing implementation authority for that exact graph (#3055 / #3145). It is not consumed after the first child and does not require Administration, PMO, Product Authority, or an agent to restate unchanged authority between prepared serial children.
 
-A serial successor becomes executable when all of the following are true:
+`team:*` labels record durable Team ownership for the Issue's entire lifecycle. `agent:*` labels record the current execution claim only and do not transfer Team, Project, Program, or portfolio ownership.
 
-- its predecessor has an evidence-backed `ACCEPT` disposition;
+Eligible agents **self-claim** the next package-complete child one task at a time. Routine PMO redispatch, WORK “release,” or administrative confirmation between already-authorized tasks is not required and must not idle an otherwise eligible executor.
+
+A serial successor becomes claimable when all of the following are true:
+
+- the recorded project/program sequence identifies it as next (or explicitly authorizes parallel disjoint work);
+- its predecessor is deterministically complete for graph purposes — validated merge plus successful post-merge closeout, or an evidence-backed WORK `ACCEPT` when the project defines a substantive acceptance gate on that edge;
 - its live Issue is package-complete under `docs/templates/executable-child-task-template.md`;
 - the starting target, branch rule, writable allowlist, non-goals, tests, failure paths, evidence, rollback, independent review, handoff, closeout, and protected stops are explicit;
 - no technical dependency, collision, numbered Operations interrupt, evidence-specific hold, failed verification, or protected decision blocks it; and
-- the project sequence still identifies it as next.
+- the claiming agent is eligible for the Issue's owning Team (`team:operations`, `team:pmo`, or `team:engineering`).
 
-WORK, acting through PMO / Engineering and Administration & Communications, owns independent task acceptance, child closure/reconciliation, parent progress reconciliation, and successor release. After verified integration, WORK records exactly one disposition without idle delay: `ACCEPT`, bounded correction via `REMEDIATE`, evidence-specific `HOLD` (protected stop or real collision only), or `VERIFY MORE`. Deterministic CI may attempt the idempotent closeout transaction first but does not invent acceptance.
+Before each claim, the agent evaluates recorded order, predecessor evidence, factual dependencies, active claims and repository collisions, protected stops, required Product/Production/privacy/security/cost/rights authority, Operations precedence, and Team eligibility.
 
-While a predecessor is in review or verification, WORK prepares the successor package so implementer idle time does not occur after `ACCEPT`. On `ACCEPT`, WORK immediately releases the next package-complete serial successor under standing Project Graduation authority.
+### WORK assurance versus dispatch
 
-A missing package is `PACKAGE-INCOMPLETE`, not an implementation assignment and not a generic dependency block. WORK corrects the package before it enters the executable queue. A wake event, label, or dispatcher message transports existing authority; it does not recreate it.
+WORK, acting through PMO / Engineering and Administration & Communications, owns preparation and graduation, monitoring and assurance, substantive acceptance where a judgment gate is defined, child/parent reconciliation, exception and HOLD handling, and portfolio reconciliation. WORK is **not** a routine per-task dispatcher after a fully prepared parent is Active.
 
-Product-authorized agent routing is preserved: each task assigns exactly one implementation executor (Cursor Local or Claude Code per `docs/ops/ai/CORE-RULES.md`); PMO sequencing does not reroute executors.
+After verified integration, WORK records `ACCEPT`, bounded correction via `REMEDIATE`, evidence-specific `HOLD` (protected stop or real collision only), or `VERIFY MORE` when judgment is required or a discrepancy appears. Deterministic CI remains the single automatic source-Issue closeout owner and may attempt mechanically provable closeout and bookkeeping first; it does not invent acceptance, waive disputed risks, or authorize protected decisions.
+
+While a predecessor is in review or verification, WORK prepares the successor package so implementer idle time does not occur after deterministic completion. A missing package is `PACKAGE-INCOMPLETE`, not an implementation assignment and not a generic dependency block. A wake event, label, or dispatcher message transports existing authority; it does not recreate it.
+
+Product-authorized agent routing is preserved: each claimed task has exactly one implementation executor (Cursor Local or Claude Code per Team eligibility in `docs/governance/AGENT-TEAM.md`). PMO sequencing does not invent unprepared tasks or bypass the parent graph.
 
 Parallel execution is permitted only when the project master explicitly authorizes it and records disjoint writable scopes, collision safety, dependency independence, and separate review/closeout evidence.
 
@@ -319,17 +328,23 @@ Parallel execution is permitted only when the project master explicitly authoriz
 
 ### Cursor
 
-1. Numbered Operations Issues.
-2. Active PMO project tasks, selected by parent PMO priority and then project sequence.
-3. Engineering collaboration only when explicitly requested and bounded.
+1. Actionable `team:operations` Issues (self-claim by queue priority and eligibility).
+2. Active `team:pmo` project/program children under standing parent authority (self-claim next eligible child).
+3. Engineering collaboration only when explicitly requested and bounded — Cursor is not a normal Engineering executor.
 
-Operations Monitoring and Hold Issues receive their required interval updates but do not block PMO work.
+Operations Monitoring and Hold Issues receive their required interval updates but do not block PMO work. An actionable Operations Issue interrupts ordinary PMO implementation at the nearest safe checkpoint; Cursor resumes the PMO graph after the interrupt clears.
 
-### ChatGPT
+### Claude Code
+
+1. Active `team:pmo` project/program children under standing parent authority (self-claim when eligible).
+2. `team:engineering` Pipeline and Active Engineering work (self-claim by Engineering priority and eligibility).
+3. Bounded `team:operations` support only when an Operations Issue is explicitly escalated beyond normal Cursor-only handling — Claude does not normally self-claim the Operations queue, and escalation does not create a fourth Team or change Team ownership.
+
+### Work
 
 1. Numbered Operations Issues when assigned for Tier 2 support, Engineering judgment, review, or coordination.
-2. PMO work when assigned for design adjustment, independent review, promotion, Production decision preparation, verification, or closeout.
-3. Engineering Pipeline preparation, selected by Engineering priority.
+2. PMO preparation, graduation, monitoring, assurance, substantive acceptance, exception handling, and closeout.
+3. Engineering Pipeline preparation and portfolio reconciliation.
 
 ## Universal collaboration method
 

@@ -386,8 +386,8 @@ An exception identifies the affected subject, invariant, evidence, blocking scop
 - Closeout procedure: `docs/ops/pmo/github-issue-closeout-protocol.md`
 
 
-## WORK acceptance and successor release
+## WORK acceptance and continuous parent-level continuation
 
-WORK owns the controlling `ACCEPT`, `HOLD`, `REMEDIATE`, or `VERIFY MORE` task disposition, child and parent reconciliation, and release of a package-complete serial successor. Transport automation may apply an idempotent mutation but cannot invent acceptance.
+WORK owns controlling `ACCEPT`, `HOLD`, `REMEDIATE`, or `VERIFY MORE` dispositions when substantive assurance or discrepancy handling is required, plus child/parent reconciliation. After deterministic predecessor completion, eligible agents self-claim the next package-complete serial successor under standing parent authority (#3145). Transport automation may apply an idempotent mutation but cannot invent acceptance.
 
 A generic `BLOCKED` state is prohibited for prepared project queues. Use `PACKAGE-INCOMPLETE` for missing execution fields or `HOLD` for a named substantive condition with owner, evidence, and release criteria. WORK must not independently verify or approve a PR that WORK implemented.
