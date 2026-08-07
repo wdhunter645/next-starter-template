@@ -229,7 +229,8 @@
       "forbidsPrefixes": [
         "pmo:priority:",
         "eng:priority:",
-        "gov:"
+        "gov:",
+        "pmo:stage:"
       ]
     },
     {
@@ -248,7 +249,8 @@
       "forbidsPrefixes": [
         "ops:",
         "pmo:priority:",
-        "eng:priority:"
+        "eng:priority:",
+        "pmo:stage:"
       ]
     },
     {

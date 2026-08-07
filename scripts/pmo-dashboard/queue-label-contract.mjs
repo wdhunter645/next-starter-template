@@ -96,7 +96,7 @@ export function analyzeQueueLabels({ labels: input, lifecycle, role = 'portfolio
         errors,
         remediation,
         `project child carries prohibited queue priority/state label(s): ${prohibited.join(', ')}`,
-        'Remove team priority and Operations/Governance state labels from project children'
+        'Remove team:*, ops:*, gov:*, pmo:priority:*, and eng:priority:* labels from project children'
       );
     }
     return {
