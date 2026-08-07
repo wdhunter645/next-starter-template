@@ -28,6 +28,23 @@ const MIME_TO_KIND: Record<string, ImageKind> = {
   'image/webp': 'webp',
 };
 
+const KIND_TO_CANONICAL_MIME: Record<ImageKind, string> = {
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+};
+
+/**
+ * Canonical MIME type for a validated kind. Used for the B2 object's
+ * Content-Type instead of the raw declared type, since validateUploadedImage
+ * now accepts empty/`application/octet-stream` declared types (trusting the
+ * detected signature) — storing that generic/empty value as the object's
+ * Content-Type would be wrong even though the upload itself is valid.
+ */
+export function canonicalMimeTypeForKind(kind: ImageKind): string {
+  return KIND_TO_CANONICAL_MIME[kind];
+}
+
 export type ValidationFailureCode =
   | 'EMPTY'
   | 'OVERSIZED'
@@ -173,8 +190,16 @@ export function validateUploadedImage(input: {
     return { ok: false, code: 'OVERSIZED', error: `File exceeds maximum allowed size of ${maxBytes} bytes.` };
   }
 
-  const declaredKind = MIME_TO_KIND[String(input.declaredMimeType || '').toLowerCase()];
-  if (!declaredKind) {
+  // Some multipart clients omit Content-Type or send the generic
+  // 'application/octet-stream' fallback. Treat those as "unspecified" and
+  // decide purely from the binary signature below, rather than rejecting an
+  // otherwise-valid image — the security boundary is the signature and
+  // structural checks, not the declared type. An explicit, specific
+  // declared type that disagrees with the signature is still rejected.
+  const normalizedMimeType = String(input.declaredMimeType || '').toLowerCase().trim();
+  const isUnspecifiedMimeType = normalizedMimeType === '' || normalizedMimeType === 'application/octet-stream';
+  const declaredKind = MIME_TO_KIND[normalizedMimeType];
+  if (!declaredKind && !isUnspecifiedMimeType) {
     return { ok: false, code: 'UNSUPPORTED_TYPE', error: 'Only JPEG, PNG, and WebP images are accepted.' };
   }
 
@@ -186,7 +211,7 @@ export function validateUploadedImage(input: {
   if (!detectedKind) {
     return { ok: false, code: 'MALFORMED', error: 'File signature does not match a supported image format.' };
   }
-  if (detectedKind !== declaredKind) {
+  if (!isUnspecifiedMimeType && detectedKind !== declaredKind) {
     return {
       ok: false,
       code: 'SIGNATURE_MISMATCH',
@@ -314,16 +339,28 @@ export async function recordUploadAttempt(db: any, memberEmail: string, ip: stri
 // Pending record persistence (schema-gated — see module header)
 // ---------------------------------------------------------------------------
 
+const PENDING_PHOTO_SCHEMA_COLUMNS = [
+  'status',
+  'submitted_by',
+  'submitted_at',
+  'quarantine_key',
+  'consent_confirmed',
+  'credit_line',
+];
+
 /**
  * True only once #3119's additive columns exist on this environment's
- * `photos` table. The caller must fail closed (not silently accept an
- * upload with nowhere safe to record it) when this returns false.
+ * `photos` table. Checks every column `insertPendingPhotoRecord` writes, not
+ * just a subset — a partially-applied migration must still fail closed here
+ * rather than passing this gate and then failing at insert time. The caller
+ * must fail closed (not silently accept an upload with nowhere safe to
+ * record it) when this returns false.
  */
 export async function hasPendingPhotoSchema(db: any): Promise<boolean> {
   try {
     const result = await db.prepare(`PRAGMA table_info(photos)`).all();
     const names = new Set((result?.results || []).map((row: any) => row.name));
-    return names.has('status') && names.has('quarantine_key') && names.has('submitted_by');
+    return PENDING_PHOTO_SCHEMA_COLUMNS.every((column) => names.has(column));
   } catch {
     return false;
   }

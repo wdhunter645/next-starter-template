@@ -11,6 +11,7 @@ import {
   requireB2,
   validateUploadedImage,
   generateQuarantineKey,
+  canonicalMimeTypeForKind,
   checkUploadRateLimit,
   recordUploadAttempt,
   putQuarantineObject,
@@ -50,7 +51,12 @@ export const onRequestPost = async (context: any): Promise<Response> => {
   const memberEmail = auth.email;
 
   const b2 = requireB2(env as Record<string, unknown>);
-  if (!b2.ok) return b2.response;
+  if (!b2.ok) {
+    return jsonResponse(
+      { ok: false, error: 'Photo storage is not configured for this environment.', requestId, code: 'STORAGE_UNAVAILABLE' },
+      503
+    );
+  }
 
   const rateCheck = await checkUploadRateLimit(db, memberEmail);
   if (!rateCheck.allowed) {
@@ -100,6 +106,17 @@ export const onRequestPost = async (context: any): Promise<Response> => {
     );
   }
 
+  // Fail fast on the reported size before allocating a full in-memory buffer
+  // for an oversized upload. File.size is advisory (a client could lie), so
+  // the post-read byteLength check below remains as the authoritative guard.
+  if (typeof fileLike.size === 'number' && fileLike.size > MAX_UPLOAD_BYTES) {
+    await recordUploadAttempt(db, memberEmail, ip, false);
+    return jsonResponse(
+      { ok: false, error: `File exceeds maximum allowed size of ${MAX_UPLOAD_BYTES} bytes.`, requestId, code: 'OVERSIZED' },
+      413
+    );
+  }
+
   let bytes: Uint8Array;
   try {
     const buf: ArrayBuffer = await fileLike.arrayBuffer();
@@ -137,8 +154,9 @@ export const onRequestPost = async (context: any): Promise<Response> => {
   }
 
   const quarantineKey = generateQuarantineKey(validation.kind);
+  const contentType = canonicalMimeTypeForKind(validation.kind);
 
-  const putResult = await putQuarantineObject(b2.cfg, quarantineKey, bytes, declaredMimeType);
+  const putResult = await putQuarantineObject(b2.cfg, quarantineKey, bytes, contentType);
   if (!putResult.ok) {
     await recordUploadAttempt(db, memberEmail, ip, false);
     return jsonResponse({ ok: false, error: 'Upload storage failed. Please try again.', requestId, code: 'STORAGE_UNAVAILABLE' }, 502);

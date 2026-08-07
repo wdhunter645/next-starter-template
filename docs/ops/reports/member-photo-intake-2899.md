@@ -5,7 +5,7 @@ Authority Level: Operational Evidence Report
 Owns: Member photo intake, validation, quarantine, and rate-limit implementation (#2899)
 Does Not Own: Schema/persistence contract decisions (#3119); moderation UI, publication flow, photo-detail UX (#2900)
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Last Reviewed: 2026-08-06
+Last Reviewed: 2026-08-07
 Related issues: #2857, #2898, #2899, #2900, #3118, #3119
 ---
 
@@ -77,17 +77,81 @@ portion executable in parallel with #3119's schema-contract work.
 `POST /api/fanclub/photos/upload` — wires the above into a single
 fail-closed request pipeline: `requireMember` auth → B2 config check →
 rate-limit check → multipart parse → consent-confirmation check → size
-check → signature/dimension validation → schema-availability check →
-quarantine key generation → B2 PUT → pending-record insert (with B2
-cleanup on failure) → best-effort attempt logging on every path (success
-and every failure branch). Every response includes a `requestId` and a
-deterministic `code`, matching `functions/api/login.ts`'s pattern.
+check (fast-path on `File.size`, then an authoritative check on the actual
+read byte length) → signature/dimension validation → schema-availability
+check → quarantine key generation → B2 PUT → pending-record insert (with B2
+cleanup on failure). Every response includes a `requestId` and a
+deterministic `code`, matching `functions/api/login.ts`'s pattern —
+including the B2-not-configured path, which previously returned a bare
+`Response` without either field (fixed after review, see below).
+
+**Attempt logging is intentionally not on every exit path.** `recordUploadAttempt`
+is called on every branch that reflects something the *member* did (missing
+consent, oversized/invalid/malformed file, B2 PUT failure, pending-record
+insert failure). It is deliberately **not** called when: the request never
+reached an authenticated member (no `db`/`email` yet); the request was
+rejected for being *already* rate-limited (logging that would keep
+re-extending the trailing 1-hour window every time a blocked client retries,
+effectively making the rate limit self-perpetuating); B2 is unconfigured for
+this environment; or the schema contract isn't available yet. The last three
+are environment/system conditions, not user error, and logging them would
+unfairly count against the member's own attempt budget.
 
 ## Preserved behavior
 
 No existing file was modified. `functions/api/fanclub/photos.ts` (read/list),
 `functions/api/photos.ts` (public read), and all existing gallery/search/tag
 behavior are unchanged.
+
+## Copilot review round — fixes applied and one clarified dependency
+
+- **Fixed:** `hasPendingPhotoSchema` now checks all six columns
+  `insertPendingPhotoRecord` writes (`status`, `submitted_by`, `submitted_at`,
+  `quarantine_key`, `consent_confirmed`, `credit_line`), not just three. A
+  partially-applied migration now correctly fails the schema gate with
+  `SCHEMA_UNAVAILABLE` instead of passing the gate and failing at insert time
+  with a generic `PERSIST_FAILED`. Covered by a new regression test.
+- **Fixed:** the B2-not-configured early return now returns the same
+  `{ ok, error, requestId, code }` shape as every other branch, instead of a
+  bare `Response` missing `requestId`/`code`.
+- **Fixed:** the handler now checks `File.size` and fails fast on an
+  oversized upload before reading the full body into memory; the
+  post-read byte-length check remains as the authoritative guard, since
+  `File.size` is advisory.
+- **Fixed:** `validateUploadedImage` now treats an empty or
+  `application/octet-stream` declared MIME type as "unspecified" and
+  validates purely from the binary signature, instead of rejecting an
+  otherwise-valid upload outright — some multipart clients send no
+  `Content-Type` or the generic fallback. An explicit, specific declared
+  type that disagrees with the detected signature is still rejected
+  (`SIGNATURE_MISMATCH`) — the security boundary remains the signature and
+  structural checks, not the declared type. Since the declared type can no
+  longer be trusted as the B2 object's `Content-Type` in the unspecified
+  case, `putQuarantineObject` now receives a canonical MIME type derived
+  from the *detected* kind (`canonicalMimeTypeForKind`) instead of the raw
+  declared value.
+- **Fixed:** logging-coverage language in this report (previous wording
+  overstated it — see "What was implemented" above for the corrected,
+  precise claim).
+- **Clarified, not fixed here (promotion-gate dependency, not a same-PR
+  merge blocker):** Copilot correctly noted that once #3119 merges,
+  `insertPendingPhotoRecord` writes `quarantine_key` into `photos.url`, and
+  the existing read endpoints (`functions/api/fanclub/photos.ts`,
+  `functions/api/photos.ts`) select all rows unconditionally — so without
+  the `status = 'published'` read-filter, pending rows would be publicly
+  exposed. That filter's required file paths are **not** in this task's
+  4-file allowlist (only `functions/api/fanclub/photos/upload.ts`,
+  `functions/_lib/member-photo-upload.ts`, its test, and this report are).
+  This is not an immediate risk for *this* PR: it merges into
+  `component/member-photo-experience`, a pre-production component branch,
+  and #3121's migration (the only thing that makes non-`'published'` rows
+  possible at all) has not merged there yet either — so no live environment
+  can currently be exposed by this PR alone. It **is** a hard requirement
+  before any future Promotion PR from this component branch to `main`: the
+  read-filter must land (in-scope for #2900, or via an explicit allowlist
+  exception for this task) before or in the same promotion as this PR's
+  code. Recorded here as an explicit, named promotion-gate condition rather
+  than left implicit.
 
 ## Known test failure and required follow-up (protected stop)
 
@@ -122,18 +186,20 @@ or silently leaving the suite red without explanation.
 
 ## Validation performed
 
-- `npx vitest run tests/member-photo-upload.test.ts` — PASS (25/25):
+- `npx vitest run tests/member-photo-upload.test.ts` — PASS (31/31):
   signature detection, full validation matrix (valid PNG/JPEG/WebP-VP8X/
   WebP-VP8, oversized, unsupported type, mismatch, malformed/truncated,
-  polyglot), quarantine-key format/uniqueness/no-caller-data, and
-  schema-gated D1 behavior (rate limit fail-open when table absent,
-  threshold enforcement when present, per-member isolation, pending-record
-  insert when schema present, fail-closed when absent) — the schema-present
-  tests apply #3119's migration inline (`ALTER TABLE`/`CREATE TABLE`
-  statements matching `migrations/0045_...` in PR #3121) via `node:sqlite`,
-  since that migration has not merged into this branch; this keeps the test
-  self-contained rather than depending on #3121's merge order.
-- `npx vitest run` (full suite) — 969/970 pass; the one failure is the
+  polyglot, unspecified/`application/octet-stream` MIME trusting the
+  signature, explicit-mismatch still rejected), `canonicalMimeTypeForKind`,
+  quarantine-key format/uniqueness/no-caller-data, and schema-gated D1
+  behavior (rate limit fail-open when table absent, threshold enforcement
+  when present, per-member isolation, pending-record insert when schema
+  present, fail-closed when absent or only partially applied) — the
+  schema-present tests apply #3119's migration inline (`ALTER TABLE`/
+  `CREATE TABLE` statements matching `migrations/0045_...` in PR #3121) via
+  `node:sqlite`, since that migration has not merged into this branch; this
+  keeps the test self-contained rather than depending on #3121's merge order.
+- `npx vitest run` (full suite) — 975/976 pass; the one failure is the
   documented, expected `preview-isolation-inventory.test.ts` finding above.
 - `npx tsc --noEmit -p .` — PASS, no errors.
 - `git diff --check` — PASS.

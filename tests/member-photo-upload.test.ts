@@ -7,6 +7,7 @@ import {
   containsPolyglotMarker,
   detectImageKind,
   generateQuarantineKey,
+  canonicalMimeTypeForKind,
   validateUploadedImage,
   checkUploadRateLimit,
   recordUploadAttempt,
@@ -165,6 +166,34 @@ describe('validateUploadedImage', () => {
     const result = validateUploadedImage({ bytes, declaredMimeType: 'image/png' });
     expect(result).toEqual({ ok: false, code: 'SUSPECT_POLYGLOT', error: expect.any(String) });
   });
+
+  it('accepts a valid image with an empty declared MIME type, trusting the signature', () => {
+    const result = validateUploadedImage({ bytes: validPng(10, 10), declaredMimeType: '' });
+    expect(result).toEqual({ ok: true, kind: 'png', width: 10, height: 10 });
+  });
+
+  it('accepts a valid image declared as application/octet-stream, trusting the signature', () => {
+    const result = validateUploadedImage({ bytes: validJpeg(10, 10), declaredMimeType: 'application/octet-stream' });
+    expect(result).toEqual({ ok: true, kind: 'jpeg', width: 10, height: 10 });
+  });
+
+  it('still rejects an unrecognized signature when the declared MIME type is unspecified', () => {
+    const result = validateUploadedImage({ bytes: new Uint8Array([0x00, 0x01, 0x02]), declaredMimeType: '' });
+    expect(result).toEqual({ ok: false, code: 'MALFORMED', error: expect.any(String) });
+  });
+
+  it('still rejects an explicit declared/detected mismatch even though unspecified types are trusted', () => {
+    const result = validateUploadedImage({ bytes: validJpeg(10, 10), declaredMimeType: 'image/png' });
+    expect(result).toEqual({ ok: false, code: 'SIGNATURE_MISMATCH', error: expect.any(String) });
+  });
+});
+
+describe('canonicalMimeTypeForKind', () => {
+  it('maps each supported kind to its canonical MIME type', () => {
+    expect(canonicalMimeTypeForKind('jpeg')).toBe('image/jpeg');
+    expect(canonicalMimeTypeForKind('png')).toBe('image/png');
+    expect(canonicalMimeTypeForKind('webp')).toBe('image/webp');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -278,6 +307,20 @@ describe('hasPendingPhotoSchema', () => {
     applyPendingPhotoSchemaContract(sqlite);
     const db = wrapSqliteAsD1(sqlite);
     expect(await hasPendingPhotoSchema(db)).toBe(true);
+    sqlite.close();
+  });
+
+  it('is false when the migration is only partially applied', async () => {
+    // Regression: a partial migration must not pass this gate and then fail
+    // at insert time with a generic PERSIST_FAILED instead of a
+    // deterministic SCHEMA_UNAVAILABLE.
+    const sqlite = new DatabaseSync(':memory:');
+    applyCurrentBranchMigrations(sqlite);
+    sqlite.exec(`ALTER TABLE photos ADD COLUMN status TEXT NOT NULL DEFAULT 'published';`);
+    sqlite.exec(`ALTER TABLE photos ADD COLUMN quarantine_key TEXT;`);
+    // submitted_by, submitted_at, consent_confirmed, credit_line intentionally omitted.
+    const db = wrapSqliteAsD1(sqlite);
+    expect(await hasPendingPhotoSchema(db)).toBe(false);
     sqlite.close();
   });
 });
