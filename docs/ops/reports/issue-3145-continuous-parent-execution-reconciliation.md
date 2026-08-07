@@ -45,6 +45,10 @@ Parent ACTIVE + prepared child graph = standing implementation authority. Eligib
 | Evidence-backed HOLD taxonomy | Preserve #3134 ownership; pointers only here |
 | Automatic source-Issue closeout | `.github/workflows/post-merge-closeout.yml` (unchanged single owner) |
 
+## Team topology note (#3152)
+
+Issue #3145 originally preserved a three-Team topology. Product Authority later added `team:governance` via #3152. The continuous parent-level self-claim model remains unchanged; Governance is an additional stewardship queue, not a PMO graph executor and not an Operations interrupt. See `docs/ops/reports/issue-3152-governance-team-reconciliation.md`.
+
 ## Team vs agent labels
 
 - `team:operations` | `team:pmo` | `team:engineering` = durable ownership

@@ -218,27 +218,27 @@ Website delivery may be maintained as the top LGFC priority through PMO decision
 
 ## Operations interrupt precedence
 
-Normal repository execution consists primarily of authorized project tasks and Engineering preparation. A qualifying standalone `OPS:` source Issue is a standing Product Authority interrupt and takes precedence while it carries a numbered Operations priority.
+Normal repository execution consists primarily of authorized project tasks, Engineering preparation, and Governance stewardship. A qualifying standalone Operations source Issue is a standing Product Authority interrupt and takes precedence while it carries a numbered Operations priority. Governance is a peer stewardship queue (#3152) and is **not** an Operations interrupt.
 
-Operations priority, Monitoring, Hold, and resume semantics are defined in `docs/governance/WORK-QUEUES-AND-COLLABORATION.md` and recovery authority is defined in `docs/governance/OPERATIONS-AND-RECOVERY.md`.
+Operations priority, Monitoring, Hold, and resume semantics — and Governance `gov:*` semantics — are defined in `docs/governance/WORK-QUEUES-AND-COLLABORATION.md`. Recovery authority is defined in `docs/governance/OPERATIONS-AND-RECOVERY.md`.
 
 A qualifying Operations interrupt is:
 
-- an open, same-repository, non-PR Issue whose title begins `OPS:`;
+- an open, same-repository, non-PR Issue owned by `team:operations` with a numbered `ops:priority:*` (title may begin `OPS:`);
 - a standalone source Issue rather than a child of a project lifecycle;
 - bounded by an objective, owner, scope, acceptance criteria, validation, rollback, and stop conditions appropriate to the work; and
 - not merely a generated tracker, duplicate, bookkeeping record, advisory alert, or evidence-only record unless Product Authority explicitly elevates it.
 
 When a qualifying numbered Operations Issue appears:
 
-1. no new PMO or Engineering work may be dispatched;
+1. no new PMO, Engineering, or Governance work may be dispatched;
 2. active work stops at the nearest safe checkpoint rather than being terminated in a way that corrupts a branch, claim, test, deployment, or evidence state;
 3. Administration & Communications preserves exact state and records the Operations interrupt hold;
 4. the Operations Issue receives the next available capacity it requires;
 5. no additional material-risk test or case-by-case reprioritization decision is required; and
-6. PMO and Engineering work resume when no numbered Operations Issue remains actionable, subject to recorded Monitoring or Hold interval obligations.
+6. PMO, Engineering, and Governance work resume when no numbered Operations Issue remains actionable, subject to recorded Monitoring or Hold interval obligations.
 
-Operations interrupt precedence changes sequencing only. It does not bypass source-Issue scope, promotion profiles, validation, independent review, Production authority, rollback, or protected-stop requirements.
+Operations interrupt precedence changes sequencing only. It does not bypass source-Issue scope, promotion profiles, validation, independent review, Production authority, rollback, or protected-stop requirements. Active PMO Project documentation children remain on the PMO graph and are not reclassified as Governance merely because they edit docs.
 
 ## Lightweight problem adjustment
 

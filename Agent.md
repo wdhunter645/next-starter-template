@@ -241,6 +241,6 @@ Legacy person-specific or serialized instructions must not be cited when they co
 
 ## Continuous serial implementation (#3055 / #3145)
 
-For a graduated project, the exact prepared child graph is standing authority. Eligible agents self-claim the next package-complete serial child without a repeat Administration/PMO dispatch. The implementation runtime must record starting SHA, branch, allowlist confirmation, and pre-implementation checkpoint before editing.
+For a graduated project, the exact prepared child graph is standing authority. Eligible agents self-claim the next package-complete serial child (Operations, Governance, PMO, or Engineering per Team eligibility) without a repeat Administration/PMO dispatch. The implementation runtime must record starting SHA, branch, allowlist confirmation, and pre-implementation checkpoint before editing.
 
 Missing package fields produce `PACKAGE-INCOMPLETE`; a substantive dependency or protected boundary produces an evidence-specific `HOLD`. Merge alone is not substantive acceptance. WORK owns preparation, monitoring, assurance, and exception handling where judgment is required — not routine per-task successor release — and cannot independently verify or approve work WORK implemented.
