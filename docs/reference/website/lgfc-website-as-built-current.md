@@ -107,4 +107,4 @@ For website current-state decisions use, in order:
 
 ## Closeout condition for #3074
 
-#3074 may close only after independent review confirms this reconciliation and the canonical design/runtime discrepancies routed to #3148/#3149 are either completed or explicitly accepted as bounded open follow-up without leaving contradictory canonical documentation.
+#3074 may close only after independent review confirms this reconciliation and the canonical design/runtime discrepancies routed to #3148/#3149 are either completed or explicitly accepted as bounded open follow-up without leaving contradictory canonical documentation. The actor performing this documentation increment must not serve as the independent closeout reviewer for the same work.
