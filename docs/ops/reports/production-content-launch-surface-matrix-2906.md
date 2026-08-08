@@ -27,6 +27,22 @@ Authoritative inventory of every launch-required public, Fan Club, and administr
 - **Does not** assert Production population counts, rights clearance, or editorial approval where evidence is absent.
 - **Does not** implement #2907–#2909 work units.
 
+## Current known truth
+
+- Parent project #2859 is active; child #2906 is the matrix increment only.
+- Structural public and Fan Club routes from Program #1685 remain on `main` and are present under the component base SHA above.
+- Launch readiness manifest (`scripts/launch-readiness/manifest.json`) enumerates required public, Fan Club, admin, and ai-review routes.
+- Prior evidence exists for gap inventory (#2041), copy reconciliation (#2042), fundraiser boundary (#2045), and QA route/content validation (#1259 lineage).
+- Campaign/fundraiser public surfaces remain fail-closed (`enabled: false` / deferred modules).
+- Production D1/B2 population counts were **not** queried in this increment; data-backed surfaces default to `missing-actionable` unless repository evidence proves static or fail-closed behavior.
+- #2858 responsive-contract acceptance is a non-blocking predecessor for this matrix; it gates final consumption only.
+
+## Intended final state
+
+- One authoritative matrix report merged on `component/production-content-readiness` that successors #2907–#2909 can consume without re-inventorying routes.
+- Every launch-required surface has a disposition and accountable owner; protected Product/editorial/rights decisions are explicit rather than inferred.
+- No claim of Production launch readiness from this document alone.
+
 ## Disposition vocabulary (required)
 
 | Code | Meaning |
@@ -51,7 +67,7 @@ Authoritative inventory of every launch-required public, Fan Club, and administr
 | --- | --- |
 | Component branch | `component/production-content-readiness` @ `00e1608adb8ff27b24eae2fa995372e79c2ab8eb` |
 | Working branch | `grok/2859-001-launch-surface-matrix` (Grok takeover; prior empty `codex/2859-001-launch-surface-matrix` left untouched) |
-| Open PR for #2906 | None at start |
+| Open PR for #2906 | Delivery PR opened after matrix authoring (see PR targeting this report); none existed at branch-creation collision check |
 | Allowlisted write path | `docs/ops/reports/production-content-launch-surface-matrix-2906.md` only |
 | `main` drift note | `main` advanced to `c114d8bd…`; route inventory inspected on `main` for completeness; matrix remains valid for component base unless material route deletion occurs |
 
