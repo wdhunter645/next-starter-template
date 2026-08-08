@@ -5,8 +5,8 @@ Authority Level: Controlled
 Owns: Content inventory model, field definitions, submission queue requirements, media association requirements, and schema invariants for project #1256
 Does Not Own: D1 migration files, runtime API implementation, UI copy, or editorial fact approval
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
-Related issues: #1256, #824, #819, #1137, #1689, #1685
-Last Reviewed: 2026-06-23
+Related issues: #1256, #824, #819, #1137, #1689, #1685, #2860, #2910
+Last Reviewed: 2026-08-08
 ---
 
 # Content Inventory Model
@@ -296,3 +296,20 @@ Future implementation tasks must verify:
 - existing admin/editor flows before creating duplicate tooling.
 
 New build issues should fill documented gaps only.
+
+## Legacy `library_entries` migration authority (#2910 / #2860)
+
+The approved mapping from legacy `library_entries` to `content_inventory` lives
+in `docs/ops/reports/library-content-migration-map-2910.md`.
+
+Standing rules from that map (do not re-derive ad hoc in later children):
+
+- Deterministic source identity: `tag = legacy-library-{id}` for legacy primary
+  key `id`.
+- Inventory-first dual-read with `library_entries` fallback remains required
+  until cutover criteria in the map are met and accepted.
+- Legacy `email` must not be copied into public inventory fields.
+- Publication still requires `source_name` and `credit_line`; migrated rows that
+  cannot satisfy attribution remain `draft`.
+- Duplicate/conflict handling is fail-closed per the map; #2911–#2913 implement
+  tooling and Production batches against that contract only.
