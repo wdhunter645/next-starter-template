@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import {
+  appendRetryEvidence,
   GitHubApiTransientError,
   githubApiRequestWithRetry,
 } from './github_api_retry.mjs';
@@ -613,15 +614,6 @@ async function graphql(query, variables, token) {
   return data.data;
 }
 
-function appendRetryEvidence(retryEvidence, operation, attemptLog = []) {
-  if (!Array.isArray(retryEvidence) || !attemptLog.length) return;
-  const hadRetry = attemptLog.some((attempt) => attempt.outcome !== 'success') || attemptLog.length > 1;
-  if (!hadRetry) return;
-  for (const attempt of attemptLog) {
-    retryEvidence.push({ operation, ...attempt });
-  }
-}
-
 async function requestWithRetry(path, token, options = {}, { fetchFn, sleepFn, retryEvidence } = {}) {
   const method = options.method || 'GET';
   const response = await githubApiRequestWithRetry({
@@ -675,7 +667,7 @@ async function graphqlWithRetry(query, variables, token, { fetchFn, sleepFn, ret
   appendRetryEvidence(retryEvidence, 'POST /graphql', response.attemptLog);
   const data = response.data;
   if (data.errors?.length) {
-    throw new Error(`GraphQL request failed: 200 ${JSON.stringify(data.errors || data)}`);
+    throw new Error(`GraphQL application error: ${JSON.stringify(data.errors || data)}`);
   }
   return data.data;
 }

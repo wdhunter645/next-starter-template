@@ -31,6 +31,15 @@ export async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export function appendRetryEvidence(retryEvidence, operation, attemptLog = []) {
+  if (!Array.isArray(retryEvidence) || !attemptLog.length) return;
+  const hadRetry = attemptLog.some((attempt) => attempt.outcome !== 'success');
+  if (!hadRetry) return;
+  for (const attempt of attemptLog) {
+    retryEvidence.push({ operation, ...attempt });
+  }
+}
+
 function parseSuccessfulResponse(response, responseText, parse) {
   if (response.status === 204 || parse === 'none') return null;
   if (typeof parse === 'function') return parse(responseText, response);

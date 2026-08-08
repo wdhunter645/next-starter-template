@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import { findUnlistedChangedFiles, parseAllowedFiles } from './pr_hygiene_audit.mjs';
 import {
+  appendRetryEvidence,
   GitHubApiTransientError,
   githubApiRequestWithRetry,
 } from './github_api_retry.mjs';
@@ -110,15 +111,6 @@ export function writeDiffScopeArtifacts(report, env = process.env) {
 function readListFile(path) {
   if (!path || !fs.existsSync(path)) return [];
   return fs.readFileSync(path, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-}
-
-function appendRetryEvidence(retryEvidence, operation, attemptLog = []) {
-  if (!Array.isArray(retryEvidence) || !attemptLog.length) return;
-  const hadRetry = attemptLog.some((attempt) => attempt.outcome !== 'success') || attemptLog.length > 1;
-  if (!hadRetry) return;
-  for (const attempt of attemptLog) {
-    retryEvidence.push({ operation, ...attempt });
-  }
 }
 
 async function requestGitHub(path, token, { method = 'GET', body, headers = {} } = {}, { fetchFn, sleepFn, retryEvidence } = {}) {
@@ -231,7 +223,8 @@ async function loadDiffScopeInputs(env = process.env, dependencies = {}) {
       token: env.GITHUB_TOKEN || env.GH_TOKEN,
       repository: env.GITHUB_REPOSITORY,
       prNumber: env.PR_NUMBER,
-      ...dependencies,
+      fetchFn: dependencies.fetchFn,
+      sleepFn: dependencies.sleepFn,
       retryEvidence,
     });
     return {
