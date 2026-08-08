@@ -21,6 +21,11 @@ import {
   trustedBotSet,
 } from './reviewer_trusted_bots.mjs';
 import { evaluateReviewerCommentDisposition } from './reviewer_comment_disposition.mjs';
+import {
+  GitHubInfrastructureError,
+  formatAttemptEvidence,
+  githubApiFetch,
+} from './github_api_retry.mjs';
 
 export {
   DEFAULT_TRUSTED_BOT_LOGINS,
@@ -28,6 +33,8 @@ export {
   parseTrustedBotLogins,
   trustedBotSet,
 } from './reviewer_trusted_bots.mjs';
+
+export { GitHubInfrastructureError } from './github_api_retry.mjs';
 
 export const DEFAULT_EXCEPTION_LABEL = 'reviewer-lifecycle-exception';
 export const BREAK_GLASS_MARKER = /<!--\s*reviewer-lifecycle-break-glass\s*-->/i;
@@ -488,8 +495,10 @@ export function buildReviewerLifecycleReport(result) {
 }
 
 async function request(path, token, options = {}) {
-  const response = await fetch(`https://api.github.com${path}`, {
-    ...options,
+  const method = options.method || 'GET';
+  const { response, bodyText, attemptLog } = await githubApiFetch({
+    url: `https://api.github.com${path}`,
+    method,
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
@@ -498,11 +507,21 @@ async function request(path, token, options = {}) {
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
       ...(options.headers || {}),
     },
+    body: options.body,
+    maxRetries: options.maxRetries,
+    initialBackoffMs: options.initialBackoffMs,
+    maxBackoffMs: options.maxBackoffMs,
+    sleepFn: options.sleepFn,
+    fetchFn: options.fetchFn,
+    pathLabel: path,
   });
 
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`${options.method || 'GET'} ${path} failed: ${response.status} ${text}`);
+    throw new Error(`${method} ${path} failed: ${response.status} ${bodyText || ''}`);
+  }
+
+  if (attemptLog.length) {
+    console.warn(`GitHub API retry evidence for ${method} ${path}:\n${formatAttemptEvidence(attemptLog)}`);
   }
 
   if (response.status === 204) return null;
@@ -525,8 +544,9 @@ async function paginate(path, token) {
   return results;
 }
 
-async function graphql(query, variables, token) {
-  const response = await fetch('https://api.github.com/graphql', {
+async function graphql(query, variables, token, options = {}) {
+  const { response, bodyText, attemptLog } = await githubApiFetch({
+    url: 'https://api.github.com/graphql',
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -534,11 +554,27 @@ async function graphql(query, variables, token) {
       'User-Agent': 'lgfc-reviewer-lifecycle-gate',
     },
     body: JSON.stringify({ query, variables }),
+    maxRetries: options.maxRetries,
+    initialBackoffMs: options.initialBackoffMs,
+    maxBackoffMs: options.maxBackoffMs,
+    sleepFn: options.sleepFn,
+    fetchFn: options.fetchFn,
+    pathLabel: '/graphql',
   });
 
-  const data = await response.json();
-  if (!response.ok || data.errors?.length) {
-    throw new Error(`GraphQL request failed: ${response.status} ${JSON.stringify(data.errors || data)}`);
+  if (attemptLog.length) {
+    console.warn(`GitHub API retry evidence for POST /graphql:\n${formatAttemptEvidence(attemptLog)}`);
+  }
+
+  let data;
+  try {
+    data = bodyText ? JSON.parse(bodyText) : await response.json();
+  } catch {
+    data = bodyText || null;
+  }
+
+  if (!response.ok || data?.errors?.length) {
+    throw new Error(`GraphQL request failed: ${response.status} ${JSON.stringify(data?.errors || data || bodyText)}`);
   }
   return data.data;
 }
@@ -701,7 +737,15 @@ async function main() {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
-    console.error(error);
+    if (error instanceof GitHubInfrastructureError) {
+      console.error(`INFRASTRUCTURE_FAILURE classification=${error.classification}`);
+      console.error(error.message);
+      if (error.attemptLog?.length) {
+        console.error(formatAttemptEvidence(error.attemptLog));
+      }
+    } else {
+      console.error(error);
+    }
     process.exit(1);
   });
 }
