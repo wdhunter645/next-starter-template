@@ -144,11 +144,7 @@ jobs:
               existing_state="$state"
               break
             fi
-          done < <(echo "$result" | python3 -c "
-import json,sys
-for item in json.load(sys.stdin):
-    print(json.dumps(item))
-")
+          done < <(echo "$result" | python3 -c "import json,sys; sys.stdout.writelines(json.dumps(item) + '\n' for item in json.load(sys.stdin))")
           if [ -n "$existing_number" ]; then
             echo "action=reuse" >> "$GITHUB_OUTPUT"
             echo "existing_number=$existing_number" >> "$GITHUB_OUTPUT"
