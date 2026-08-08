@@ -2,6 +2,7 @@
 /**
  * Unit tests for orchestrator preflight duplicate-detection helpers.
  * Run with: node scripts/orchestrator/test-preflight.mjs
+ * (re-triggered for CI)
  */
 
 import {
