@@ -31,6 +31,25 @@ async function mockGalleryApis(page: Page) {
       body: JSON.stringify({ ok: true, tags: ['bat', 'card'] }),
     });
   });
+  // List endpoint (distinct from /photos); memorabilia page uses buildFanclubPhotoListApiUrl({ memorabilia: true }).
+  await page.route('**/api/fanclub/memorabilia**', async (route) => {
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        items: [
+          {
+            id: 1,
+            title: 'Long memorabilia title that should wrap without forcing horizontal overflow on mobile',
+            description: 'Description text that wraps safely.',
+            tags: 'bat',
+            thumbnail_url: '/IMG_1946.png',
+          },
+        ],
+        related_library_entries: [],
+      }),
+    });
+  });
   await page.route('**/api/fanclub/photos**', async (route) => {
     await route.fulfill({
       contentType: 'application/json',
