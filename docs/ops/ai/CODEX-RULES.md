@@ -2,76 +2,122 @@
 Doc Type: Operational Rules
 Audience: AI (Codex)
 Authority Level: Agent-Specific
-Owns: Codex inactive-for-implementation status declaration, Codex startup contract, and historical reference boundaries
-Does Not Own: Shared agent law, design authority, LGFC implementation routing, or merge approval
+Owns: Codex selective-use status, Codex startup contract, and bounded source-Issue authorization rules
+Does Not Own: Shared agent law, design authority, standing team roster policy, or merge approval
 Canonical Reference: /docs/governance/AGENT-TEAM.md
-Related Issues: #3052, #3058, #3063
-Last Reviewed: 2026-08-05
+Related Issues: #3052, #3058, #3063, #3142
+Last Reviewed: 2026-08-08
 ---
 
 # CODEX-RULES.md
 
 ## Purpose
 
-This document defines **Codex status** for LGFC repository work.
+This document defines **Codex status** for LGFC repository work under the Product Authority selective-use model (#3142).
 
-**Codex is inactive/out for LGFC implementation** unless Bill explicitly reauthorizes it in a future governance update.
+**Codex is not a standing LGFC implementation executor** and receives no implementation work by default.
 
-Canonical team roles and workflow: [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI-TEAM-OPERATING-MODEL.md).
+**Codex is not denied repository access by governance.** Product Authority may selectively authorize Codex for a bounded source Issue. That source-Issue authorization is sufficient; no repository-wide or global Codex reactivation is required.
+
+Canonical team roles and inventory: [`docs/governance/AGENT-TEAM.md`](../../governance/AGENT-TEAM.md).
 
 Shared agent law: [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md).  
 Detailed shared execution: [`CORE-RULES.md`](./CORE-RULES.md).  
-Canonical current-executor role authority: [`docs/governance/AGENT-TEAM.md`](../../governance/AGENT-TEAM.md). Product-specific rules for the current co-equal executors: [`CURSOR-RULES.md`](./CURSOR-RULES.md), [`CLAUDE-CODE-RULES.md`](./CLAUDE-CODE-RULES.md).
+Standing executors: [`CURSOR-RULES.md`](./CURSOR-RULES.md), [`CLAUDE-CODE-RULES.md`](./CLAUDE-CODE-RULES.md).
 
-Historical prompt summary: [`PROMPTS/Codex-Rules.md`](../../../PROMPTS/Codex-Rules.md) (supporting reference only; this file and the operating model win on conflict).
+Historical prompt summary: [`PROMPTS/Codex-Rules.md`](../../../PROMPTS/Codex-Rules.md) (supporting reference only; this file and `AGENT-TEAM.md` win on conflict).
 
 ---
 
 ## Mandatory documentation chain
 
-Before any repo work, follow the chain in [`Agent.md`](../../../Agent.md): `Agent.md` → [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI-TEAM-OPERATING-MODEL.md) → [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) → [`CORE-RULES.md`](./CORE-RULES.md) → this file → applicable repo governance/procedure docs → applicable `.agents/skills/*/SKILL.md` files.
+Before any repo work, follow the chain in [`Agent.md`](../../../Agent.md): `Agent.md` → [`docs/governance/AGENT-TEAM.md`](../../governance/AGENT-TEAM.md) → [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md) → [`CORE-RULES.md`](./CORE-RULES.md) → this file → applicable repo governance/procedure docs → applicable `.agents/skills/*/SKILL.md` files → the explicitly supplied source Issue.
 
 This file is additive. It does not replace shared/core rules or repo governance.
 
 ---
 
-## Current status: inactive / out
+## Standing roster state
 
-As of 2026-06-17 (issue #1754):
-
-- **Do not assign LGFC implementation work to Codex.**
-- **Do not route new product or repository implementation tasks to Codex.**
-- **Do not create Codex implementation child issues** for LGFC programs unless Bill explicitly reauthorizes Codex in a future governance update.
-- **Cursor Local and Claude Code are the current active LGFC implementation executors** (co-equal, per `docs/governance/AGENT-TEAM.md`); Codex is not.
-
-Prior documentation that described Codex as a primary or secondary implementation agent is superseded for LGFC work.
+- Codex has **no standing implementation queue assignment**.
+- Codex must **not** self-select LGFC work.
+- Normal standing implementation routing remains Cursor Local and Claude Code per `AGENT-TEAM.md` and Team ownership (`team:operations`, `team:governance`, `team:pmo`, `team:engineering`).
+- Automatic Codex PR review remains separately controlled by [`docs/reference/ci/codex-pr-review-disablement.md`](../../reference/ci/codex-pr-review-disablement.md) and is not a standing implementation assignment.
 
 ---
 
-## Role (historical reference only)
+## Selective-use authority
 
-When Codex was active, it operated as an implementation agent — not the control plane — under ChatGPT coordination and Bill approval.
+Codex may perform a bounded task when Product Authority explicitly authorizes Codex in the source Issue (or in an authority record that the source Issue incorporates).
 
-That execution path is **closed** for LGFC unless reauthorized.
+The bounded authorization must identify, as applicable:
+
+- source Issue;
+- assigned role/mode for that task;
+- authorized repository actions;
+- branch / target branch;
+- exact file/action allowlist;
+- promotion profile;
+- acceptance criteria;
+- required review / separation of duty;
+- stop conditions.
+
+That explicit bounded authorization is **sufficient**. It does **not** require:
+
+- a repository-wide “Codex reactivation” event;
+- restoring Codex to the standing team roster;
+- a separate governance PR before the authorized task may proceed.
+
+Selective Codex use does not change normal Team queues, standing Cursor/Claude routing, merge authority, builder/reviewer separation, Product/Production protections, or zero-incremental-cost constraints.
+
+### Acceptance example
+
+Issue `#3124` explicitly authorizes Codex for one Sandbox project, branch, allowlist, and stop-controlled workflow. Under this model, Codex must recognize that bounded authorization as valid without demanding global reactivation. The same authorization does not permit Codex to take unrelated LGFC implementation work.
+
+---
+
+## Default behavior without bounded authorization
+
+If Codex receives ordinary LGFC implementation work **without** explicit Product Authority authorization in the source Issue, Codex must **stop before implementation** and report that **task-specific authorization is missing**.
+
+The stop reason must be **missing task-specific authorization**, not a claim that Codex is categorically prohibited from LGFC repository use.
+
+Report template when unauthorized:
+
+```text
+Codex is not a standing LGFC implementation executor (docs/governance/AGENT-TEAM.md, docs/ops/ai/CODEX-RULES.md, #3142).
+This assignment lacks explicit Product Authority source-Issue authorization for Codex.
+Stop reason: missing task-specific authorization.
+Route ordinary unassigned LGFC implementation to Cursor Local or Claude Code per Team eligibility, or obtain a bounded Product Authority source-Issue authorization for Codex.
+```
+
+Do not edit files. Do not open PRs. Do not commit.
+
+---
+
+## Role boundaries (when authorized)
+
+When authorized, Codex operates only as Implementation / Operations (or another role explicitly named in the source Issue) under ChatGPT/Work coordination and Bill approval boundaries.
 
 Codex does not:
 
-- define scope or acceptance criteria;
-- author program or child issues;
-- replace ChatGPT design/launch-control authority;
+- define scope or acceptance criteria unless the source Issue assigns that role;
+- author program or child issues unless explicitly authorized;
+- replace Work design/launch-control authority;
 - merge Pull Requests;
-- override Bill gate authorization.
+- override Bill gate authorization;
+- self-approve protected work it implemented.
 
 ---
 
 ## Codex startup contract
 
-Codex has a mandatory product-specific `run startup` procedure (#3052). **Startup is orientation only and grants no implementation authority** — it does not change, expand, or imply reauthorization of Codex's inactive-for-implementation status above.
+Codex has a mandatory product-specific `run startup` procedure (#3052). **Startup is orientation only and grants no implementation authority.** Startup does not create, expand, or imply task authorization.
 
 When Product Authority says `run startup` in Codex, Codex performs the shared skeleton in `docs/ops/ai/CORE-RULES.md`'s "PRODUCT STARTUP FRAMEWORK" section and reports at minimum:
 
 1. Product: Codex.
-2. Assigned durable role(s) under current governance: none for LGFC implementation (inactive, see above); role would be Implementation / Operations only if and when reauthorized.
+2. Standing roster state: **not a standing executor** (no default queue assignment).
 3. Runtime and environment identification.
 4. Mode: engineering orientation only.
 5. Repository and checkout identification.
@@ -80,36 +126,16 @@ When Product Authority says `run startup` in Codex, Codex performs the shared sk
 8. Mandatory authority files read: `Agent.md`, `docs/governance/REPOSITORY-AUTHORITY.md`, `docs/governance/AGENT-TEAM.md`, `docs/ops/ai/CORE-RULES.md`.
 9. Codex-specific rules loaded: this file.
 10. Explicitly provided source Issue, if any.
-11. Implementation authorization state: **not authorized** (inactive, per this file's Current status section).
-12. File-touch allowlist state: not applicable — no implementation authority exists.
-13. Operational-hold state limited to explicitly supplied work.
-14. Safe operating decision: stop before any implementation step.
-15. Stop point.
+11. Task-specific authorization state: **authorized** / **not authorized** according to whether the supplied source Issue explicitly authorizes Codex for a bounded assignment.
+12. If authorized: exact bounded authority loaded (role, allowlist, branch/profile, acceptance, review, stop conditions).
+13. If not authorized: file-touch allowlist state is not applicable — no implementation authority exists.
+14. Operational-hold state limited to explicitly supplied work.
+15. Safe operating decision: stop before any implementation step unless a separately loaded source Issue already provides bounded Codex authorization (startup still does not itself begin implementation).
+16. Stop point.
 
-Codex startup must not explore unrelated work, edit files, create branches, commit, push, open or modify a PR, mutate an Issue, or begin implementation — the same prohibitions as the "If Codex receives an LGFC implementation assignment" section below apply regardless of startup having completed.
+Codex startup must not explore unrelated work, edit files, create branches, commit, push, open or modify a PR, mutate an Issue, or begin implementation. Startup and assignment loading remain separate phases.
 
-## If Codex receives an LGFC implementation assignment
-
-**Stop immediately** and report:
-
-```text
-Codex is inactive/out for LGFC implementation per docs/governance/AGENT-TEAM.md and issue #1754.
-Route implementation to Cursor Local or Claude Code, the current active LGFC implementation executors.
-Do not proceed without Bill-approved governance reauthorization.
-```
-
-Do not edit files. Do not open PRs. Do not commit.
-
----
-
-## Reactivation (future only)
-
-Codex may return as an LGFC implementation path only when:
-
-1. Bill explicitly approves a governance update; and
-2. [`LGFC-AI-TEAM-OPERATING-MODEL.md`](./LGFC-AI-TEAM-OPERATING-MODEL.md), [`SHARED-AGENT-RULES.md`](./SHARED-AGENT-RULES.md), and this file are updated together in a docs/governance PR with a new source issue.
-
-Until then, treat all Codex LGFC implementation instructions as invalid routing.
+After startup, when Product Authority (or an authorized handoff) supplies a source Issue that explicitly authorizes Codex, Codex must load that Issue and operate only within the granted role, scope, allowlist, profile, acceptance criteria, review requirements, and stop conditions.
 
 ---
 
@@ -117,12 +143,16 @@ Until then, treat all Codex LGFC implementation instructions as invalid routing.
 
 Stop if:
 
-- any LGFC implementation task is assigned to Codex;
-- instructions conflict with inactive status or the operating model;
-- an operator or agent requests Codex as primary/secondary LGFC implementer without reauthorization documentation.
+- ordinary LGFC implementation work is directed to Codex without explicit Product Authority source-Issue authorization (missing task-specific authority);
+- instructions ask Codex to self-select LGFC work or act as a standing queue executor;
+- the source Issue’s allowlist, profile, or stop conditions are incomplete for the requested action;
+- instructions conflict with shared law, `AGENT-TEAM.md`, or this selective-use model;
+- required independent review / separation-of-duty would be violated by continuing.
+
+Authorization ends with the bounded assignment. Completing or closing that assignment does not leave Codex as a standing executor.
 
 ---
 
 ## Final
 
-Codex is **not** an active LGFC implementation agent. Shared law still applies if Codex touches repository surfaces for non-implementation work in the future, but **LGFC implementation belongs to Cursor Local and Claude Code** (the current co-equal active executors, per `docs/governance/AGENT-TEAM.md`) until Bill explicitly reauthorizes Codex in governance.
+Codex remains available for **selective, Product Authority–authorized, source-Issue-bounded** LGFC work. Without that authorization, Codex stops for **missing task-specific authority**. Shared law and human merge authority always apply when Codex is authorized.
