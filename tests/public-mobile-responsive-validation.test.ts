@@ -17,7 +17,7 @@ const MOBILE_TEST_FILES = [
   'tests/e2e/mobile-navigation.spec.ts',
 ] as const;
 
-const MOBILE_E2E_PRIORITY_ROUTES = ['/', '/fanclub'] as const;
+const MOBILE_E2E_PRIORITY_ROUTES = ['/', '/fanclub', '/fanclub/myprofile', '/fanclub/submit', '/fanclub/chat'] as const;
 
 describe('mobile responsive contract (#1259 Task 004)', () => {
   it('ships mobile navigation unit and playwright suites', () => {

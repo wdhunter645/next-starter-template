@@ -3,7 +3,20 @@ import { expect, test, type Page } from '@playwright/test';
 const STORE_URL = 'https://www.bonfire.com/store/lou-gehrig-fan-club/';
 
 const publicGuestItems = ['Join', 'Search', 'Store', 'Login', 'About', 'Contact'];
-const fanclubItems = ['Club Home', 'My Profile', 'Search', 'Store', 'Logout', 'About', 'Contact'];
+const fanclubItems = [
+  'Club Home',
+  'My Profile',
+  'Photo',
+  'Library',
+  'Memorabilia',
+  'Chat',
+  'Submit',
+  'Search',
+  'Store',
+  'Logout',
+  'About',
+  'Contact',
+];
 
 async function assertNoHorizontalOverflow(page: Page) {
   const overflow = await page.evaluate(() => ({
@@ -119,6 +132,73 @@ test.describe('fanclub mobile navigation responsiveness', () => {
       await assertNoHorizontalOverflow(page);
     });
   }
+
+  async function mockShellFormApis(page: Page) {
+    await page.route('**/api/fanclub/profile', async (routeHandle) => {
+      await routeHandle.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          profile: {
+            email: 'fan@example.com',
+            first_name: 'Fan',
+            last_name: 'Member',
+            screen_name: 'fan',
+            email_opt_in: true,
+          },
+        }),
+      });
+    });
+    await page.route('**/api/content/membercard', async (routeHandle) => {
+      await routeHandle.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, content: null }),
+      });
+    });
+    await page.route('**/api/discussions/list**', async (routeHandle) => {
+      await routeHandle.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          items: [
+            {
+              id: 1,
+              title: 'Long title that should wrap instead of forcing overflow on narrow viewports',
+              body: 'Body copy that should wrap safely on mobile widths without horizontal scroll.',
+              created_at: '2026-08-08T00:00:00.000Z',
+            },
+          ],
+        }),
+      });
+    });
+  }
+
+  test('keeps /fanclub/myprofile free of horizontal overflow on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await mockMemberSession(page);
+    await mockShellFormApis(page);
+    await page.goto('/fanclub/myprofile');
+    await expect(page.locator('main').first()).toBeVisible();
+    await assertNoHorizontalOverflow(page);
+  });
+
+  test('keeps /fanclub/submit free of horizontal overflow on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await mockMemberSession(page);
+    await mockShellFormApis(page);
+    await page.goto('/fanclub/submit');
+    await expect(page.locator('main').first()).toBeVisible();
+    await assertNoHorizontalOverflow(page);
+  });
+
+  test('keeps /fanclub/chat free of horizontal overflow on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await mockMemberSession(page);
+    await mockShellFormApis(page);
+    await page.goto('/fanclub/chat');
+    await expect(page.locator('main').first()).toBeVisible();
+    await assertNoHorizontalOverflow(page);
+  });
 });
 
 test.describe('footer responsive invariants', () => {
