@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMemberSession } from '@/hooks/useMemberSession';
 import { buildFanclubPhotoListApiUrl } from '@/lib/fanclubApi';
 import { fanclubThreeColumnGridClassName } from '@/components/fanclub/fanclubGridStyles';
+import styles from './page.module.css';
 
 type PhotoItem = {
   id: number;
@@ -14,22 +15,6 @@ type PhotoItem = {
   description?: string;
   tags?: string | null;
   uploaded_by?: string | null;
-};
-
-const pillBase: React.CSSProperties = {
-  padding: '6px 12px',
-  borderRadius: 999,
-  border: '1px solid rgba(255,255,255,0.18)',
-  background: 'rgba(255,255,255,0.06)',
-  cursor: 'pointer',
-  fontSize: 13,
-};
-
-const pillActive: React.CSSProperties = {
-  ...pillBase,
-  background: '#1e3a8a',
-  borderColor: '#1e3a8a',
-  color: '#fff',
 };
 
 export default function FanclubPhotoGalleryPage() {
@@ -94,38 +79,37 @@ export default function FanclubPhotoGalleryPage() {
   }
 
   return (
-    <main style={{ maxWidth: 1100, margin: '0 auto', padding: '28px 16px' }}>
-      <h1 style={{ fontSize: 32, margin: '0 0 8px 0' }}>Photo Gallery</h1>
-      <p style={{ marginTop: 0, opacity: 0.85 }}>
-        Browse member-only photos. Use search and tags to narrow the archive.
-      </p>
+    <main className={styles.main}>
+      <h1 className={styles.title}>Photo Gallery</h1>
+      <p className={styles.lead}>Browse member-only photos. Use search and tags to narrow the archive.</p>
 
       <form
+        className={styles.form}
         onSubmit={(event) => {
           event.preventDefault();
           setSubmittedQuery(query);
           setSubmittedTags(tagCsv);
           setRefreshKey((value) => value + 1);
         }}
-        style={{ marginTop: 14, padding: 14, borderRadius: 16, border: '1px solid rgba(255,255,255,0.14)' }}
       >
-        <label style={{ display: 'grid', gap: 6 }}>
+        <label className={styles.field}>
           Search
           <input
+            className={styles.input}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search photos…"
-            style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.2)' }}
+            aria-label="Search photos"
           />
         </label>
 
-        <div style={{ marginTop: 12 }}>
-          <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 8 }}>Tag filters</div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div className={styles.tagBlock}>
+          <div className={styles.tagLabel}>Tag filters</div>
+          <div className={styles.pillRow}>
             <button
               type="button"
               aria-pressed={selectedTags.length === 0}
-              style={selectedTags.length === 0 ? pillActive : pillBase}
+              className={selectedTags.length === 0 ? styles.pillActive : styles.pill}
               onClick={() => setSelectedTags([])}
             >
               All
@@ -137,7 +121,7 @@ export default function FanclubPhotoGalleryPage() {
                   key={tag}
                   type="button"
                   aria-pressed={active}
-                  style={active ? pillActive : pillBase}
+                  className={active ? styles.pillActive : styles.pill}
                   onClick={() => {
                     setSelectedTags((current) =>
                       current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag],
@@ -151,54 +135,49 @@ export default function FanclubPhotoGalleryPage() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 12 }}>
-          <button
-            type="submit"
-            style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.08)', cursor: 'pointer' }}
-          >
+        <div className={styles.actions}>
+          <button type="submit" className={styles.button}>
             Apply filters
           </button>
         </div>
       </form>
 
-      {loading && <p style={{ opacity: 0.85 }}>Loading…</p>}
-      {err && <p style={{ color: 'salmon' }}>Unable to load member photos right now. {err}</p>}
+      {loading ? <p className={styles.muted}>Loading…</p> : null}
+      {err ? <p className={styles.error}>Unable to load member photos right now. {err}</p> : null}
 
-      {!loading && !err && (
-        <div className={fanclubThreeColumnGridClassName} style={{ marginTop: 14 }}>
+      {!loading && !err ? (
+        <div className={`${fanclubThreeColumnGridClassName} ${styles.gridWrap}`}>
           {items.map((p) => {
             const photoUrl = p.thumbnail_url || p.url;
             const title = p.title || p.description || `Photo #${p.id}`;
 
             return (
-              <div key={p.id} style={{ borderRadius: 16, border: '1px solid rgba(255,255,255,0.12)', overflow: 'hidden' }}>
-                <div style={{ aspectRatio: '4/3', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div key={p.id} className={styles.card}>
+                <div className={styles.media}>
                   {photoUrl ? (
-                    <img src={photoUrl} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img className={styles.image} src={photoUrl} alt={title} />
                   ) : (
-                    <span style={{ opacity: 0.75, fontSize: 12, padding: 10 }}>Photo media unavailable</span>
+                    <span className={styles.mediaFallback}>Photo media unavailable</span>
                   )}
                 </div>
-                <div style={{ padding: 12 }}>
-                  <div style={{ fontWeight: 600 }}>{title}</div>
-                  {p.description && p.description !== title ? <p style={{ margin: '8px 0 0', opacity: 0.85 }}>{p.description}</p> : null}
-                  {p.tags ? <div style={{ marginTop: 8, opacity: 0.72, fontSize: 12 }}>Tags: {p.tags}</div> : null}
-                  {p.uploaded_by ? <div style={{ marginTop: 6, opacity: 0.72, fontSize: 12 }}>Source: {p.uploaded_by}</div> : null}
+                <div className={styles.cardBody}>
+                  <div className={styles.cardTitle}>{title}</div>
+                  {p.description && p.description !== title ? (
+                    <p className={styles.cardText}>{p.description}</p>
+                  ) : null}
+                  {p.tags ? <div className={styles.cardMeta}>Tags: {p.tags}</div> : null}
+                  {p.uploaded_by ? <div className={styles.cardMeta}>Source: {p.uploaded_by}</div> : null}
                 </div>
               </div>
             );
           })}
-          {items.length === 0 && (
-            <div style={{ gridColumn: '1 / -1', padding: 14, borderRadius: 14, border: '1px solid rgba(255,255,255,0.12)', opacity: 0.85 }}>
-              No photos match your search.
-            </div>
-          )}
+          {items.length === 0 ? <div className={styles.empty}>No photos match your search.</div> : null}
         </div>
-      )}
+      ) : null}
 
-      <p style={{ marginTop: 18, opacity: 0.9 }}>
+      <p className={styles.footer}>
         Have a photo to share?{' '}
-        <Link href="/fanclub/submit" style={{ fontWeight: 600 }}>
+        <Link href="/fanclub/submit" className={styles.footerLink}>
           Submit a Photo →
         </Link>
       </p>

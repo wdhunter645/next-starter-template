@@ -1,0 +1,181 @@
+.main {
+  box-sizing: border-box;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 16px;
+  width: 100%;
+}
+
+.title {
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  margin: 0 0 8px;
+}
+
+.lead {
+  margin-top: 0;
+  opacity: 0.85;
+}
+
+.form {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.input {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.tagBlock {
+  margin-top: 12px;
+}
+
+.tagLabel {
+  font-size: 13px;
+  opacity: 0.85;
+  margin-bottom: 8px;
+}
+
+.pillRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.pillActive {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid #1e3a8a;
+  background: #1e3a8a;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.button {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+
+.muted {
+  opacity: 0.85;
+}
+
+.error {
+  color: salmon;
+}
+
+.gridWrap {
+  margin-top: 14px;
+}
+
+.card {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.media {
+  aspect-ratio: 4 / 3;
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mediaFallback {
+  opacity: 0.75;
+  font-size: 12px;
+  padding: 10px;
+}
+
+.cardBody {
+  padding: 12px;
+}
+
+.cardTitle {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.cardText {
+  margin: 8px 0 0;
+  opacity: 0.85;
+  overflow-wrap: anywhere;
+}
+
+.cardMeta {
+  margin-top: 8px;
+  opacity: 0.72;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 0.85;
+}
+
+.footer {
+  margin-top: 18px;
+  opacity: 0.9;
+}
+
+.footerLink {
+  font-weight: 600;
+}
+
+@media (max-width: 520px) {
+  .main {
+    padding: 20px 12px;
+  }
+}
