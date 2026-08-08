@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { clubHomeMutedText, clubHomeSectionCard, clubHomeSectionTitle } from './clubHomeStyles';
+import styles from './MembershipCardSection.module.css';
 
 type MemberCardContent = {
   id: number;
@@ -57,22 +58,22 @@ export default function MembershipCardSection() {
       {loading ? <p style={clubHomeMutedText}>Loading membership card…</p> : null}
       {message ? <p style={{ ...clubHomeMutedText, color: '#8a1f1f' }}>{message}</p> : null}
 
-      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 16 }}>
-        <figure style={{ margin: 0 }}>
+      <div className={styles.figures}>
+        <figure className={styles.figure}>
           <img
+            className={styles.cardImage}
             src="/membercard-front.png"
             alt="Membership card - front"
-            style={{ width: 190, height: 'auto', borderRadius: 10, border: '1px solid rgba(0,0,0,0.12)' }}
           />
-          <figcaption style={{ fontSize: 12, opacity: 0.75, marginTop: 6, textAlign: 'center' }}>Front</figcaption>
+          <figcaption className={styles.caption}>Front</figcaption>
         </figure>
-        <figure style={{ margin: 0 }}>
+        <figure className={styles.figure}>
           <img
+            className={styles.cardImage}
             src="/membercard-back.png"
             alt="Membership card - back"
-            style={{ width: 190, height: 'auto', borderRadius: 10, border: '1px solid rgba(0,0,0,0.12)' }}
           />
-          <figcaption style={{ fontSize: 12, opacity: 0.75, marginTop: 6, textAlign: 'center' }}>Back</figcaption>
+          <figcaption className={styles.caption}>Back</figcaption>
         </figure>
       </div>
     </section>

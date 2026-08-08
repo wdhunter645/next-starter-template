@@ -78,7 +78,8 @@ describe('fanclub responsive inventory (#2902 / #2858-001)', () => {
     const e2e = readFileSync('tests/e2e/mobile-navigation.spec.ts', 'utf8');
     expect(e2e).toContain("'/fanclub'");
     // Deep routes are successor work (#2904/#2905); inventory asserts the gap remains explicit.
-    for (const deep of ['/fanclub/photo', '/fanclub/library', '/fanclub/memorabilia', '/fanclub/chat']) {
+    // Gallery deep routes remain successor work (#2904/#2905). Shell forms (#2903) may be covered.
+    for (const deep of ['/fanclub/photo', '/fanclub/library', '/fanclub/memorabilia']) {
       const hasDeepGoto =
         e2e.includes(`goto('${deep}'`) ||
         e2e.includes(`goto("${deep}"`) ||

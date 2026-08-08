@@ -1,0 +1,89 @@
+.main {
+  box-sizing: border-box;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 16px;
+  width: 100%;
+}
+
+.title {
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  margin: 0 0 8px;
+}
+
+.lead {
+  margin-top: 0;
+  opacity: 0.85;
+}
+
+.section {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 18px;
+}
+
+.formGrid {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.input,
+.textarea {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.inputReadonly {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.textarea {
+  min-height: 160px;
+  resize: vertical;
+}
+
+.button {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+
+.button:disabled {
+  background: rgba(255, 255, 255, 0.03);
+  cursor: not-allowed;
+}
+
+.message {
+  margin-top: 6px;
+  opacity: 0.9;
+}
+
+@media (max-width: 520px) {
+  .main {
+    padding: 20px 12px;
+  }
+}

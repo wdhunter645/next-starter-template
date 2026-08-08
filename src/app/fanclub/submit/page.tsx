@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useMemberSession } from '@/hooks/useMemberSession';
+import styles from './page.module.css';
 
 export default function FanclubSubmitPage() {
   const { isLoading, isAuthenticated, email } = useMemberSession({ redirectTo: '/' });
@@ -41,49 +42,51 @@ export default function FanclubSubmitPage() {
   }
 
   return (
-    <main style={{ maxWidth: 980, margin: '0 auto', padding: '28px 16px' }}>
-      <h1 style={{ fontSize: 32, margin: '0 0 8px 0' }}>Member Submissions</h1>
-      <p style={{ marginTop: 0, opacity: 0.85 }}>
+    <main className={styles.main}>
+      <h1 className={styles.title}>Member Submissions</h1>
+      <p className={styles.lead}>
         Submit a short article or note to be considered for the Library. (PDF upload pipeline will be added as part of the media workflow.)
       </p>
 
-      <section style={{ marginTop: 14, padding: 16, borderRadius: 16, border: '1px solid rgba(255,255,255,0.14)' }}>
-        <h2 style={{ margin: 0, fontSize: 18 }}>Submit an article</h2>
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Submit an article</h2>
 
-        <div style={{ display: 'grid', gap: 10, marginTop: 10 }}>
+        <div className={styles.formGrid}>
           <input
+            className={styles.input}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"
-            style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.2)' }}
+            aria-label="Your name"
+            autoComplete="name"
           />
           <input
+            className={styles.inputReadonly}
             value={email}
             readOnly
             placeholder="Your email"
-            style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.12)' }}
+            aria-label="Your email"
+            autoComplete="email"
           />
           <input
+            className={styles.input}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Article title"
-            style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.2)' }}
+            aria-label="Article title"
           />
           <textarea
+            className={styles.textarea}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Paste your article text here…"
             rows={8}
-            style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(0,0,0,0.2)', resize: 'vertical' }}
+            aria-label="Article text"
           />
-          <button
-            onClick={submit}
-            disabled={!can}
-            style={{ padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.18)', background: can ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)', cursor: can ? 'pointer' : 'not-allowed' }}
-          >
+          <button className={styles.button} onClick={submit} disabled={!can}>
             {busy ? 'Submitting…' : 'Submit'}
           </button>
-          {msg && <div style={{ marginTop: 6, opacity: 0.9 }}>{msg}</div>}
+          {msg ? <div className={styles.message}>{msg}</div> : null}
         </div>
       </section>
     </main>
