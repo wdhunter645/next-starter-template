@@ -18,7 +18,7 @@ Profile examples (stable fields only — replace placeholders before opening):
 
 Model A child:
   Size: small | Delivery model: A | Change mode: routine-ops
-  Target environment: production | Approval profile: chat-bill-production
+  Target environment: production | Approval profile: work-bill-production
   Gate profile: production-candidate | Rollback profile: one-step
   Component branch: not-applicable | Component master: not-applicable
   Promotion PR: not-applicable
@@ -32,7 +32,7 @@ Model B child:
 
 Model B promotion:
   Size: large | Delivery model: B-promotion | Change mode: planned-migration
-  Target environment: production | Approval profile: chat-bill-production
+  Target environment: production | Approval profile: work-bill-production
   Gate profile: component-promotion | Rollback profile: multi-step
   Component branch: component/<release-unit> | Component master: #<program-issue>
   Promotion PR: #<this-pr-number>
@@ -47,14 +47,14 @@ Emergency recovery:
 
 # PR Summary
 
-- **Issue:** #____
+- **Issue:** #____  <!-- REQUIRED: open same-repo governing Issue that PREDATES this branch/PR (issue-first hard gate; #3117). No PR-first exceptions. -->
 - Intent label: <!-- intent:docs / intent:feature / intent:fix / intent:chore / intent:config / intent:ci / intent:ops -->
 - PR class: <!-- docs-governance / docs-content / code / config / ci / release / ops / mixed-approved -->
 - Size: <!-- medium-provisional / small / medium / large -->
 - Delivery model: <!-- A / B-child / B-promotion / emergency-recovery -->
 - Change mode: <!-- project / routine-ops / planned-migration / emergency -->
 - Target environment: <!-- component / preview / production / recovery -->
-- Approval profile: <!-- component-auto-integration / chat-bill-production / protected-change-review / emergency-approval -->
+- Approval profile: <!-- component-auto-integration / work-bill-production / protected-change-review / emergency-approval -->
 - Gate profile: <!-- component-child / production-candidate / component-promotion / emergency-recovery -->
 - Rollback profile: <!-- one-step / multi-step / emergency-stabilization -->
 - Implementation agent: <!-- required for Model B-child and B-promotion — e.g. Cursor Local -->

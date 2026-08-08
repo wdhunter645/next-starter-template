@@ -5,7 +5,7 @@ Authority Level: Core
 Owns: Shared execution rules, enforcement model, PR discipline, stop conditions, shared product-startup framework
 Does Not Own: Design authority, platform configuration, tracker content
 Canonical Reference: /docs/ops/ai/SHARED-AGENT-RULES.md
-Related Issues: #3055, #3113, #3138
+Related Issues: #3055, #3113, #3117, #3138
 Last Reviewed: 2026-08-07
 ---
 
@@ -61,21 +61,43 @@ If additional work is discovered → log it in the source Issue or PR, do not ex
 
 ---
 
-# ISSUE-FIRST PR DISCIPLINE
+# ISSUE-FIRST HARD GATE
 
-Normal repository work must be Issue-first.
+A live, open same-repository governing source Issue is a **mandatory hard precondition** for every repository-changing action: branch creation, first commit, Pull Request, workflow edit, code change, documentation change, configuration change, emergency containment, or any other repository mutation.
+
+The only repository action permitted when no governing Issue exists is **creation of that Issue**.
+
+Required order (no exceptions):
+
+1. Create or identify the governing Issue.
+2. Verify the Issue authorizes objective, scope, writable paths, agent, validation, rollback, and review boundaries.
+3. Create the authorized branch.
+4. Create authorized commits.
+5. Open the PR with an explicit governing-Issue reference that predates the branch and commits.
 
 Rules:
 
-- Create or identify the source Issue before creating a Pull Request.
-- The PR must explicitly link to the source Issue.
+- The governing Issue must **predate** branch creation, first commit, and PR creation.
+- The PR must explicitly link to exactly one primary same-repository, open, non-PR governing Issue.
 - The source Issue remains the task authority for implementation, review, post-merge verification, and closure.
 - Open PR count must stay limited and purposeful.
-- PR-first work is an exception, not the default.
-- Auto-created OPS tracker Issues are allowed only for legitimate operations troubleshooting or PR-first exceptions where a PR exists before a task Issue.
+- **No PR-first path is compliant.** Operations, incidents, CI, workflow, documentation-only, emergency, or administrative work has no exception.
+- A later Issue reference does not retroactively make an issue-less branch, commit, or PR compliant; it is process correction only.
+- Auto-created OPS tracker Issues after a PR already exists are not a compliant substitute for a pre-existing governing Issue.
 - OPS tracker Issues must not replace, override, or hijack the source task Issue.
-- Post-merge validation must report against the source task Issue when one exists.
+- Post-merge validation must report against the source task Issue.
 - Merge authority remains human/operator only.
+
+Motivating incident: PR #3115 was opened before governing Issue #3116 existed. That sequence must never recur (Issue #3117).
+
+Compliant sequence: Issue → branch → commits → PR (with Issue reference).
+
+Non-compliant sequences (examples):
+
+- branch or commits before any Issue;
+- PR opened, then Issue created and linked;
+- emergency or CI fix without a pre-existing Issue;
+- “operations exception” or “PR-first troubleshooting” paths.
 
 ---
 
@@ -232,7 +254,7 @@ Agents must NOT:
 - PR body = execution contract
 - File allowlist = hard boundary
 - Out-of-scope edits = forbidden
-- Source Issue link = required except documented PR-first operations exceptions
+- Source Issue link = required; governing Issue must predate branch, commits, and PR (issue-first hard gate; no exceptions)
 - Tracker/status-index edits = forbidden unless explicitly in the source Issue scope
 
 Defaults:
@@ -263,7 +285,7 @@ A PR must not be handed to ChatGPT/Bill for review while any required gate, revi
 
 - Work owns Issue and PR creation under standing operator permission.
 - Work may create, comment on, label, update, and organize Issues and Pull Requests when task scope is clear.
-- Issue-first discipline remains mandatory unless the work is a legitimate PR-first operations troubleshooting exception.
+- Issue-first hard gate remains mandatory for all work; no PR-first operations, incident, CI, or emergency exception exists.
 - PR creation is NOT delegated unless explicitly instructed.
 - Merge authority remains human/operator only.
 
