@@ -41,7 +41,8 @@ The workflow may report:
 - unresolved non-outdated human threads;
 - stale or outdated comments;
 - trusted-bot findings as advisory evidence;
-- pagination or data-read failures.
+- pagination or data-read failures;
+- transient GitHub API infrastructure failures after bounded retry/backoff, with explicit retry-attempt evidence in artifacts.
 
 Human findings may become blocking only after an explicit promotion decision and successful advisory observation. Bot findings remain advisory unless separately promoted by governance.
 

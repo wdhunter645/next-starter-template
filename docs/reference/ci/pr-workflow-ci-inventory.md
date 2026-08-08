@@ -43,8 +43,8 @@ The PR workflow surface remains deterministic, minimal, and documented. No manua
 | Workflow | Job | Classification |
 | --- | --- | --- |
 | `gate-pr-hygiene.yml` | `pr-hygiene` | Advisory |
-| `gate-diff-scope.yml` | `diff-scope` | Advisory |
-| `reviewer-response-completion.yml` | `reviewer-response-completion` | Advisory |
+| `gate-diff-scope.yml` | `diff-scope` | Advisory — repository-owned GitHub API reads use bounded retry/backoff for transient 5xx failures and emit retry evidence in artifacts/comments |
+| `reviewer-response-completion.yml` | `reviewer-response-completion` | Advisory — repository-owned GitHub API reads use bounded retry/backoff for transient 5xx failures and emit retry evidence in artifacts |
 
 ## Manual-only or paused
 

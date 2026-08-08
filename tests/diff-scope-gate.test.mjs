@@ -1,8 +1,9 @@
 import fs from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   buildDiffScopeReport,
   renderDiffScopeReport,
+  resolveDiffScopeContext,
   runCli,
   writeDiffScopeArtifacts,
 } from '../scripts/ci/diff_scope_gate.mjs';
@@ -31,7 +32,7 @@ describe('diff scope gate', () => {
 
     expect(report.ok).toBe(true);
     expect(report.gate).toBe('diff-scope');
-    expect(report.schemaVersion).toBe(1);
+    expect(report.schemaVersion).toBe(2);
     expect(report.advisory).toBe(true);
     expect(report.unlistedChangedFiles).toEqual([]);
   });
@@ -83,7 +84,7 @@ describe('diff scope gate', () => {
 
       expect(JSON.parse(fs.readFileSync(jsonPath, 'utf8'))).toMatchObject({
         gate: 'diff-scope',
-        schemaVersion: 1,
+        schemaVersion: 2,
         ok: true,
       });
       expect(fs.readFileSync(mdPath, 'utf8')).toContain('Diff Scope Gate');
@@ -94,26 +95,110 @@ describe('diff scope gate', () => {
     }
   });
 
-  it('returns advisory exit code zero when enforcement is disabled', () => {
+  it('returns advisory exit code zero when enforcement is disabled', async () => {
     const bodyPath = 'diff-scope-body.test.md';
     const changedPath = 'diff-scope-changed.test.txt';
     fs.writeFileSync(bodyPath, body);
     fs.writeFileSync(changedPath, 'src/app/page.tsx\n');
 
     try {
-      expect(runCli({
+      await expect(runCli({
         DIFF_SCOPE_BODY_FILE: bodyPath,
         DIFF_SCOPE_CHANGED_FILES_FILE: changedPath,
         DIFF_SCOPE_ENFORCE_FAILURE: 'false',
-      })).toBe(0);
+        DIFF_SCOPE_SKIP_COMMENT: 'true',
+      })).resolves.toBe(0);
 
-      expect(runCli({
+      await expect(runCli({
         DIFF_SCOPE_BODY_FILE: bodyPath,
         DIFF_SCOPE_CHANGED_FILES_FILE: changedPath,
         DIFF_SCOPE_ENFORCE_FAILURE: 'true',
-      })).toBe(1);
+        DIFF_SCOPE_SKIP_COMMENT: 'true',
+      })).resolves.toBe(1);
     } finally {
       for (const file of [bodyPath, changedPath]) {
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+      }
+    }
+  });
+
+  it('retries transient GitHub API failures while resolving PR context', async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        text: async () => 'service unavailable',
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ body }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify([{ filename: 'scripts/ci/diff_scope_gate.mjs' }]),
+      });
+
+    const context = await resolveDiffScopeContext({
+      token: 'test-token',
+      repository: 'owner/repo',
+      prNumber: '42',
+      fetchFn,
+      sleepFn: async () => {},
+    });
+
+    expect(context.changedFiles).toEqual(['scripts/ci/diff_scope_gate.mjs']);
+    expect(context.retryEvidence).toEqual([
+      {
+        operation: 'GET /repos/owner/repo/pulls/42',
+        attempt: 1,
+        status: 503,
+        outcome: 'retrying',
+        classification: 'infrastructure-transient',
+        delayMs: 1000,
+      },
+      {
+        operation: 'GET /repos/owner/repo/pulls/42',
+        attempt: 2,
+        status: 200,
+        outcome: 'success',
+      },
+    ]);
+  });
+
+  it('classifies exhausted retries as infrastructure failure artifacts', async () => {
+    const jsonPath = 'diff-scope-infra.test.json';
+    const mdPath = 'diff-scope-infra.test.md';
+
+    try {
+      const exitCode = await runCli({
+        GITHUB_TOKEN: 'test-token',
+        GITHUB_REPOSITORY: 'owner/repo',
+        PR_NUMBER: '42',
+        DIFF_SCOPE_RESULT_JSON: jsonPath,
+        DIFF_SCOPE_RESULT_MD: mdPath,
+        DIFF_SCOPE_SKIP_COMMENT: 'true',
+      }, {
+        fetchFn: vi.fn(async () => ({
+          ok: false,
+          status: 503,
+          text: async () => 'service unavailable',
+        })),
+        sleepFn: async () => {},
+      });
+
+      expect(exitCode).toBe(1);
+      expect(JSON.parse(fs.readFileSync(jsonPath, 'utf8'))).toMatchObject({
+        gate: 'diff-scope',
+        classification: 'infrastructure-transient',
+        reason: 'github-api-transient-failure',
+        ok: false,
+      });
+      expect(fs.readFileSync(mdPath, 'utf8')).toContain('Classification: infrastructure-transient');
+    } finally {
+      for (const file of [jsonPath, mdPath]) {
         if (fs.existsSync(file)) fs.unlinkSync(file);
       }
     }

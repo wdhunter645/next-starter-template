@@ -3,6 +3,10 @@
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import {
+  GitHubApiTransientError,
+  githubApiRequestWithRetry,
+} from './github_api_retry.mjs';
+import {
   classifyProtectedScope,
   isEnforcingReviewerLifecycleEvent,
 } from './reviewer-gate-simulation.mjs';
@@ -411,11 +415,12 @@ export function assessReviewerLifecycle({
 export function buildReviewerLifecycleArtifact(result) {
   return {
     gate: 'reviewer-lifecycle',
-    schemaVersion: 2,
+    schemaVersion: 3,
     advisory: !result.enforceFailure,
     ok: result.assessment.ok,
     severity: result.assessment.severity,
     reason: result.assessment.reason,
+    classification: result.infrastructureFailure ? 'infrastructure-transient' : 'policy',
     enforceFailure: result.enforceFailure,
     humanChangesRequested: result.humanChangesRequested.length,
     unresolvedHumanThreads: result.reviewThreads.blocking.length,
@@ -426,6 +431,8 @@ export function buildReviewerLifecycleArtifact(result) {
     outdatedWithoutDisposition: result.disposition?.outdatedWithoutDispositionCount || 0,
     blockingReasons: result.blockingReasons,
     headSha: result.headSha || '',
+    retryAttempts: result.retryAttempts || 0,
+    retryEvidence: result.retryEvidence || [],
   };
 }
 
@@ -445,6 +452,26 @@ export function writeReviewerLifecycleArtifacts(result, env = process.env) {
 }
 
 export function buildReviewerLifecycleReport(result) {
+  if (result.infrastructureFailure) {
+    const lines = [
+      'Reviewer lifecycle gate could not complete repository evaluation.',
+      '',
+      'Classification: infrastructure-transient',
+      'Reason: GitHub API transient failures exhausted the bounded retry policy.',
+      `Assessment reason: ${result.assessment.reason}`,
+      `Enforcing event: ${result.enforceFailure ? 'yes' : 'no'}`,
+    ];
+
+    if (result.retryEvidence?.length) {
+      lines.push('', '## Retry evidence');
+      for (const attempt of result.retryEvidence) {
+        lines.push(`- attempt ${attempt.attempt}: status ${attempt.status} — ${attempt.outcome}${attempt.delayMs ? ` — next backoff ${attempt.delayMs}ms` : ''}`);
+      }
+    }
+
+    return lines.join('\n');
+  }
+
   const lines = [
     result.assessment.ok
       ? 'Reviewer lifecycle gate passed.'
@@ -484,7 +511,50 @@ export function buildReviewerLifecycleReport(result) {
     }
   }
 
+  if (result.retryEvidence?.length) {
+    lines.push('', '## Retry evidence');
+    for (const attempt of result.retryEvidence) {
+      lines.push(`- ${attempt.operation}: attempt ${attempt.attempt} status ${attempt.status} — ${attempt.outcome}${attempt.delayMs ? ` — next backoff ${attempt.delayMs}ms` : ''}`);
+    }
+  }
+
   return lines.join('\n');
+}
+
+export function buildReviewerLifecycleInfrastructureResult({
+  error,
+  enforceFailure,
+  prNumber = '',
+} = {}) {
+  const result = {
+    prNumber,
+    marker: '<!-- reviewer-lifecycle-gate -->',
+    scope: { hasProtectedScope: false, protectedFiles: [], unprotectedFiles: [] },
+    labels: [],
+    trustedBotLogins: [],
+    exceptionLabel: DEFAULT_EXCEPTION_LABEL,
+    exceptionActive: false,
+    humanChangesRequested: [],
+    reviewThreads: { blocking: [], advisory: [], outdated: [], resolved: [] },
+    disposition: { failures: [], outdatedWithoutDispositionCount: 0 },
+    blockingReasons: [{
+      code: 'github-api-transient-failure',
+      message: error.message,
+    }],
+    enforceFailure,
+    headSha: '',
+    infrastructureFailure: true,
+    retryAttempts: error.attempts || error.attemptLog?.length || 0,
+    retryEvidence: error.attemptLog || [],
+    assessment: {
+      ok: false,
+      severity: 'infrastructure',
+      reason: 'github-api-transient-failure',
+    },
+    shouldFail: true,
+  };
+  result.report = buildReviewerLifecycleReport(result);
+  return result;
 }
 
 async function request(path, token, options = {}) {
@@ -543,7 +613,74 @@ async function graphql(query, variables, token) {
   return data.data;
 }
 
-export async function fetchNativeReviewState({ owner, repo, prNumber, token }) {
+function appendRetryEvidence(retryEvidence, operation, attemptLog = []) {
+  if (!Array.isArray(retryEvidence) || !attemptLog.length) return;
+  const hadRetry = attemptLog.some((attempt) => attempt.outcome !== 'success') || attemptLog.length > 1;
+  if (!hadRetry) return;
+  for (const attempt of attemptLog) {
+    retryEvidence.push({ operation, ...attempt });
+  }
+}
+
+async function requestWithRetry(path, token, options = {}, { fetchFn, sleepFn, retryEvidence } = {}) {
+  const method = options.method || 'GET';
+  const response = await githubApiRequestWithRetry({
+    url: `https://api.github.com${path}`,
+    method,
+    headers: {
+      Authorization: ['Bearer', token].join(' '),
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'User-Agent': 'lgfc-reviewer-lifecycle-gate',
+      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(options.headers || {}),
+    },
+    ...(Object.prototype.hasOwnProperty.call(options, 'body') ? { body: options.body } : {}),
+    fetchFn,
+    sleepFn,
+  });
+  appendRetryEvidence(retryEvidence, `${method} ${path}`, response.attemptLog);
+  return response.data;
+}
+
+async function paginateWithRetry(path, token, dependencies = {}) {
+  const results = [];
+  let page = 1;
+
+  while (true) {
+    const separator = path.includes('?') ? '&' : '?';
+    const data = await requestWithRetry(`${path}${separator}per_page=100&page=${page}`, token, {}, dependencies);
+    if (!Array.isArray(data) || data.length === 0) break;
+    results.push(...data);
+    if (data.length < 100) break;
+    page += 1;
+  }
+
+  return results;
+}
+
+async function graphqlWithRetry(query, variables, token, { fetchFn, sleepFn, retryEvidence } = {}) {
+  const response = await githubApiRequestWithRetry({
+    url: 'https://api.github.com/graphql',
+    method: 'POST',
+    headers: {
+      Authorization: ['Bearer', token].join(' '),
+      'Content-Type': 'application/json',
+      'User-Agent': 'lgfc-reviewer-lifecycle-gate',
+    },
+    body: JSON.stringify({ query, variables }),
+    fetchFn,
+    sleepFn,
+  });
+  appendRetryEvidence(retryEvidence, 'POST /graphql', response.attemptLog);
+  const data = response.data;
+  if (data.errors?.length) {
+    throw new Error(`GraphQL request failed: 200 ${JSON.stringify(data.errors || data)}`);
+  }
+  return data.data;
+}
+
+export async function fetchNativeReviewState({ owner, repo, prNumber, token, fetchFn, sleepFn, retryEvidence }) {
   const query = `
     query ReviewerLifecycle($owner: String!, $repo: String!, $number: Int!) {
       repository(owner: $owner, name: $repo) {
@@ -564,7 +701,7 @@ export async function fetchNativeReviewState({ owner, repo, prNumber, token }) {
       }
     }
   `;
-  const data = await graphql(query, { owner, repo, number: Number(prNumber) }, token);
+  const data = await graphqlWithRetry(query, { owner, repo, number: Number(prNumber) }, token, { fetchFn, sleepFn, retryEvidence });
   const pr = data.repository?.pullRequest;
   if (!pr) throw new Error(`PR #${prNumber} not found.`);
 
@@ -591,13 +728,16 @@ export async function runReviewerLifecycleGate({
   enforceFailure = isEnforcingReviewerLifecycleEvent(eventName),
   trustedBotLogins = DEFAULT_TRUSTED_BOT_LOGINS,
   exceptionLabel = DEFAULT_EXCEPTION_LABEL,
+  fetchFn,
+  sleepFn,
 }) {
-  const pull = await request(`/repos/${owner}/${repo}/pulls/${prNumber}`, token);
+  const retryEvidence = [];
+  const pull = await requestWithRetry(`/repos/${owner}/${repo}/pulls/${prNumber}`, token, {}, { fetchFn, sleepFn, retryEvidence });
   const [files, nativeState, reviewComments, issueComments] = await Promise.all([
-    paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/files`, token),
-    fetchNativeReviewState({ owner, repo, prNumber, token }),
-    paginate(`/repos/${owner}/${repo}/pulls/${prNumber}/comments`, token),
-    paginate(`/repos/${owner}/${repo}/issues/${prNumber}/comments`, token),
+    paginateWithRetry(`/repos/${owner}/${repo}/pulls/${prNumber}/files`, token, { fetchFn, sleepFn, retryEvidence }),
+    fetchNativeReviewState({ owner, repo, prNumber, token, fetchFn, sleepFn, retryEvidence }),
+    paginateWithRetry(`/repos/${owner}/${repo}/pulls/${prNumber}/comments`, token, { fetchFn, sleepFn, retryEvidence }),
+    paginateWithRetry(`/repos/${owner}/${repo}/issues/${prNumber}/comments`, token, { fetchFn, sleepFn, retryEvidence }),
   ]);
 
   const result = assessReviewerLifecycle({
@@ -619,32 +759,35 @@ export async function runReviewerLifecycleGate({
     readyForReviewAt: pull.updated_at || pull.created_at || '',
   });
 
-  return {
+  const fullResult = {
     ...result,
     prNumber,
     headSha: pull.head?.sha || '',
+    retryAttempts: retryEvidence.length,
+    retryEvidence,
     marker: '<!-- reviewer-lifecycle-gate -->',
-    report: buildReviewerLifecycleReport(result),
   };
+  fullResult.report = buildReviewerLifecycleReport(fullResult);
+  return fullResult;
 }
 
-export async function upsertGateComment({ token, owner, repo, prNumber, marker, body }) {
-  const comments = await paginate(`/repos/${owner}/${repo}/issues/${prNumber}/comments`, token);
+export async function upsertGateComment({ token, owner, repo, prNumber, marker, body, fetchFn, sleepFn }) {
+  const comments = await paginateWithRetry(`/repos/${owner}/${repo}/issues/${prNumber}/comments`, token, { fetchFn, sleepFn });
   const existing = comments.find((comment) => (comment.body || '').includes(marker));
   const commentBody = `${marker}\n\n${body}`;
 
   if (existing) {
-    await request(`/repos/${owner}/${repo}/issues/comments/${existing.id}`, token, {
+    await requestWithRetry(`/repos/${owner}/${repo}/issues/comments/${existing.id}`, token, {
       method: 'PATCH',
       body: JSON.stringify({ body: commentBody }),
-    });
+    }, { fetchFn, sleepFn });
     return;
   }
 
-  await request(`/repos/${owner}/${repo}/issues/${prNumber}/comments`, token, {
+  await requestWithRetry(`/repos/${owner}/${repo}/issues/${prNumber}/comments`, token, {
     method: 'POST',
     body: JSON.stringify({ body: commentBody }),
-  });
+  }, { fetchFn, sleepFn });
 }
 
 async function main() {
@@ -701,6 +844,23 @@ async function main() {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
+    if (error instanceof GitHubApiTransientError) {
+      const prNumber = process.env.PR_NUMBER || '';
+      const eventName = process.env.GITHUB_EVENT_NAME || 'pull_request_target';
+      const enforceFailure = (process.env.ENFORCE_FAILURE || (isEnforcingReviewerLifecycleEvent(eventName) ? 'true' : 'false')) === 'true';
+      const result = buildReviewerLifecycleInfrastructureResult({
+        error,
+        enforceFailure,
+        prNumber,
+      });
+      writeReviewerLifecycleArtifacts(result, process.env);
+      const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+      if (summaryPath) {
+        fs.appendFileSync(summaryPath, `\n### Reviewer lifecycle gate\n\n${result.report}\n`);
+      }
+      console.error(result.report);
+      process.exit(1);
+    }
     console.error(error);
     process.exit(1);
   });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   assessReviewerLifecycle,
+  buildReviewerLifecycleInfrastructureResult,
   buildReviewerLifecycleReport,
   hasExceptionLabel,
   isProtectedPath,
@@ -174,5 +175,43 @@ describe('native lifecycle assessment', () => {
     const trusted = new Set(['custom-bot']);
     expect(isTrustedReviewer('custom-bot', trusted)).toBe(true);
     expect(isTrustedReviewer('reviewer-a', trusted)).toBe(false);
+  });
+
+  it('classifies exhausted transient GitHub API retries as infrastructure failure', () => {
+    const result = buildReviewerLifecycleInfrastructureResult({
+      enforceFailure: true,
+      prNumber: '2657',
+      error: {
+        message: 'GET /repos/owner/repo/pulls/2657 failed after 3 transient GitHub API attempts: 503 service unavailable',
+        attempts: 3,
+        attemptLog: [
+          {
+            attempt: 1,
+            status: 503,
+            outcome: 'retrying',
+            classification: 'infrastructure-transient',
+            delayMs: 1000,
+          },
+          {
+            attempt: 2,
+            status: 503,
+            outcome: 'retrying',
+            classification: 'infrastructure-transient',
+            delayMs: 2000,
+          },
+          {
+            attempt: 3,
+            status: 503,
+            outcome: 'exhausted',
+            classification: 'infrastructure-transient',
+          },
+        ],
+      },
+    });
+
+    expect(result.assessment.reason).toBe('github-api-transient-failure');
+    expect(result.infrastructureFailure).toBe(true);
+    expect(result.report).toContain('Classification: infrastructure-transient');
+    expect(result.report).toContain('attempt 3: status 503 — exhausted');
   });
 });
