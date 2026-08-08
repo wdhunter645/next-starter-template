@@ -67,6 +67,15 @@ describe('DIATAXIS folder hygiene audit', () => {
     expect(auditDiataxisFile('docs/ops/reports/example.md', operationsReportDoc)).toEqual([]);
   });
 
+  it('keeps header validation for operational docs', () => {
+    const findings = auditDiataxisFile(
+      'docs/ops/reports/example.md',
+      operationsReportDoc.replace('Authority Level: Evidence\n', ''),
+    );
+
+    expect(findings.map((finding) => finding.code)).toContain('HEADER_FIELD_MISSING');
+  });
+
   it('rejects DIATAXIS knowledge docs misplaced under docs/ops paths', () => {
     const findings = auditDiataxisFile('docs/ops/reports/example.md', referenceDoc);
 
