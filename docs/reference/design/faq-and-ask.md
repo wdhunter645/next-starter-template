@@ -1,7 +1,7 @@
 ---
-Doc Type: Specification
+Doc Type: Reference
 Audience: Human + AI
-Authority Level: Canonical Design Specification
+Authority Level: Controlled
 Owns: Routes, navigation invariants, UI/UX contracts, page content contracts for public FAQ browse and Ask submission
 Does Not Own: How-to procedures; operational runbooks; governance policies; admin FAQ/Ask queues
 Canonical Reference: /docs/reference/design/LGFC-Production-Design-and-Standards.md
