@@ -42,6 +42,7 @@ jobs:
           fi
 
       - name: Checkout
+        id: checkout
         uses: actions/checkout@v4
 
       - name: Setup Node
@@ -54,10 +55,14 @@ jobs:
 
       - name: Verify Cloudflare D1 credentials
         env:
+          # Token/account only — verify_cloudflare_d1_auth.mjs prints its resolved database
+          # name in its OK/error output, so D1_DATABASE_NAME/D1_DATABASE_ID are deliberately
+          # withheld here. It falls back to its own non-secret default ("lgfc_lite", matching
+          # wrangler.toml) for this SELECT 1 probe; the real identity check against the
+          # D1_DATABASE_NAME/D1_DATABASE_ID secrets happens in the preflight step below,
+          # which never prints either value.
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          D1_DATABASE_NAME: ${{ secrets.D1_DATABASE_NAME }}
-          D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
         run: node scripts/ci/verify_cloudflare_d1_auth.mjs
 
       - name: Run #2913 read-only Production D1 schema preflight
@@ -90,7 +95,10 @@ jobs:
         run: gh issue comment 2913 --body-file production-d1-preflight-2913-result.md
 
       - name: Record failure on #2913
-        if: failure() && hashFiles('production-d1-preflight-2913-result.md') == ''
+        # Scoped to steps that actually reached credentialed/Production work (checkout
+        # succeeded, i.e. past the confirmation-input gate) so a mistyped confirmation
+        # input doesn't post a misleading "preflight FAILED" comment on #2913.
+        if: failure() && steps.checkout.outcome == 'success' && hashFiles('production-d1-preflight-2913-result.md') == ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
