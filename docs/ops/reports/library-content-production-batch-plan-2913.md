@@ -29,7 +29,13 @@ PRAGMA table_info(library_entries);
 ```
 
 - If `is_approved` is **absent**, every legacy row must be treated as unapproved/draft-only per the #2910 map's own rule — record this and proceed with all rows as drafts.
-- If `is_approved` is **present**, record its actual value distribution (counts only, no row content) so the `LE_APPROVED`/`LE_UNAPPROVED` split used in pre/post batch evidence is accurate rather than assumed.
+- If `is_approved` is **present**, record its actual value distribution (counts only, no row content) so the `LE_APPROVED`/`LE_UNAPPROVED` split used in pre/post batch evidence is accurate rather than assumed:
+
+```sql
+-- Read-only, counts only, no row content.
+SELECT COUNT(*) AS le_approved FROM library_entries WHERE is_approved = 1;
+SELECT COUNT(*) AS le_unapproved FROM library_entries WHERE is_approved != 1 OR is_approved IS NULL;
+```
 
 This is a factual verification step, not a judgment call, and this task does not resolve it — it is restated here as the first checklist item below so it is not lost between #2913's issue body and this plan.
 
@@ -64,13 +70,20 @@ Record only these aggregate counts in batch evidence — never individual row ti
 
 ## Rollback — delegates to #2912's proven runbook
 
-This plan does not redefine recovery. Use the exact sequence already proven end-to-end (real local-D1 backfill → revert → re-backfill cycle) in `docs/ops/reports/library-content-recovery-verification-2912.md`:
+This plan does not redefine recovery. Use the exact three-step sequence already proven end-to-end (real local-D1 backfill → revert → re-backfill cycle) in `docs/ops/reports/library-content-recovery-verification-2912.md` — the count confirmations before and after are part of that proven sequence, not optional:
 
 ```sql
+-- 1. Confirm current legacy-tagged canonical row count before acting.
+SELECT COUNT(*) AS n FROM content_inventory WHERE canonical = 1 AND tag LIKE 'legacy-library-%';
+
+-- 2. Revert: removes only canonical rows under the migration's own tag prefix.
 DELETE FROM content_inventory WHERE canonical = 1 AND tag LIKE 'legacy-library-%';
+
+-- 3. Confirm the count is now zero (or matches the intended partial-revert scope).
+SELECT COUNT(*) AS n FROM content_inventory WHERE canonical = 1 AND tag LIKE 'legacy-library-%';
 ```
 
-scoped to a single id (`tag = 'legacy-library-{id}'`) for a partial revert, or the full prefix for a complete revert of this migration's rows. Non-legacy `content_inventory` rows are never touched by this statement (proven in #2912). Any Production use of this statement requires the same separate Production authorization as the forward batch itself, plus a confirmed backup per #2860's stop conditions.
+Scope the `DELETE` and both `SELECT`s to a single id (`tag = 'legacy-library-{id}'`) for a partial revert, or leave the `LIKE` prefix form for a complete revert of this migration's rows. Non-legacy `content_inventory` rows are never touched by this statement (proven in #2912). Any Production use of this sequence requires the same separate Production authorization as the forward batch itself, plus a confirmed backup per #2860's stop conditions.
 
 ## Post-migration verification checklist (for after a Production batch, once authorized and executed)
 
