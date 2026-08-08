@@ -76,6 +76,7 @@
     "yet-another-react-lightbox": "^3.32.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@eslint/eslintrc": "3",
     "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.6.3",
