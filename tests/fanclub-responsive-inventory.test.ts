@@ -79,7 +79,11 @@ describe('fanclub responsive inventory (#2902 / #2858-001)', () => {
     expect(e2e).toContain("'/fanclub'");
     // Deep routes are successor work (#2904/#2905); inventory asserts the gap remains explicit.
     for (const deep of ['/fanclub/photo', '/fanclub/library', '/fanclub/memorabilia', '/fanclub/chat']) {
-      expect(e2e.includes(`goto('${deep}'`) || e2e.includes(`goto("${deep}"`)).toBe(false);
+      const hasDeepGoto =
+        e2e.includes(`goto('${deep}'`) ||
+        e2e.includes(`goto("${deep}"`) ||
+        e2e.includes(`goto(\`${deep}\``);
+      expect(hasDeepGoto).toBe(false);
     }
   });
 
@@ -88,5 +92,6 @@ describe('fanclub responsive inventory (#2902 / #2858-001)', () => {
     for (const width of Object.values(FANCLUB_RESPONSIVE_BREAKPOINTS)) {
       expect(report).toContain(String(width));
     }
+    expect(report).toContain(String(HAMBURGER_ONLY_MAX_WIDTH_PX));
   });
 });
