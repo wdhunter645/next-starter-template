@@ -125,7 +125,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           ISSUE_TITLE: ${{ steps.route.outputs.issue_title }}
         run: |
-          normalized="$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g' | sed 's/^-\|-$//g')"
+          normalized="$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')"
           result="$(gh issue list \
             --repo "${{ github.repository }}" \
             --state all \

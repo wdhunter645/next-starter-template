@@ -165,7 +165,7 @@ export function findExistingIssueByTitle(repoArg, title) {
     '--search',
     title,
     '--json',
-    'number,title,state,body',
+    'number,title,state,body,labels',
     '--limit',
     '10'
   ]);
