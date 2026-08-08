@@ -9,6 +9,10 @@ name: OPS — Library Content Production D1 Preflight (#2913)
 # This workflow performs NO D1 writes. It does not run migrations, backfills, or batch
 # execution. Actual Production batch writes remain a separate, explicitly-authorized
 # increment (see docs/ops/reports/library-content-production-batch-plan-2913.md).
+#
+# This file (and scripts/ci/production_d1_preflight_2913.mjs) matches this repo's
+# protected-path patterns in scripts/ci/delivery_profile.mjs, so PRs touching it require
+# Approval profile: protected-change-review.
 
 on:
   workflow_dispatch:
