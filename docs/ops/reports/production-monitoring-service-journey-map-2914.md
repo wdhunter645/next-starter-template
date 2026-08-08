@@ -70,17 +70,29 @@ member PII.
 
 **Safe to capture:** HTTP status codes, response timing, aggregate row
 *counts* (never row content), boolean pass/fail per check, workflow run
-IDs/URLs, schema metadata (table/column names — not values), and hashed
-IP+UA fingerprints.
+IDs/URLs, schema metadata (table/column names — not values), and
+non-reversible client fingerprints (hashed IP, never a full raw IP;
+truncated rather than raw user-agent).
 
-This isn't a new policy — it's already the pattern this codebase uses
-consistently, and #2915's collectors should follow the same precedent:
+This isn't a new policy — it's already the pattern this codebase uses,
+though not uniformly, and #2915's collectors should follow the *strongest*
+existing precedent below rather than assume every example uses the same
+technique:
 - `functions/_lib/d1.ts` (`requireD1`/`requireTables`) and
   `functions/_lib/env.ts` (`checkEnv`) fail closed on missing
   bindings/secrets without ever logging their values.
-- `functions/_lib/matchup-repair-audit.ts` hashes IP+UA (SHA-256) before
-  logging a structured repair-audit event — the one place in the runtime
-  with a real structured-log schema.
+- `functions/api/matchup/vote.ts` computes a real cryptographic
+  `SHA-256` digest (`crypto.subtle.digest`) over IP+UA+week for its
+  anti-spam vote-dedup hash — the strongest fingerprinting pattern in
+  this codebase.
+- `functions/_lib/matchup-repair-audit.ts` is weaker and should not be
+  read as the SHA-256 precedent: it hashes only the IP, via a lightweight
+  non-cryptographic FNV-1a-style fingerprint (`hashIp`, explicitly
+  commented "not auth"-grade), and logs the user-agent as plain text
+  truncated to 180 characters rather than hashing it. It's still the one
+  place in the runtime with a real structured-log event schema, but
+  #2915 should match `matchup/vote.ts`'s SHA-256 approach for any new
+  IP/UA fingerprinting, not this one.
 - `scripts/ci/production_d1_preflight_2913.mjs` (#2913) emits only column
   names/types from a schema check, never row content, and never prints its
   own credentials.
@@ -113,7 +125,7 @@ evidence contract."*
 | **Member login/session** (`login.ts`, session cookie) | Yes — gates all member content below | **Gap** — no synthetic login test. `login_attempts` rate-limits 3 failed/hr/IP but nothing proactively reads that table for abuse trends | P2 | Implementation/Ops | N/A until #2915; if abuse-trend signal added, hash IP as `matchup-repair-audit` does |
 | **Member content** (`fanclub/home`, `library`, `memorabilia`, `photos`, `profile`, `membercard`) | Yes, once logged in | **Gap, confirmed** — `tests/e2e/launch-readiness-fanclub-routes.spec.ts` (run by `production-audit.yml`) intercepts `**/api/session/me` client-side and returns a mocked authenticated response (`page.route(...)`). It verifies the frontend renders correctly when it *believes* it's authenticated, but never performs a real login and never exercises the real backend `requireMember` guard or session cookie. This confirms — it does not merely leave open — that there is no signal for real backend member authentication/authorization | P3 (partial feature) escalating to P2 if the whole member area is down | Implementation/Ops | N/A until #2915; a real signal would need an actual test-account login, not a mock |
 | **Member content submission** (`library/submit`, `library/content-pipeline/submit`, `discussions/create`) | No (internal/editorial, not public-facing until published) | **Gap** — no monitoring of submission-queue backlog growth or submit-endpoint failure rate | P3 | Implementation/Ops | Aggregate counts only |
-| **Member photo upload** | N/A — **does not exist in Production.** `functions/_lib/photo-upload-validation.ts` is fully implemented but has zero callers; photos enter the system only via the B2→D1 sync path, not member upload | N/A | Not applicable | N/A | Recorded here so a future signal isn't designed against a journey that doesn't exist |
+| **Member photo upload** | N/A — **does not exist in Production.** `functions/_lib/photo-upload-validation.ts` is fully implemented but has no production/runtime callers — its only reference in the repo is `tests/photo-upload-validation.test.ts`, which exercises it in isolation; no `functions/api/**` route imports it. Photos enter the system only via the B2→D1 sync path, not member upload | N/A | Not applicable | N/A | Recorded here so a future signal isn't designed against a journey that doesn't exist |
 
 ### Admin/operational journeys
 
