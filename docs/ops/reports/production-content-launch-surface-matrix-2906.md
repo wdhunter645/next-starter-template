@@ -71,6 +71,8 @@ Authoritative inventory of every launch-required public, Fan Club, and administr
 | Allowlisted write path | `docs/ops/reports/production-content-launch-surface-matrix-2906.md` only |
 | `main` drift note | `main` advanced to `c114d8bd…`; route inventory inspected on `main` for completeness; matrix remains valid for component base unless material route deletion occurs |
 
+<!-- gate-rerun: 2026-08-08T16:05Z -->
+
 ---
 
 ## 1. Public core surfaces
