@@ -5,8 +5,8 @@ Authority Level: Domain Policy
 Owns: Durable LGFC roles, recognized agent product inventory, current member mapping, approval authority, protected stops, operating modes, launch-control workflow boundaries, member work-precedence mapping, and delegated task-closeout role boundaries
 Does Not Own: Queue and priority semantics, shared execution detail, tool-specific runtime behavior, PMO sizing, promotion-profile policy, communication mutation taxonomy, or production mechanics
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2494, #2640, #2641, #2648, #2699, #2700, #3052, #3145, #3152
-Last Reviewed: 2026-08-07
+Related Issues: #2494, #2640, #2641, #2648, #2699, #2700, #3052, #3145, #3142, #3152
+Last Reviewed: 2026-08-08
 ---
 
 # Agent Team
@@ -57,7 +57,7 @@ This inventory represents each distinct LGFC agent product separately rather tha
 | Product | Status | Distinct from | Product-specific rules file | `run startup` applies |
 | --- | --- | --- | --- | --- |
 | Work (OpenAI) | Active — LGFC team member | Ordinary Chat (same model family, outside the delivery chain) | `docs/ops/ai/WORK-RULES.md` | Yes |
-| Codex (OpenAI) | Inactive for implementation; startup contract only | Work | `docs/ops/ai/CODEX-RULES.md` | Yes (orientation only; grants no implementation authority) |
+| Codex (OpenAI) | Selective use — no standing implementation assignment; startup contract only | Work | `docs/ops/ai/CODEX-RULES.md` | Yes (orientation only; grants no implementation authority) |
 | Cursor Local / Cursor Cloud | Active — LGFC team member | — | `docs/ops/ai/CURSOR-RULES.md`, `.cursor/rules/*.mdc`, `AGENTS.md` (Cloud) | Yes (existing bootstrap, unchanged by #3052) |
 | Claude Code (Anthropic) | Active — LGFC team member | Claude (conversational) | `docs/ops/ai/CLAUDE-CODE-RULES.md` | Yes |
 | Claude (Anthropic, conversational) | Supporting/advisory only — no durable role | Claude Code | none | No — outside the operational delivery chain; state this plainly if asked to perform repository work |
@@ -74,7 +74,7 @@ This inventory represents each distinct LGFC agent product separately rather tha
 | Claude Code | Implementation / Operations; PR Approver / Engineering (only for work Claude Code did not itself implement) |
 | GitHub Actions and repository automation | Deterministic CI; Administration & Communications transport/evidence; authorized Day-2 monitoring and bounded remediation |
 | Repository runner and routing controller | Administration & Communications control-plane infrastructure; host/service maintained by Day-2 Operations |
-| Codex | Inactive for LGFC implementation unless Product Authority records future reauthorization and role assignment |
+| Codex | No standing durable role; may receive a bounded task-specific role by explicit Product Authority source-Issue authorization (#3142). Selective use does not place Codex on the standing implementation roster or default queues. |
 | Claude (conversational) | No durable repository role; bounded collaboration only under the Universal collaboration boundary below |
 | Notion | No durable repository role; controlled-document workspace supporting Administration & Communications / Work evidence and record-keeping; no GitHub mutation authority |
 

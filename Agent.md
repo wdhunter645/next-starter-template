@@ -5,8 +5,8 @@ Authority Level: Navigation
 Owns: Read order, authority routing, lane/profile identification, execution entry point
 Does Not Own: Role policy, execution rules, design authority, communication policy, delivery policy, or governance decisions
 Canonical Reference: /docs/governance/REPOSITORY-AUTHORITY.md
-Related Issues: #2640, #2641, #2686, #2690, #3052, #3138
-Last Reviewed: 2026-08-07
+Related Issues: #2640, #2641, #2686, #2690, #3052, #3138, #3142
+Last Reviewed: 2026-08-08
 ---
 
 # Agent.md
@@ -165,7 +165,7 @@ Administration & Communications spans all steps.
 When Product Authority says `run startup`, the literal command resolves according to the active product — Product Authority does not need to say `run Work startup` or `run Codex startup`. Each recognized product identifies itself and performs its own product-specific orientation-only startup, then stops:
 
 - Work: `docs/ops/ai/WORK-RULES.md`
-- Codex: `docs/ops/ai/CODEX-RULES.md` (orientation only; grants no implementation authority)
+- Codex: `docs/ops/ai/CODEX-RULES.md` (orientation only; grants no implementation authority; after startup, a separately loaded source Issue may provide bounded Codex authority when Product Authority explicitly authorizes it — #3142)
 - Claude Code: `docs/ops/ai/CLAUDE-CODE-RULES.md`
 - Cursor: existing bootstrap, unchanged (`AGENTS.md` for Cloud, `.cursor/rules/*.mdc` for Local)
 - Ordinary Chat or Claude (conversational): no product-specific startup contract; state plainly that the product is outside the operational delivery chain
