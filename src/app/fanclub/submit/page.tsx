@@ -57,18 +57,23 @@ export default function FanclubSubmitPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"
+            aria-label="Your name"
+            autoComplete="name"
           />
           <input
             className={styles.inputReadonly}
             value={email}
             readOnly
             placeholder="Your email"
+            aria-label="Your email"
+            autoComplete="email"
           />
           <input
             className={styles.input}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Article title"
+            aria-label="Article title"
           />
           <textarea
             className={styles.textarea}
@@ -76,6 +81,7 @@ export default function FanclubSubmitPage() {
             onChange={(e) => setContent(e.target.value)}
             placeholder="Paste your article text here…"
             rows={8}
+            aria-label="Article text"
           />
           <button className={styles.button} onClick={submit} disabled={!can}>
             {busy ? 'Submitting…' : 'Submit'}

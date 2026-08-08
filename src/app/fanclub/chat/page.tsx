@@ -119,6 +119,7 @@ function ChatComposer({ onSubmit, disabled }: { onSubmit: (title: string, body: 
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Title"
+          aria-label="Post title"
         />
         <textarea
           className={styles.textarea}
@@ -126,6 +127,7 @@ function ChatComposer({ onSubmit, disabled }: { onSubmit: (title: string, body: 
           onChange={(e) => setBody(e.target.value)}
           placeholder="Write your message…"
           rows={4}
+          aria-label="Post message"
         />
         <button className={styles.button} onClick={go} disabled={!canSubmit} type="button">
           {busy ? 'Posting…' : 'Post'}

@@ -54,7 +54,8 @@ describe('fanclub responsive shell (#2903 / #2858-002)', () => {
   it('covers shell form routes in mobile playwright overflow suite', () => {
     const e2e = readFileSync('tests/e2e/mobile-navigation.spec.ts', 'utf8');
     for (const route of ['/fanclub/myprofile', '/fanclub/submit', '/fanclub/chat']) {
-      expect(e2e).toContain(`'${route}'`);
+      const pattern = new RegExp(`goto\\(\\s*['"\`]${route}['"\`]`);
+      expect(e2e).toMatch(pattern);
     }
   });
 });
