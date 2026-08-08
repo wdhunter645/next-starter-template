@@ -206,9 +206,9 @@ describe('githubRepoRequest', () => {
 				sleepFn: async () => {},
 				fetchFn: fetchMock,
 			}),
-		).rejects.toMatchObject({
-			name: 'GitHubInfrastructureError',
-			classification: 'transient-infrastructure',
-		});
+		).rejects.toSatisfy(
+			(error) => error instanceof GitHubInfrastructureError
+				&& error.classification === 'transient-infrastructure',
+		);
 	});
 });

@@ -1,8 +1,6 @@
 import {
 	GitHubInfrastructureError,
-	computeBackoffDelayMs,
 	githubApiFetch,
-	isGitHubRateLimitResponse,
 	sleep,
 } from './github_api_retry.mjs';
 
