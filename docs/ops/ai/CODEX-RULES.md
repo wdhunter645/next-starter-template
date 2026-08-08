@@ -97,7 +97,7 @@ Do not edit files. Do not open PRs. Do not commit.
 
 ## Role boundaries (when authorized)
 
-When authorized, Codex operates only as Implementation / Operations (or another role explicitly named in the source Issue) under ChatGPT/Work coordination and Bill approval boundaries.
+When authorized, Codex operates only as Implementation / Operations (or another role explicitly named in the source Issue) under Work coordination and Bill approval boundaries.
 
 Codex does not:
 
