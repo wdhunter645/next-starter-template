@@ -34,7 +34,6 @@ export const FOLDER_RULES = [
   {
     prefix: 'docs/ops/',
     folderClass: 'operational',
-    expectedDocTypePattern: /^Doc Type:[ \t]+Operation(?:s|al)\b/im,
   },
 ];
 
@@ -95,19 +94,14 @@ export function auditDiataxisFile(file, content) {
   }
 
   if (rule.folderClass === 'operational') {
+    // Approved operational paths: keep header checks, reject only DIATAXIS knowledge types.
+    // Do not enforce a narrow ops Doc Type allowlist (Implementation Plan, Task, etc. are valid).
     if (DIATAXIS_DOC_TYPE_PATTERN.test(content)) {
       findings.push({
         file,
         code: 'OUTSIDE_DIATAXIS_FOLDER',
         message: 'DIATAXIS knowledge content must live in docs/tutorials, docs/how-to, docs/reference, or docs/explanation; approved docs/ops/** paths are for operational evidence, plans, and reports',
         correction: 'Move the document into the matching DIATAXIS knowledge folder, or keep it under docs/ops/** only if it is an operational document.',
-      });
-    } else if (!rule.expectedDocTypePattern.test(content)) {
-      findings.push({
-        file,
-        code: 'DOC_TYPE_FOLDER_MISMATCH',
-        message: 'docs/ops/** content must declare an operational Doc Type',
-        correction: 'Use an operational Doc Type (for example Operations, Operational Checklist, or Operations Report), or move the document to the folder that matches its actual type.',
       });
     }
     return findings;

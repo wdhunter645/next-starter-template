@@ -39,6 +39,23 @@ Last Reviewed: 2026-08-08
 Records operational evidence.
 `;
 
+const implementationPlanDoc = `---
+Doc Type: Implementation Plan
+Audience: Human + AI
+Authority Level: Controlled
+Owns: implementation planning evidence
+Does Not Own: DIATAXIS knowledge content
+Canonical Reference: docs/ops/implementation-plans/example.md
+Last Reviewed: 2026-08-08
+---
+
+# Implementation Plan
+
+## Summary
+
+Records an approved operational plan.
+`;
+
 describe('DIATAXIS folder hygiene audit', () => {
   it('maps files to folder intent rules', () => {
     expect(ruleForFile('docs/reference/example.md')?.expectedDocType).toBe('Reference');
@@ -65,6 +82,10 @@ describe('DIATAXIS folder hygiene audit', () => {
 
   it('accepts operational reports under docs/ops paths', () => {
     expect(auditDiataxisFile('docs/ops/reports/example.md', operationsReportDoc)).toEqual([]);
+  });
+
+  it('accepts non-Operations Doc Types under docs/ops (Implementation Plan, Task, etc.)', () => {
+    expect(auditDiataxisFile('docs/ops/implementation-plans/example.md', implementationPlanDoc)).toEqual([]);
   });
 
   it('keeps header validation for operational docs', () => {
