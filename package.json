@@ -65,7 +65,8 @@
     "launch-readiness:unit": "vitest run tests/launch-readiness-manifest.test.ts tests/d1-b2-fail-closed.test.ts tests/homepage-structure.test.tsx tests/join-login-auth.test.tsx tests/mobile-navigation.test.tsx",
     "launch-readiness:e2e": "LAUNCH_READINESS_E2E=1 playwright test tests/e2e/launch-readiness-public-routes.spec.ts tests/e2e/launch-readiness-fanclub-routes.spec.ts tests/e2e/homepage-sections.spec.ts tests/e2e/mobile-navigation.spec.ts",
     "launch-readiness": "node scripts/launch-readiness/run.mjs",
-    "deploy:prod": "npm run build:cf && wrangler pages deploy out"
+    "deploy:prod": "npm run build:cf && wrangler pages deploy out",
+    "lighthouse:baseline": "lhci collect --staticDistDir=out --url=/ --url=/search/ --url=/join/ --url=/faq/ --url=/about/ --numberOfRuns=1"
   },
   "dependencies": {
     "@pinecone-database/pinecone": "^6.1.3",
@@ -78,6 +79,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
     "@eslint/eslintrc": "3",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
