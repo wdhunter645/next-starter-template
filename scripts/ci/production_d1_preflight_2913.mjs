@@ -199,8 +199,10 @@ export async function main() {
 
   const execResult = runWrangler(['d1', 'execute', dbName, '--remote', '--command', PREFLIGHT_SQL, '--json']);
   if (execResult.error || execResult.status !== 0) {
+    // Never echo wrangler's raw stderr/stdout here: its error text can embed the database
+    // name/uuid or account id sourced from the env/args above, and we treat those as opaque
+    // secrets throughout this script. The exit code is the only diagnostic surfaced.
     failClosed(`wrangler d1 execute failed (exit ${execResult.status ?? 'spawn error'}) running the read-only preflight query.`);
-    console.error((execResult.stderr || execResult.stdout || '').trim());
     return;
   }
 
